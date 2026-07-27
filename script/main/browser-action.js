@@ -157,6 +157,13 @@ function initialize(){
  */
 function requireMonaco(){
     return new Promise(function(_resolve){
+        // Manifest V3 CSP forbids blob: workers, which Monaco uses by default.
+        // Point it at the vendored worker file on the extension origin instead.
+        self.MonacoEnvironment = {
+            getWorkerUrl: function(){
+                return '../script/vs/base/worker/workerMain.js';
+            }
+        };
         require.config({ paths: { 'vs': '../script/vs' }});
         require(['vs/editor/editor.main'], _resolve);
     });

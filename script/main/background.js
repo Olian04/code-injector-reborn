@@ -113,9 +113,13 @@ function injectRules(_injectionObject){
     if (!_injectionObject.info)
         return Promise.reject({message: 'Unknown tab info.'});
 
-    // inject the "injector" script
-    return browser.tabs
-    .executeScript(_injectionObject.info.tabId, {file: '/script/inject.js', runAt: 'document_start', frameId: _injectionObject.info.frameId})
+    // inject the "injector" script (MV3: chrome.scripting replaces tabs.executeScript)
+    return browser.scripting
+    .executeScript({
+        target: { tabId: _injectionObject.info.tabId, frameIds: [_injectionObject.info.frameId] },
+        files: ['/script/inject.js'],
+        injectImmediately: true
+    })
     .then(function(_res){ 
                 
         // send the list of rules
@@ -254,8 +258,8 @@ function setBadgeCounter(_tabData) {
         text = '';
     }
 
-    // Update the badge text
-    browser.browserAction.setBadgeText({ text: text });
+    // Update the badge text (MV3: browserAction -> action)
+    browser.action.setBadgeText({ text: text });
 }
 
 /**
@@ -465,17 +469,13 @@ function getInvolvedRules(_info, _rules){
             // if 'path' exist then it's a rule of a file
             if (rule.path){
     
-                // if it's a local file path
+                // Local file injection relied on XMLHttpRequest/FileReader reading
+                // "file://" paths from the background page. Manifest V3 runs the
+                // background as a service worker where those APIs (and file://
+                // access) are unavailable, so this feature can no longer work.
                 if (rule.local){
-                    readFile(rule.path, function(_res){
-    
-                        if (_res.success)
-                            result.push({ type: rule.type, onLoad: rule.onLoad , code: _res.response });
-                        else if (_res.message)
-                            result.push({ type: 'js', onLoad: rule.onLoad , code: 'console.error(\'Code-Injector [ERROR]:\', \''+_res.message.replace(/\\/g, '\\\\')+'\')' });
-    
-                        checkRule(_ind+1);
-                    });
+                    result.push({ type: 'js', onLoad: rule.onLoad, code: 'console.error(\'Code-Injector [ERROR]: local file injection is no longer supported in Manifest V3. Use a remote URL or paste the code directly instead.\')' });
+                    checkRule(_ind+1);
                 }
                 else{
                     result.push({ type: rule.type, onLoad: rule.onLoad, path: rule.path});
@@ -491,71 +491,6 @@ function getInvolvedRules(_info, _rules){
         // start to check rules
         checkRule(0);
     });
-}
-
-// https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-// https://developer.mozilla.org/en-US/docs/Web/API/FileReader
-/**
- * @param {string} _path    
- * @param {boolean} _local  
- * @param {function} _cb    
- */
-function readFile(_path, _cb){
-
-    _path = 'file://'+ _path;
-
-    try{
-        
-        fetch(_path, { mode: 'same-origin' })
-    
-        .then(
-            function(_res) {
-                return _res.blob();
-            },
-            function(_ex){
-
-                // fallback to XMLHttpRequest
-                var xhr = new XMLHttpRequest();
-
-                xhr.onload = function() {
-                    _cb({ success: true, path: _path, response: xhr.response });
-                };
-                xhr.onerror = function(error) {
-                    _cb({ success: false, path: _path, response: null, message: 'The browser can not load the file "'+_path+'". Check that the path is correct or for file access permissions.' });
-                };
-
-                xhr.open('GET', _path);
-                xhr.send();
-
-                throw "FALLBACK";
-            }
-        )
-    
-        .then(
-            function(_blob) {
-
-                if (!_blob) return _cb({ success: false, path: _path, response: null, message: '' });
-
-                var reader = new FileReader();
-    
-                reader.addEventListener("loadend", function() {
-                    _cb({ success: true, path: _path, response: this.result });
-                });
-                reader.addEventListener("error", function() {
-                    _cb({ success: false, path: _path, response: null, message: 'Unable to read the file "'+_path+'".' });
-                });
-    
-                reader.readAsText(_blob);
-            },
-            function(_ex){
-                if (_ex !== "FALLBACK")
-                    _cb({ success: false, path: _path, response: null, message: 'The browser can not load the file "'+_path+'".' });
-            }
-        );
-    }
-    catch(ex){
-        _cb({ success: false, path: _path, response: null, message: 'En error occurred while loading the file "'+_path+'".' });
-    }
 }
 
 /**

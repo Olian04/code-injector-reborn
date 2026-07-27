@@ -4,6 +4,24 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2026-07-18
+
+Maintainership of this project has moved to a fork maintained by Oliver Anteros (@Olian04). The original author remains L. Sabatelli (@Lor-Saba).
+
+#### Changed
+- Migrated the extension from Manifest V2 to **Manifest V3** (required for continued distribution on the Chrome Web Store).
+  - `browser_action` is now `action`.
+  - The background page is now a service worker.
+  - `<all_urls>` moved to `host_permissions`; added the `scripting` permission.
+  - Code injection now uses `chrome.scripting.executeScript` instead of the removed `tabs.executeScript`.
+
+#### Added
+- A build toolchain (`npm run build` / `npm run zip`) that assembles a loadable `dist/` folder (SCSS compilation, vendored Monaco editor and webextension-polyfill, script bundling).
+- A GitHub Actions workflow that publishes to the Chrome Web Store via a service-account on GitHub Release.
+
+#### Removed
+- Local `file://` injection, which is not possible from a Manifest V3 service worker. A clear error is now logged when a local-file rule is used.
+
 ## [0.3.3] - 2022-01-12 
    
 #### changed
@@ -103,6 +121,7 @@ The initial Beta release
 
 
 
+[0.4.0]: https://github.com/Olian04/Code-Injector/releases/tag/v0.4.0
 [0.3.3]: https://github.com/Lor-Saba/Code-Injector/releases/tag/v0.3.3
 [0.3.2]: https://github.com/Lor-Saba/Code-Injector/releases/tag/v0.3.2
 [0.3.0]: https://github.com/Lor-Saba/Code-Injector/releases/tag/v0.3.0

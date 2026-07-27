@@ -1,0 +1,26 @@
+{
+  "name": "code-injector",
+  "version": "0.4.0",
+  "description": "Inject code into websites! (JavaScript, CSS, HTML and Files)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "zip": "node build.mjs --zip",
+    "publish:chrome": "node scripts/publish-chrome.mjs",
+    "test": "npm run build && playwright test",
+    "test:e2e": "playwright test"
+  },
+  "author": "Oliver Anteros (@Olian04)",
+  "contributors": [
+    "L. Sabatelli (@Lor-Saba) - original author"
+  ],
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@playwright/test": "^1.54.2",
+    "archiver": "7.0.1",
+    "monaco-editor": "0.52.2",
+    "sass": "1.101.0",
+    "webextension-polyfill": "0.12.0"
+  }
+}

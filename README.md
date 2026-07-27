@@ -1,5 +1,9 @@
 <!--img src="./readme-resources/wip.jpg" style="width: 350px; height: 345px;"-->
 
+> **Maintainership note**
+>
+> This is a maintained fork of the original [Code-Injector](https://github.com/Lor-Saba/Code-Injector) by **L. Sabatelli ([@Lor-Saba](https://github.com/Lor-Saba))**, who is the original author of this project. The upstream project has been abandoned, and since the Chrome Web Store no longer accepts Manifest V2 extensions, this fork has been migrated to **Manifest V3** and is now maintained by **Oliver Anteros ([@Olian04](https://github.com/Olian04))**. All credit for the original design and implementation goes to L. Sabatelli.
+
 # Code-Injector
 A [WebExtensions](https://developer.mozilla.org/en-US/Add-ons/WebExtensions) based addon which let the user inject code into the websites
 
@@ -55,6 +59,9 @@ You can install the official `Code Injector` from the following Web Stores:
   * [Show counter](#show-counter)
 * [Injection flow](#injection-flow)
 * [What's next](#whats-next)
+* [Building from source](#building-from-source)
+* [Testing](#testing)
+* [Publishing (Chrome Web Store)](#publishing-chrome-web-store)
 * [Credits](#credits)
 * [Info](#info)
 
@@ -270,6 +277,51 @@ The rules whose *URL Pattern* match with the page address will be selected and q
 
 I would like to make it more and more easy to use so that even who's new to programming can use this add-on with ease.
 
+## Building from source
+
+The extension is assembled into a loadable `dist/` folder by a small Node build script (SCSS is compiled, the [webextension-polyfill](https://github.com/mozilla/webextension-polyfill) and [Monaco editor](https://github.com/Microsoft/monaco-editor) are vendored, and the source scripts are bundled).
+
+```bash
+npm install
+npm run build      # outputs ./dist
+npm run zip        # outputs ./dist and ./code-injector.zip
+```
+
+To try it out, open `chrome://extensions`, enable **Developer mode**, click **Load unpacked** and select the generated `dist/` folder.
+
+> **Note on Manifest V3:** the *local file* injection feature (reading `file://` paths) is no longer available, because the Manifest V3 background service worker cannot access the file system. Inline code, remote files and remote URLs continue to work.
+
+## Testing
+
+End-to-end tests use [Playwright](https://playwright.dev/docs/chrome-extensions) against the built MV3 extension in `dist/`. Chromium is launched with a persistent context and `--load-extension` (use Playwright's bundled Chromium channel — installed Chrome/Edge no longer allow sideloading via those flags).
+
+```bash
+npm install
+npx playwright install chromium   # one-time browser download
+npm test                          # build + e2e
+npm run test:e2e                  # e2e only (rebuilds dist/ via globalSetup)
+```
+
+Specs live under `tests/e2e/`. They seed rules through `chrome.storage.local` and assert popup UI / page injection — Monaco editor interaction is intentionally out of scope for this first pass.
+
+Frameworks such as WXT or Extension.js are deferred to a later release; adopting either later should still keep these Playwright tests (they use the same Chromium load-extension pattern under the hood). Unit tests can be added later without changing the E2E suite.
+
+## Publishing (Chrome Web Store)
+
+Publishing is automated via GitHub Actions ([.github/workflows/publish-chrome.yml](.github/workflows/publish-chrome.yml)). When a GitHub **Release** is published, the workflow builds the extension, zips it, authenticates against the Chrome Web Store API v2 using a Google Cloud service account, and uploads + publishes the new version.
+
+The following repository **secrets** must be configured:
+
+| Secret | Description |
+| --- | --- |
+| `CHROME_WEBSTORE_SERVICE_ACCOUNT_JWT` | The service-account **JSON key** contents. The workflow signs a fresh JWT with it and exchanges it for an access token. (A pre-signed JWT assertion is also accepted.) |
+| `CHROME_EXTENSION_ID` | The Chrome Web Store item ID of the extension. |
+| `CHROME_PUBLISHER_ID` | The Chrome Web Store publisher ID that owns the item. |
+
+The service account must be granted access under the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) → *Account*, and the Chrome Web Store API must be enabled in the Google Cloud project. See the [official docs](https://developer.chrome.com/docs/webstore/service-accounts) for details.
+
+The workflow can also be triggered manually from the Actions tab via *workflow_dispatch*.
+
 ## Credits
 
 - Code editors handled using [monaco-editor](https://github.com/Microsoft/monaco-editor).
@@ -279,5 +331,6 @@ I would like to make it more and more easy to use so that even who's new to prog
 
 ## Info
 
-*Code Injector* is written and maintained by [L.Sabatelli](https://github.com/Lor-Saba)  
-Licenze: [GPLv3](https://www.gnu.org/licenses/quick-guide-gplv3.html)
+*Code Injector* was originally written by [L. Sabatelli (@Lor-Saba)](https://github.com/Lor-Saba).  
+This Manifest V3 fork is maintained by [Oliver Anteros (@Olian04)](https://github.com/Olian04).  
+License: [GPLv3](https://www.gnu.org/licenses/quick-guide-gplv3.html)
