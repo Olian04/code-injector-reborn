@@ -1,9 +1,18 @@
 import type * as Monaco from 'monaco-editor';
+import { registerHtmlClassCompletions } from './htmlClassCompletions';
 
 export type MonacoEditor = Monaco.editor.IStandaloneCodeEditor;
 
+/**
+ * Monaco's default stack varies per platform; naming it keeps the three editors
+ * identical everywhere and independent of the popup's sans-serif body font.
+ */
+export const EDITOR_FONT_FAMILY =
+  'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", "Courier New", monospace';
+
 export const EDITOR_CONFIG: Monaco.editor.IStandaloneEditorConstructionOptions = {
   cursorBlinking: 'phase',
+  fontFamily: EDITOR_FONT_FAMILY,
   fontSize: 11,
   folding: true,
   guides: { indentation: true },
@@ -11,10 +20,9 @@ export const EDITOR_CONFIG: Monaco.editor.IStandaloneEditorConstructionOptions =
   scrollbar: {
     verticalScrollbarSize: 0,
   },
+  // A 500px-wide popup has no room to spend on an overview of 20 lines.
   minimap: {
-    enabled: true,
-    renderCharacters: false,
-    showSlider: 'always',
+    enabled: false,
   },
 };
 
@@ -95,6 +103,8 @@ export function configureMonacoLanguageServices(): void {
   // Eager model sync keeps worker libs in sync when switching editor tabs.
   typescript.javascriptDefaults.setEagerModelSync(true);
   typescript.typescriptDefaults.setEagerModelSync(true);
+
+  registerHtmlClassCompletions(monaco);
 }
 
 const LOADER_SRC = '/monaco/vs/loader.js';

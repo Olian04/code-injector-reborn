@@ -207,25 +207,6 @@
         height: 100%;
         font-size: 13px;
     }
-    .editor .minimap {
-        width: 15px !important;
-        left: calc(100% - 15px) !important;
-        transition: .3s;
-        
-        canvas{
-            opacity: 0;
-            transition: .3s;
-        }
-    }
-    .editor:focus .minimap,
-    .editor:hover .minimap{
-        width: 67px !important;
-        left: calc(100% - 67px) !important;
-
-        canvas{
-            opacity: 1;
-        }
-    }
     .monaco-editor-background{
         background: transparent;
     }

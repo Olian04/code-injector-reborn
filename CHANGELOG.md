@@ -15,6 +15,7 @@ Maintainership of this project has moved to a fork maintained by Oliver Anteros 
   - The background page is now a service worker.
   - `<all_urls>` moved to `host_permissions`; added the `scripting` permission.
   - Code injection now uses `chrome.scripting.executeScript` instead of the removed `tabs.executeScript`.
+- The code editors name their monospace font stack explicitly instead of relying on Monaco's per-platform default, and the minimap is gone — it cost horizontal space the popup does not have.
 
 #### Added
 - A build toolchain (`npm run build` / `npm run zip`) that assembles a loadable `dist/` folder (SCSS compilation, vendored Monaco editor and webextension-polyfill, script bundling).
@@ -23,6 +24,7 @@ Maintainership of this project has moved to a fork maintained by Oliver Anteros 
 - **Dark mode.** It follows the system colour scheme, including Monaco's theme, and the new *Appearance* setting in the options page overrides it. The choice is cached so an override applies before the popup's first paint.
 - End-to-end tests now run against Firefox as well as Chromium, in a CI matrix. Firefox has no Playwright API for loading extensions, so the harness installs the build over the remote debugging protocol and drives the background script through it.
 - A GitHub Actions workflow that publishes to the Chrome Web Store via a service-account on GitHub Release, and attaches the Firefox build to the release.
+- The HTML tab now completes the classes and ids defined in the same rule's CSS tab, including selectors nested in at-rules such as `@media`. Suggestions follow the CSS you are typing, saved or not.
 
 #### Fixed
 - Monaco's language services now run in web workers again; they were falling back to the main thread, which left JavaScript validation and completions dead.
