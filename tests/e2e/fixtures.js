@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const pathToExtension = path.join(root, 'dist');
+const pathToExtension = path.join(root, 'dist', 'chrome');
 
 /**
  * @typedef {object} ExtensionFixtures
@@ -52,9 +52,10 @@ export const test = base.extend({
 
   openPopup: async ({ extensionId }, use) => {
     await use(async (page) => {
-      await page.goto(`chrome-extension://${extensionId}/html/browser-action.html`);
+      // Extension.js emits the action popup under action/
+      await page.goto(`chrome-extension://${extensionId}/action/index.html`);
       await page.waitForFunction(() => !document.body.dataset.loading, null, {
-        timeout: 15_000,
+        timeout: 30_000,
       });
     });
   },

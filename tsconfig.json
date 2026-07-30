@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "compilerOptions": {
+    "allowImportingTsExtensions": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "target": "esnext",
+    "verbatimModuleSyntax": false,
+    "useDefineForClassFields": true,
+    "skipLibCheck": true,
+    "types": ["chrome", "webextension-polyfill"]
+  },
+  "include": [
+    "src/**/*",
+    "scripts/**/*",
+    "extension-env.d.ts",
+    "extension.config.js"
+  ],
+  "exclude": ["node_modules", "dist", "tests", "public", "tools"]
+}

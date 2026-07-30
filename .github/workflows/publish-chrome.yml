@@ -18,22 +18,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build extension
-        run: npm run build
-
-      - name: Package extension
-        run: npm run zip
+      - name: Build and package Chrome extension
+        run: npx extension build --browser=chrome --polyfill --zip --no-telemetry
 
       - name: Upload and publish to Chrome Web Store
         env:
           CHROME_WEBSTORE_SERVICE_ACCOUNT_JWT: ${{ secrets.CHROME_WEBSTORE_SERVICE_ACCOUNT_JWT }}
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
-          CHROME_ZIP_PATH: code-injector.zip
-        run: npm run publish:chrome
+        run: |
+          ZIP=$(ls dist/chrome/code-injector-*.zip | head -1)
+          echo "Publishing $ZIP"
+          CHROME_ZIP_PATH="$ZIP" npm run publish:chrome

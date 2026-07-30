@@ -1,0 +1,1018 @@
+import browser from '../shared/browser';
+import type BrowserNS from 'webextension-polyfill';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import type { Rule, Settings } from '../shared/types';
+import { getRules, setRules, getSettings } from '../shared/storage';
+import {
+  containsCode,
+  clearSelection,
+  getPathHost,
+} from '../shared/utils';
+import { EDITOR_CONFIG, requireMonaco, getMonaco, type MonacoEditor } from './monaco';
+import { closest, getElementIndex } from './dom';
+import { InfoOverlay } from './components/InfoOverlay';
+import { RuleItem } from './components/RuleItem';
+import { ContextMenu } from './components/ContextMenu';
+import { EditorPanel } from './components/EditorPanel';
+import {
+  filesFromRule,
+  type EditorFile,
+} from './components/FilesList';
+import {
+  DEFAULT_NEW_RULE,
+  EMPTY_TAB_DATA,
+  type CtxMenuState,
+  type EditorState,
+  type EditorTab,
+  type InjectFeedback,
+  type RuleView,
+} from './types';
+import './styles/browser-action.scss';
+
+const HIDDEN_CTX: CtxMenuState = {
+  visible: false,
+  hiding: false,
+  x: 0,
+  y: 0,
+  reversed: false,
+  ruleId: null,
+  enabled: true,
+};
+
+export function App() {
+  const manifest = (() => {
+    try {
+      return chrome.runtime.getManifest();
+    } catch {
+      return { version: '' };
+    }
+  })();
+
+  const [rules, setRulesState] = useState<RuleView[]>([]);
+  const [tabData, setTabData] = useState(EMPTY_TAB_DATA);
+  const [editing, setEditing] = useState(false);
+  const [info, setInfo] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [monacoReady, setMonacoReady] = useState(false);
+
+  const [editorTarget, setEditorTarget] = useState('NEW');
+  const [selector, setSelector] = useState('');
+  const [selectorActive, setSelectorActive] = useState(false);
+  const [selectorError, setSelectorError] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<EditorTab>('js');
+  const [tabFocus, setTabFocus] = useState(false);
+  const [enabled, setEnabled] = useState(true);
+  const [onLoad, setOnLoad] = useState(true);
+  const [topFrameOnly, setTopFrameOnly] = useState(true);
+  const [editorFiles, setEditorFiles] = useState<EditorFile[]>(() =>
+    filesFromRule([])
+  );
+  const [codeActive, setCodeActive] = useState({
+    js: false,
+    css: false,
+    html: false,
+    files: false,
+  });
+
+  const [ctxMenu, setCtxMenu] = useState<CtxMenuState>(HIDDEN_CTX);
+  const [injectFeedback, setInjectFeedback] = useState<InjectFeedback>(null);
+  const [removingId, setRemovingId] = useState<number | null>(null);
+  const [resizeLabel, setResizeLabel] = useState({
+    w: 540,
+    h: 450,
+  });
+
+  const rulesCounter = useRef(0);
+  const rulesListRef = useRef<HTMLUListElement>(null);
+  const editorJsRef = useRef<HTMLDivElement>(null);
+  const editorCssRef = useRef<HTMLDivElement>(null);
+  const editorHtmlRef = useRef<HTMLDivElement>(null);
+  const tabContentsRef = useRef<HTMLDivElement>(null);
+
+  const editorJS = useRef<MonacoEditor | null>(null);
+  const editorCSS = useRef<MonacoEditor | null>(null);
+  const editorHTML = useRef<MonacoEditor | null>(null);
+
+  const isDragging = useRef(false);
+  const unsavedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dotsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const editingRef = useRef(editing);
+  const tabDataRef = useRef(tabData);
+  const editorFilesRef = useRef(editorFiles);
+  const editorMetaRef = useRef({
+    target: editorTarget,
+    enabled,
+    onLoad,
+    topFrameOnly,
+    selector,
+  });
+
+  editingRef.current = editing;
+  tabDataRef.current = tabData;
+  editorFilesRef.current = editorFiles;
+  editorMetaRef.current = {
+    target: editorTarget,
+    enabled,
+    onLoad,
+    topFrameOnly,
+    selector,
+  };
+
+  const setBodySize = useCallback((width: number, height: number) => {
+    document.body.style.width = `${width}px`;
+    document.body.style.height = `${height}px`;
+    if (tabContentsRef.current) {
+      tabContentsRef.current.style.height = `${height - 130}px`;
+    }
+    editorJS.current?.layout();
+    editorCSS.current?.layout();
+    editorHTML.current?.layout();
+  }, []);
+
+  const persistRules = useCallback(async (next: RuleView[]) => {
+    setSaving(true);
+    const payload: Rule[] = next.map(
+      ({ selector, enabled, onLoad, topFrameOnly, code }) => ({
+        selector,
+        enabled,
+        onLoad,
+        topFrameOnly,
+        code,
+      })
+    );
+    await setRules(payload);
+    setSaving(false);
+  }, []);
+
+  const getEditorPanelData = useCallback((): EditorState => {
+    const meta = editorMetaRef.current;
+    const data: EditorState = {
+      target: meta.target,
+      enabled: meta.enabled,
+      onLoad: meta.onLoad,
+      topFrameOnly: meta.topFrameOnly,
+      selector: meta.selector.trim(),
+      code: {
+        js: editorJS.current?.getValue() ?? '',
+        css: editorCSS.current?.getValue() ?? '',
+        html: editorHTML.current?.getValue() ?? '',
+        files: [],
+      },
+    };
+
+    for (const file of editorFilesRef.current) {
+      const path = file.path.trim();
+      if (!path) continue;
+      data.code.files.push({
+        path,
+        type: file.type,
+        ext: file.ext,
+      });
+    }
+
+    try {
+      // Validate regex; invalid patterns become empty (blocked on save)
+      void new RegExp(data.selector).test(tabDataRef.current.topURL);
+    } catch {
+      data.selector = '';
+    }
+
+    return data;
+  }, []);
+
+  const checkEditorDots = useCallback(() => {
+    if (dotsTimeout.current) clearTimeout(dotsTimeout.current);
+    dotsTimeout.current = setTimeout(() => {
+      const filesWithPath = editorFilesRef.current.filter((f) =>
+        f.path.trim()
+      );
+      setCodeActive({
+        js: containsCode(editorJS.current?.getValue()),
+        css: containsCode(editorCSS.current?.getValue()),
+        html: containsCode(editorHTML.current?.getValue()),
+        files: filesWithPath.length > 0,
+      });
+    }, 1000);
+  }, []);
+
+  const setLastSession = useCallback(() => {
+    checkEditorDots();
+    if (unsavedTimeout.current) clearTimeout(unsavedTimeout.current);
+    if (!editingRef.current) return;
+
+    unsavedTimeout.current = setTimeout(() => {
+      if (editingRef.current && !isDragging.current) {
+        void browser.storage.local.set({
+          lastSession: getEditorPanelData(),
+        });
+      }
+    }, 750);
+  }, [checkEditorDots, getEditorPanelData]);
+
+  const applyEditorState = useCallback(
+    (data: Partial<EditorState> & { code?: EditorState['code'] }) => {
+      const next: EditorState = {
+        target: data.target ?? 'NEW',
+        onLoad: data.onLoad ?? false,
+        enabled: data.enabled ?? false,
+        selector: data.selector ?? '',
+        topFrameOnly: data.topFrameOnly ?? false,
+        code: {
+          js: data.code?.js ?? '',
+          css: data.code?.css ?? '',
+          html: data.code?.html ?? '',
+          files: data.code?.files ?? [],
+        },
+      };
+
+      const active = {
+        js: containsCode(next.code.js),
+        css: containsCode(next.code.css),
+        html: containsCode(next.code.html),
+        files: next.code.files.length > 0,
+      };
+
+      let activeTab: EditorTab = 'js';
+      if (active.js) activeTab = 'js';
+      else if (active.css) activeTab = 'css';
+      else if (active.html) activeTab = 'html';
+      else if (active.files) activeTab = 'files';
+
+      editorJS.current?.setValue(next.code.js);
+      editorCSS.current?.setValue(next.code.css);
+      editorHTML.current?.setValue(next.code.html);
+
+      setCodeActive(active);
+      setEditorFiles(filesFromRule(next.code.files));
+      setSelectedTab(activeTab);
+      setSelector(next.selector.trim());
+      try {
+        setSelectorActive(
+          next.selector.trim()
+            ? new RegExp(next.selector.trim()).test(tabDataRef.current.topURL)
+            : false
+        );
+      } catch {
+        setSelectorActive(false);
+      }
+      setSelectorError(false);
+      setEditorTarget(next.target);
+      setEnabled(next.enabled);
+      setOnLoad(next.onLoad);
+      setTopFrameOnly(next.topFrameOnly);
+    },
+    []
+  );
+
+  const hideRuleContextMenu = useCallback(() => {
+    setCtxMenu((prev) => {
+      if (prev.hiding) return prev;
+      if (!prev.visible) return prev;
+      return { ...prev, hiding: true };
+    });
+    setTimeout(() => {
+      setCtxMenu(HIDDEN_CTX);
+      setInjectFeedback(null);
+    }, 200);
+  }, []);
+
+  const showRuleContextMenu = useCallback(
+    (ruleId: number, x: number, y: number) => {
+      const rule = rules.find((r) => r.id === ruleId);
+      if (!rule) return;
+
+      const reversed = window.innerHeight - y < 248;
+      setInjectFeedback(null);
+      setCtxMenu({
+        visible: true,
+        hiding: false,
+        x,
+        y,
+        reversed,
+        ruleId,
+        enabled: rule.enabled,
+      });
+    },
+    [rules]
+  );
+
+  // Settings + Monaco init + tab data request
+  useEffect(() => {
+    void getSettings().then((settings: Settings) => {
+      if (settings.size) {
+        setBodySize(settings.size.width, settings.size.height);
+      }
+    });
+
+    void browser.tabs
+      .query({ active: true, currentWindow: true })
+      .then((tabs: { id?: number }[]) => {
+        if (tabs[0]?.id != null) {
+          void browser.runtime.sendMessage({
+            action: 'get-current-tab-data',
+            tabId: tabs[0].id,
+          });
+        }
+      });
+
+    let disposed = false;
+
+    void requireMonaco()
+      .then(() => {
+        if (disposed) return;
+        if (
+          !editorJsRef.current ||
+          !editorCssRef.current ||
+          !editorHtmlRef.current
+        ) {
+          // Refs should exist after first paint; clear loading so UI is usable.
+          delete document.body.dataset.loading;
+          setMonacoReady(true);
+          return;
+        }
+
+        const m = getMonaco();
+
+        const js = m.editor.create(editorJsRef.current, {
+          ...EDITOR_CONFIG,
+          language: 'javascript',
+        });
+        const css = m.editor.create(editorCssRef.current, {
+          ...EDITOR_CONFIG,
+          language: 'css',
+        });
+        const html = m.editor.create(editorHtmlRef.current, {
+          ...EDITOR_CONFIG,
+          language: 'html',
+        });
+
+        editorJS.current = js;
+        editorCSS.current = css;
+        editorHTML.current = html;
+
+        const onFocus = () => setTabFocus(true);
+        const onBlur = () => setTabFocus(false);
+
+        js.onDidFocusEditorWidget(onFocus);
+        css.onDidFocusEditorWidget(onFocus);
+        html.onDidFocusEditorWidget(onFocus);
+        js.onDidBlurEditorWidget(onBlur);
+        css.onDidBlurEditorWidget(onBlur);
+        html.onDidBlurEditorWidget(onBlur);
+
+        const nameAreas = () => {
+          for (const id of ['#editor-js', '#editor-css', '#editor-html']) {
+            const area = document.querySelector(
+              `${id} .inputarea`
+            ) as HTMLElement | null;
+            if (area) area.dataset.name = 'txt-editor-inputarea';
+          }
+        };
+        nameAreas();
+
+        js.layout();
+        css.layout();
+        html.layout();
+
+        delete document.body.dataset.loading;
+        setMonacoReady(true);
+
+        void browser.storage.local
+          .get('lastSession')
+          .then((data: { lastSession?: EditorState }) => {
+            if (data.lastSession) {
+              applyEditorState(data.lastSession);
+              setEditing(true);
+            }
+          });
+      })
+      .catch((err) => {
+        console.error('[Code Injector] Monaco failed to load', err);
+        delete document.body.dataset.loading;
+        setMonacoReady(false);
+      });
+
+    return () => {
+      disposed = true;
+      editorJS.current?.dispose();
+      editorCSS.current?.dispose();
+      editorHTML.current?.dispose();
+    };
+  }, [applyEditorState, setBodySize]);
+
+  // Message listener
+  useEffect(() => {
+    const handleMessage = (
+      message: unknown,
+      _sender: BrowserNS.Runtime.MessageSender,
+      callback?: (response?: unknown) => void
+    ) => {
+      const mex = message as {
+        action?: string;
+        success?: boolean;
+        data?: { topURL?: string; innerURLs?: string[] };
+      };
+      const cb = typeof callback === 'function' ? callback : () => {};
+
+      switch (mex.action) {
+        case 'inject':
+          setInjectFeedback(mex.success ? 'success' : 'fail');
+          break;
+
+        case 'get-current-tab-data': {
+          const next = {
+            topURL: mex.data?.topURL ?? '',
+            innerURLs: mex.data?.innerURLs ?? [],
+          };
+          setTabData(next);
+          void getRules().then((stored) => {
+            const views: RuleView[] = stored.map((rule) => ({
+              ...rule,
+              id: rulesCounter.current++,
+              enabled: rule.enabled === undefined ? true : rule.enabled,
+              onLoad: rule.onLoad === undefined ? true : rule.onLoad,
+              topFrameOnly:
+                rule.topFrameOnly === undefined ? true : rule.topFrameOnly,
+            }));
+            setRulesState(views);
+          });
+          break;
+        }
+      }
+
+      cb();
+      return true;
+    };
+
+    browser.runtime.onMessage.addListener(handleMessage);
+    return () => {
+      browser.runtime.onMessage.removeListener(handleMessage);
+    };
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+
+      switch (e.keyCode) {
+        case 9: {
+          // TAB
+          if (editingRef.current) {
+            const name = target.dataset.name;
+            if (name === 'txt-editor-selector') {
+              switch (selectedTab) {
+                case 'js':
+                  editorJS.current
+                    ?.getDomNode()
+                    ?.querySelector<HTMLTextAreaElement>('textarea.inputarea')
+                    ?.focus();
+                  break;
+                case 'css':
+                  editorCSS.current
+                    ?.getDomNode()
+                    ?.querySelector<HTMLTextAreaElement>('textarea.inputarea')
+                    ?.focus();
+                  break;
+                case 'html':
+                  editorHTML.current
+                    ?.getDomNode()
+                    ?.querySelector<HTMLTextAreaElement>('textarea.inputarea')
+                    ?.focus();
+                  break;
+                case 'files': {
+                  const list = document.querySelector('.files-list');
+                  const input = e.shiftKey
+                    ? list?.lastElementChild?.querySelector('input')
+                    : list?.firstElementChild?.querySelector('input');
+                  (input as HTMLInputElement | null)?.focus();
+                  break;
+                }
+              }
+            } else if (name === 'txt-file-path') {
+              const file = closest(target, '.file');
+              if (file) {
+                if (e.ctrlKey) {
+                  // forced tab switch left as no-op matching commented legacy path
+                } else if (e.shiftKey) {
+                  const prev = file.previousElementSibling?.querySelector(
+                    'input'
+                  ) as HTMLInputElement | null;
+                  if (prev) prev.focus();
+                  else {
+                    (
+                      document.querySelector(
+                        '[data-name="txt-editor-selector"]'
+                      ) as HTMLInputElement | null
+                    )?.focus();
+                  }
+                } else {
+                  const next = file.nextElementSibling?.querySelector(
+                    'input'
+                  ) as HTMLInputElement | null;
+                  if (next) next.focus();
+                  else {
+                    (
+                      document.querySelector(
+                        '[data-name="txt-editor-selector"]'
+                      ) as HTMLInputElement | null
+                    )?.focus();
+                  }
+                }
+              }
+            }
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          break;
+        }
+        case 83: {
+          if (editingRef.current && (e.ctrlKey || e.metaKey)) {
+            (
+              document.querySelector(
+                '[data-name="btn-editor-save"]'
+              ) as HTMLButtonElement | null
+            )?.click();
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          break;
+        }
+        case 27: {
+          if (e.shiftKey) setEditing(false);
+          setInfo(false);
+          e.preventDefault();
+          e.stopPropagation();
+          break;
+        }
+      }
+
+      if (editingRef.current) setLastSession();
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedTab, setLastSession]);
+
+  // Monaco content change → lastSession
+  useEffect(() => {
+    if (!monacoReady) return;
+    const disposables = [
+      editorJS.current?.onDidChangeModelContent(() => setLastSession()),
+      editorCSS.current?.onDidChangeModelContent(() => setLastSession()),
+      editorHTML.current?.onDidChangeModelContent(() => setLastSession()),
+    ];
+    return () => {
+      for (const d of disposables) d?.dispose();
+    };
+  }, [monacoReady, setLastSession]);
+
+  const handleSelectorChange = (value: string) => {
+    setSelector(value);
+    setSelectorError(false);
+    try {
+      setSelectorActive(
+        value.trim()
+          ? new RegExp(value.trim()).test(tabData.topURL)
+          : false
+      );
+    } catch {
+      setSelectorActive(false);
+      setSelectorError(true);
+    }
+    setLastSession();
+  };
+
+  const handleAddRule = () => {
+    applyEditorState(DEFAULT_NEW_RULE);
+    setEditing(true);
+  };
+
+  const handleCancel = () => {
+    setEditing(false);
+    void browser.storage.local.remove('lastSession');
+  };
+
+  const handleSave = () => {
+    const editorData = getEditorPanelData();
+    if (!editorData.selector) {
+      setSelectorError(true);
+      return;
+    }
+
+    const isNew = editorData.target === 'NEW';
+    const view: RuleView = {
+      id: isNew ? rulesCounter.current++ : Number(editorData.target),
+      enabled: editorData.enabled,
+      onLoad: editorData.onLoad,
+      topFrameOnly: editorData.topFrameOnly,
+      selector: editorData.selector,
+      code: editorData.code,
+    };
+
+    setRulesState((prev) => {
+      let next: RuleView[];
+      if (isNew) {
+        next = [...prev, view];
+      } else {
+        next = prev.map((r) => (r.id === view.id ? view : r));
+      }
+      void persistRules(next);
+      return next;
+    });
+
+    setEditing(false);
+    void browser.storage.local.remove('lastSession');
+  };
+
+  const handleGetHost = () => {
+    const host = getPathHost(tabData.topURL).replace(/\./g, '\\.');
+    setSelector(host);
+    setSelectorActive(true);
+    setSelectorError(false);
+    setLastSession();
+  };
+
+  const findCtxRule = () =>
+    rules.find((r) => r.id === ctxMenu.ruleId) ?? null;
+
+  const handleEdit = () => {
+    const rule = findCtxRule();
+    if (!rule) return;
+    applyEditorState({
+      target: String(rule.id),
+      enabled: rule.enabled,
+      onLoad: rule.onLoad,
+      topFrameOnly: rule.topFrameOnly,
+      selector: rule.selector,
+      code: rule.code,
+    });
+    hideRuleContextMenu();
+    setEditing(true);
+  };
+
+  const handleInject = () => {
+    const rule = findCtxRule();
+    if (!rule) return;
+    void browser.runtime.sendMessage({
+      action: 'inject',
+      rule: {
+        enabled: rule.enabled,
+        onLoad: rule.onLoad,
+        topFrameOnly: rule.topFrameOnly,
+        selector: rule.selector,
+        code: rule.code,
+      },
+    });
+  };
+
+  const handleMoveTop = () => {
+    const id = ctxMenu.ruleId;
+    if (id == null) return;
+    setRulesState((prev) => {
+      const idx = prev.findIndex((r) => r.id === id);
+      if (idx <= 0) return prev;
+      const next = [...prev];
+      const [item] = next.splice(idx, 1);
+      next.unshift(item);
+      void persistRules(next);
+      return next;
+    });
+    rulesListRef.current?.scroll({ top: 0, left: 0, behavior: 'smooth' });
+    hideRuleContextMenu();
+  };
+
+  const handleMoveBottom = () => {
+    const id = ctxMenu.ruleId;
+    if (id == null) return;
+    setRulesState((prev) => {
+      const idx = prev.findIndex((r) => r.id === id);
+      if (idx < 0 || idx === prev.length - 1) return prev;
+      const next = [...prev];
+      const [item] = next.splice(idx, 1);
+      next.push(item);
+      void persistRules(next);
+      return next;
+    });
+    const list = rulesListRef.current;
+    list?.scroll({ top: list.scrollHeight, left: 0, behavior: 'smooth' });
+    hideRuleContextMenu();
+  };
+
+  const handleToggleEnabled = () => {
+    const id = ctxMenu.ruleId;
+    if (id == null) return;
+    setRulesState((prev) => {
+      const next = prev.map((r) =>
+        r.id === id ? { ...r, enabled: !r.enabled } : r
+      );
+      void persistRules(next);
+      const updated = next.find((r) => r.id === id);
+      if (updated) {
+        setCtxMenu((c) => ({ ...c, enabled: updated.enabled }));
+      }
+      return next;
+    });
+  };
+
+  const handleDelete = (confirm: boolean) => {
+    if (!confirm) return;
+    const id = ctxMenu.ruleId;
+    if (id == null) return;
+    setRemovingId(id);
+    hideRuleContextMenu();
+    setTimeout(() => {
+      setRulesState((prev) => {
+        const next = prev.filter((r) => r.id !== id);
+        void persistRules(next);
+        return next;
+      });
+      setRemovingId(null);
+    }, 200);
+  };
+
+  const startDragReorder = (
+    e: React.MouseEvent,
+    listEl: HTMLElement | null
+  ) => {
+    if (!listEl) return;
+    const target = e.target as HTMLElement;
+    const item = closest(target, 'li') as HTMLElement | null;
+    if (!item || item.parentElement !== listEl) return;
+
+    isDragging.current = true;
+    clearSelection();
+
+    const ghost = document.createElement('li');
+    ghost.className = 'ghost';
+
+    const parent = item.parentElement!;
+    const ruleIndex = getElementIndex(item);
+    const Y = e.screenY;
+
+    const evMM = (ev: MouseEvent) => {
+      item.style.transform = `translateY(${ev.screenY - Y}px)`;
+      const targetEl = closest(ev.target as Element, (el) =>
+        el.parentElement === parent
+      ) as HTMLElement | null;
+      if (!targetEl || targetEl === ghost) return;
+
+      const ghostIndex = getElementIndex(ghost);
+      const targetRuleIndex = getElementIndex(targetEl);
+
+      if (targetRuleIndex < ghostIndex) {
+        targetEl.parentElement!.insertBefore(ghost, targetEl);
+      } else {
+        targetEl.parentElement!.insertBefore(
+          ghost,
+          targetEl.nextElementSibling
+        );
+      }
+
+      if (targetRuleIndex > ruleIndex) {
+        item.style.marginTop = '0px';
+      } else {
+        item.style.marginTop = '';
+      }
+    };
+
+    const evMU = () => {
+      delete item.dataset.dragging;
+      item.style.cssText = '';
+
+      ghost.parentElement?.insertBefore(item, ghost);
+      ghost.remove();
+      delete parent.dataset.dragging;
+
+      window.removeEventListener('mousemove', evMM);
+      window.removeEventListener('mouseup', evMU);
+
+      if (item.classList.contains('rule')) {
+        // Rebuild order from DOM
+        const ids = Array.from(parent.children)
+          .filter((el) => el.classList.contains('rule'))
+          .map((el) => Number((el as HTMLElement).dataset.id));
+        setRulesState((prev) => {
+          const map = new Map(prev.map((r) => [r.id, r]));
+          const next = ids
+            .map((id) => map.get(id))
+            .filter((r): r is RuleView => !!r);
+          void persistRules(next);
+          return next;
+        });
+      } else if (item.classList.contains('file')) {
+        const keys = Array.from(parent.children)
+          .filter((el) => el.classList.contains('file'))
+          .map((el) => (el as HTMLElement).dataset.key || '');
+        setEditorFiles((prev) => {
+          const map = new Map(prev.map((f) => [f.key, f]));
+          return keys
+            .map((key) => map.get(key))
+            .filter((f): f is EditorFile => !!f);
+        });
+      }
+
+      isDragging.current = false;
+      clearSelection();
+      if (editingRef.current) setLastSession();
+    };
+
+    item.dataset.dragging = 'true';
+    parent.insertBefore(ghost, item);
+    parent.dataset.dragging = 'true';
+
+    window.addEventListener('mousemove', evMM);
+    window.addEventListener('mouseup', evMU);
+  };
+
+  const handleResizeGrip = (e: React.MouseEvent) => {
+    const prevData = {
+      x: e.screenX,
+      y: e.screenY,
+      w: window.innerWidth,
+      h: window.innerHeight,
+    };
+    setResizeLabel({ w: window.innerWidth, h: window.innerHeight });
+
+    const evMM = (ev: MouseEvent) => {
+      document.body.style.width = `${prevData.w + (prevData.x - ev.screenX)}px`;
+      document.body.style.height = `${prevData.h + (ev.screenY - prevData.y)}px`;
+      setResizeLabel({ w: window.innerWidth, h: window.innerHeight });
+    };
+
+    const evMU = () => {
+      if (tabContentsRef.current) {
+        tabContentsRef.current.style.height = `${window.innerHeight - 130}px`;
+      }
+      delete document.body.dataset.resizing;
+      editorJS.current?.layout();
+      editorCSS.current?.layout();
+      editorHTML.current?.layout();
+
+      void browser.storage.local.get('settings').then((data: { settings?: Settings }) => {
+        const settings: Settings = {
+          nightmode: false,
+          showcounter: false,
+          size: { width: 500, height: 500 },
+          ...data.settings,
+        };
+        settings.size = {
+          width: window.innerWidth,
+          height: window.innerHeight,
+        };
+        void browser.storage.local.set({ settings });
+      });
+
+      window.removeEventListener('mousemove', evMM);
+      window.removeEventListener('mouseup', evMU);
+    };
+
+    document.body.dataset.resizing = 'true';
+    window.addEventListener('mousemove', evMM);
+    window.addEventListener('mouseup', evMU);
+  };
+
+  const actionVisible = ctxMenu.visible || ctxMenu.hiding;
+
+  return (
+    <div
+      id="body"
+      data-editing={editing ? 'true' : undefined}
+      data-info={info ? 'true' : undefined}
+      data-saving={saving ? 'true' : undefined}
+    >
+      <input className="txt-hidden" type="text" readOnly tabIndex={-1} />
+
+      <InfoOverlay
+        version={manifest.version || ''}
+        onHide={() => setInfo(false)}
+      />
+
+      <div id="rules" className="unselectable">
+        <ContextMenu
+          state={ctxMenu}
+          injectFeedback={injectFeedback}
+          onBackgroundClick={hideRuleContextMenu}
+          onEdit={handleEdit}
+          onInject={handleInject}
+          onMoveTop={handleMoveTop}
+          onMoveBottom={handleMoveBottom}
+          onToggleEnabled={handleToggleEnabled}
+          onDelete={handleDelete}
+          onInjectMouseLeave={() => setInjectFeedback(null)}
+        />
+
+        <ul
+          className="rules-list"
+          ref={rulesListRef}
+          data-actionvisible={actionVisible ? 'true' : undefined}
+        >
+          {rules.map((rule) => (
+            <RuleItem
+              key={rule.id}
+              rule={rule}
+              tabData={tabData}
+              actionVisible={ctxMenu.ruleId === rule.id && actionVisible}
+              removing={removingId === rule.id}
+              onActionClick={(e, ruleId) => {
+                e.stopPropagation();
+                showRuleContextMenu(ruleId, e.pageX, e.pageY);
+              }}
+              onGripMouseDown={(e) =>
+                startDragReorder(e, rulesListRef.current)
+              }
+            />
+          ))}
+        </ul>
+
+        <div className="rules-controls">
+          <button
+            className="btn btn-left btn-icon material-icons"
+            data-name="btn-info-show"
+            title="Info"
+            tabIndex={-1}
+            type="button"
+            onClick={() => setInfo(true)}
+          >
+            &#xE88F;
+          </button>
+          <button
+            className="btn btn-left"
+            data-name="btn-general-options-show"
+            tabIndex={-1}
+            type="button"
+            onClick={() => void browser.runtime.openOptionsPage()}
+          >
+            Options
+          </button>
+          <button
+            className="btn btn-primary"
+            data-name="btn-rules-add"
+            tabIndex={-1}
+            type="button"
+            onClick={handleAddRule}
+          >
+            Add rule
+          </button>
+        </div>
+      </div>
+
+      <EditorPanel
+        target={editorTarget}
+        selector={selector}
+        selectorActive={selectorActive}
+        selectorError={selectorError}
+        selectedTab={selectedTab}
+        tabFocus={tabFocus}
+        enabled={enabled}
+        onLoad={onLoad}
+        topFrameOnly={topFrameOnly}
+        files={editorFiles}
+        codeActive={codeActive}
+        editorJsRef={editorJsRef}
+        editorCssRef={editorCssRef}
+        editorHtmlRef={editorHtmlRef}
+        tabContentsRef={tabContentsRef}
+        onSelectorChange={handleSelectorChange}
+        onTabSelect={setSelectedTab}
+        onEnabledChange={(v) => {
+          setEnabled(v);
+          setLastSession();
+        }}
+        onOnLoadChange={(v) => {
+          setOnLoad(v);
+          setLastSession();
+        }}
+        onTopFrameOnlyChange={(v) => {
+          setTopFrameOnly(v);
+          setLastSession();
+        }}
+        onFilesChange={setEditorFiles}
+        onCancel={handleCancel}
+        onSave={handleSave}
+        onGetHost={handleGetHost}
+        onFilesDirty={setLastSession}
+        onFileGripMouseDown={(e) => {
+          const list = document.querySelector(
+            '.files-list'
+          ) as HTMLElement | null;
+          startDragReorder(e, list);
+        }}
+        onResizeGripMouseDown={handleResizeGrip}
+      />
+
+      <div id="resize" className="unselectable">
+        <div className="r-size">
+          <div className="r-size-width">{resizeLabel.w}</div>x
+          <div className="r-size-height">{resizeLabel.h}</div>
+        </div>
+        <i className="resize-grip" />
+      </div>
+    </div>
+  );
+}

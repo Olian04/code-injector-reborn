@@ -279,32 +279,40 @@ I would like to make it more and more easy to use so that even who's new to prog
 
 ## Building from source
 
-The extension is assembled into a loadable `dist/` folder by a small Node build script (SCSS is compiled, the [webextension-polyfill](https://github.com/mozilla/webextension-polyfill) and [Monaco editor](https://github.com/Microsoft/monaco-editor) are vendored, and the source scripts are bundled).
+The project uses [Extension.js](https://extension.js.org/) with React + TypeScript. Production builds emit per-browser folders under `dist/`.
 
 ```bash
 npm install
-npm run build      # outputs ./dist
-npm run zip        # outputs ./dist and ./code-injector.zip
+npm run dev          # watch + launch Chrome (polyfill enabled)
+npm run build        # dist/chrome, dist/firefox, dist/edge
+npm run build:chrome # chrome only (used by tests)
+npm run zip          # build all targets and write store-ready zips
 ```
 
-To try it out, open `chrome://extensions`, enable **Developer mode**, click **Load unpacked** and select the generated `dist/` folder.
+To try it out, open `chrome://extensions`, enable **Developer mode**, click **Load unpacked** and select `dist/chrome`.
 
 > **Note on Manifest V3:** the *local file* injection feature (reading `file://` paths) is no longer available, because the Manifest V3 background service worker cannot access the file system. Inline code, remote files and remote URLs continue to work.
 
 ## Testing
 
-End-to-end tests use [Playwright](https://playwright.dev/docs/chrome-extensions) against the built MV3 extension in `dist/`. Chromium is launched with a persistent context and `--load-extension` (use Playwright's bundled Chromium channel — installed Chrome/Edge no longer allow sideloading via those flags).
+End-to-end tests use [Playwright](https://playwright.dev/docs/chrome-extensions) against the built MV3 extension in `dist/chrome`. Chromium is launched with a persistent context and `--load-extension` (use Playwright's bundled Chromium channel — installed Chrome/Edge no longer allow sideloading via those flags).
 
 ```bash
 npm install
 npx playwright install chromium   # one-time browser download
-npm test                          # build + e2e
-npm run test:e2e                  # e2e only (rebuilds dist/ via globalSetup)
+npm test                          # build:chrome + e2e
+npm run test:e2e                  # e2e only (rebuilds dist/chrome via globalSetup)
 ```
 
-Specs live under `tests/e2e/`. They seed rules through `chrome.storage.local` and assert popup UI / page injection — Monaco editor interaction is intentionally out of scope for this first pass.
+Specs live under `tests/e2e/` and cover:
 
-Frameworks such as WXT or Extension.js are deferred to a later release; adopting either later should still keep these Playwright tests (they use the same Chromium load-extension pattern under the hood). Unit tests can be added later without changing the E2E suite.
+- Smoke: service worker, popup UI, options page
+- Inline injection: CSS, HTML, JS script-node insertion, comment-only skip
+- File injection: remote JS/CSS, unsupported remote HTML, MV3 local-file error, unrecognized extensions
+- Timing/guards: onLoad vs onCommit, disabled rules, URL non-match, mixed rule lists
+- Popup: seeded rules list, insight dots, disabled styling
+
+Rules are seeded through `chrome.storage.local` (Monaco editor interaction is intentionally out of scope). Executable JS is verified via remote `http://127.0.0.1` files because Playwright Chromium’s default page CSP blocks `unsafe-inline` scripts; inline JS is still asserted by checking the injected `<script>` node.
 
 ## Publishing (Chrome Web Store)
 
@@ -324,8 +332,9 @@ The workflow can also be triggered manually from the Actions tab via *workflow_d
 
 ## Credits
 
+- Built with [Extension.js](https://extension.js.org/).
 - Code editors handled using [monaco-editor](https://github.com/Microsoft/monaco-editor).
-- WebExtensions API normalized using [webextension-polyfill](https://github.com/mozilla/webextension-polyfill).
+- UI built with [React](https://react.dev/).
 - UI-Icons by [material-design-icons](https://github.com/google/material-design-icons).
 - A thank you to [@JD342](https://github.com/JD342) for the help provided in the testing process and for the [Icon](https://github.com/JD342/code-injector-icons)!
 
