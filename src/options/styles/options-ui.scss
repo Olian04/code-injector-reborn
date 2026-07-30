@@ -704,6 +704,10 @@
         #{$s} .import-methods .import-github-info > table{
             box-shadow: 0 0 0 1px $dBorder;
         }
+        // Solid black mark; the usual treatment on a dark background.
+        #{$s} .import-methods .import-github-info .import-gh-icon{
+            filter: invert(1);
+        }
 
         #{$s} .color{ box-shadow: inset 0 0 0 1px $dBorder; }
     }

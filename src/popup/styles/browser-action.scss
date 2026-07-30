@@ -1302,6 +1302,13 @@
         #{$s} .rules-list .ghost,
         #{$s} .files-list .ghost{ border-color: $dBorder; }
 
+        // The "add your first rule" arrow is black line art, so it needs
+        // flipping to read against a dark list.
+        #{$s} .rules-list:empty::after{
+            filter: invert(1);
+            opacity: .12;
+        }
+
         #{$s} .rules-controls{ border-top-color: $dBorderSoft; }
 
         #{$s} .r-name{ color: $dText; }
