@@ -27,6 +27,15 @@ export function closest(
   return null;
 }
 
+/** Whether a Popover API element is currently showing. */
+export function hasOpenPopover(): boolean {
+  try {
+    return document.querySelector(':popover-open') !== null;
+  } catch {
+    return false;
+  }
+}
+
 /** Index of an element among its parent's children. */
 export function getElementIndex(el: Element): number {
   let index = 0;

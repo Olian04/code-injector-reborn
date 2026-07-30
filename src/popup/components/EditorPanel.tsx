@@ -1,6 +1,11 @@
 import { useEffect, useRef, type MouseEvent, type RefObject } from 'react';
 import type { EditorTab } from '../types';
 import { FilesList, type EditorFile } from './FilesList';
+import {
+  OnPageLoadHelp,
+  SelectorHelp,
+  TopFrameOnlyHelp,
+} from './EditorHelp';
 
 interface EditorPanelProps {
   active: boolean;
@@ -105,13 +110,7 @@ export function EditorPanel({
                   data-error={String(selectorError)}
                   onChange={(e) => onSelectorChange(e.target.value)}
                 />
-                <i
-                  className="e-s-help material-icons"
-                  tabIndex={-1}
-                  title="The URL pattern specifies in what pages the rule should be applied."
-                >
-                  &#xE8FD;
-                </i>
+                <SelectorHelp />
               </td>
               <td>
                 <button
@@ -223,7 +222,7 @@ export function EditorPanel({
           />
           Enabled
         </label>
-        <label title="Wait for the page to load before injecting this rule">
+        <label>
           <input
             type="checkbox"
             data-name="cb-editor-onload"
@@ -233,7 +232,8 @@ export function EditorPanel({
           />
           On page load
         </label>
-        <label title="Set if this rule can be injected to iframes">
+        <OnPageLoadHelp />
+        <label>
           <input
             type="checkbox"
             data-name="cb-editor-topframeonly"
@@ -243,6 +243,7 @@ export function EditorPanel({
           />
           Top frame only
         </label>
+        <TopFrameOnlyHelp />
         <button
           data-name="btn-editor-cancel"
           className="btn"

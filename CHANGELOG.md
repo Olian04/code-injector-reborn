@@ -25,8 +25,10 @@ Maintainership of this project has moved to a fork maintained by Oliver Anteros 
 - End-to-end tests now run against Firefox as well as Chromium, in a CI matrix. Firefox has no Playwright API for loading extensions, so the harness installs the build over the remote debugging protocol and drives the background script through it.
 - A GitHub Actions workflow that publishes to the Chrome Web Store via a service-account on GitHub Release, and attaches the Firefox build to the release.
 - The HTML tab now completes the classes and ids defined in the same rule's CSS tab, including selectors nested in at-rules such as `@media`. Suggestions follow the CSS you are typing, saved or not.
+- Help popovers, built on the [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API): the question mark beside *URL pattern* now opens a regular-expression cheat sheet with worked examples, and *On page load* and *Top frame only* each explain what both states do.
 
 #### Fixed
+- The *Top frame only* tooltip described the opposite of what the option does ("Set if this rule can be injected to iframes").
 - Monaco's language services now run in web workers again; they were falling back to the main thread, which left JavaScript validation and completions dead.
 - `npm run build` no longer emits a development bundle for the first browser target.
 
