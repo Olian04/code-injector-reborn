@@ -22,6 +22,9 @@
     "publish:chrome": "node tools/publish-chrome.mjs",
     "postinstall": "node tools/copy-monaco.mjs"
   },
+  "engines": {
+    "node": ">=22.12"
+  },
   "author": "Oliver Anteros (@Olian04)",
   "contributors": [
     "L. Sabatelli (@Lor-Saba) - original author"

@@ -289,6 +289,8 @@ I would like to make it more and more easy to use so that even who's new to prog
 
 The project uses [Extension.js](https://extension.js.org/) with React + TypeScript. Production builds emit per-browser folders under `dist/`.
 
+Node.js 26 is what CI and the release workflow run — it becomes the LTS line in October 2026. The pinned major lives in `.nvmrc`, so `nvm use` picks it up. Extension.js itself needs at least 22.12.
+
 ```bash
 npm install
 npm run dev          # watch + launch Chrome (polyfill enabled)
