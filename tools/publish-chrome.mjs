@@ -144,7 +144,7 @@ async function main() {
     const secret = required('CHROME_WEBSTORE_SERVICE_ACCOUNT_JWT');
     const publisherId = required('CHROME_PUBLISHER_ID');
     const itemId = required('CHROME_EXTENSION_ID');
-    const zipPath = process.env.CHROME_ZIP_PATH || 'code-injector.zip';
+    const zipPath = process.env.CHROME_ZIP_PATH || 'code-injector-reborn.zip';
 
     const zipBuffer = await readFile(path.resolve(zipPath));
     console.log(`Package: ${zipPath} (${zipBuffer.length} bytes)`);

@@ -1,8 +1,11 @@
-import { test, expect } from './fixtures.js';
+import { test, expect, requiresExtensionPages } from './fixtures.js';
 import { startFixtureServer } from './helpers/fixture-server.js';
 import { makeRule, remoteFile } from './helpers/rules.js';
 
 test.describe('popup rules list', () => {
+  requiresExtensionPages(test);
+
+
   /** @type {Awaited<ReturnType<typeof startFixtureServer>>} */
   let server;
 

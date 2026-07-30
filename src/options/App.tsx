@@ -15,6 +15,7 @@ import {
 } from '../shared/storage';
 import type { Rule, Settings } from '../shared/types';
 import { DEFAULT_SETTINGS } from '../shared/types';
+import { applyTheme, type ThemePreference } from '../shared/theme';
 import { ExportModal } from './components/ExportModal';
 import { ImportModal } from './components/ImportModal';
 import { Modal } from './components/Modal';
@@ -78,7 +79,8 @@ export function App() {
   const persistSettings = useCallback(async (next: Settings) => {
     const toSave: Settings = {
       ...next,
-      nightmode: false,
+      // Legacy flag kept in sync so exports stay readable by the original addon.
+      nightmode: next.theme === 'dark',
       size: {
         width: Math.max(SIZE_MIN_W, next.size.width | 0),
         height: Math.max(SIZE_MIN_H, next.size.height | 0),
@@ -95,6 +97,7 @@ export function App() {
       await refreshRulesCounter();
       const loaded = await getSettings();
       setSettingsState(loaded);
+      applyTheme(loaded.theme);
       setSizeWidth(String(loaded.size.width));
       setSizeHeight(String(loaded.size.height));
     })();
@@ -152,9 +155,9 @@ export function App() {
     void persistSettings({ ...settings, showcounter: checked });
   };
 
-  const handleNightMode = (_checked: boolean) => {
-    // Original always persisted nightmode as false (feature hidden).
-    void persistSettings({ ...settings, nightmode: false });
+  const handleTheme = (theme: ThemePreference) => {
+    applyTheme(theme);
+    void persistSettings({ ...settings, theme });
   };
 
   const commitSize = (which: 'width' | 'height', raw: string) => {
@@ -316,24 +319,25 @@ export function App() {
               </td>
             </tr>
 
-            <tr className="opt-nightmode" style={{ display: 'none' }}>
+            <tr className="opt-theme">
               <td>
-                Night mode:
+                Appearance:
                 <small className="description">
-                  Does not fit well with your dark theme? <br />
-                  Try out the night mode!
+                  Follows your system setting by default. <br />
+                  Pick light or dark to override it.
                 </small>
               </td>
               <td>
-                <label className="cbk">
-                  <input
-                    type="checkbox"
-                    data-name="cb-night-mode"
-                    name="nightmode"
-                    checked={settings.nightmode}
-                    onChange={(e) => handleNightMode(e.target.checked)}
-                  />
-                </label>
+                <select
+                  data-name="sel-theme"
+                  name="theme"
+                  value={settings.theme}
+                  onChange={(e) => handleTheme(e.target.value as ThemePreference)}
+                >
+                  <option value="auto">System</option>
+                  <option value="light">Light</option>
+                  <option value="dark">Dark</option>
+                </select>
               </td>
             </tr>
 

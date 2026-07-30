@@ -1,5 +1,5 @@
 {
-  "name": "code-injector",
+  "name": "code-injector-reborn",
   "version": "0.4.0",
   "description": "Inject code into websites! (JavaScript, CSS, HTML and Files)",
   "type": "module",
@@ -7,12 +7,17 @@
   "scripts": {
     "dev": "extension dev --browser=chrome --polyfill --no-telemetry",
     "start": "extension start --browser=chrome --polyfill --no-telemetry",
-    "build": "extension build --browser=chrome,firefox,edge --polyfill --no-telemetry",
+    "build": "npm run build:chrome && npm run build:firefox",
     "build:chrome": "extension build --browser=chrome --polyfill --no-telemetry",
-    "zip": "extension build --browser=chrome,firefox,edge --polyfill --zip --no-telemetry",
+    "build:firefox": "extension build --browser=firefox --polyfill --no-telemetry",
+    "zip": "npm run zip:chrome && npm run zip:firefox",
+    "zip:chrome": "extension build --browser=chrome --polyfill --zip --no-telemetry",
+    "zip:firefox": "extension build --browser=firefox --polyfill --zip --no-telemetry",
     "preview": "extension preview --browser=chrome --polyfill --no-telemetry",
-    "test": "npm run build:chrome && playwright test",
+    "test": "playwright test",
     "test:e2e": "playwright test",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "test:e2e:firefox": "playwright test --project=firefox",
     "typecheck": "tsc --noEmit",
     "publish:chrome": "node tools/publish-chrome.mjs",
     "postinstall": "node tools/copy-monaco.mjs"

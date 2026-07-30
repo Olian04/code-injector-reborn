@@ -97,46 +97,86 @@ export function configureMonacoLanguageServices(): void {
   typescript.typescriptDefaults.setEagerModelSync(true);
 }
 
+const LOADER_SRC = '/monaco/vs/loader.js';
+
+let loaderPromise: Promise<void> | null = null;
+let monacoPromise: Promise<void> | null = null;
+
+/**
+ * Fetch the AMD loader on demand. Keeping it out of the popup document means
+ * opening the action does not pay for Monaco before the rules list can paint.
+ */
+function loadAmdLoader(): Promise<void> {
+  if (loaderPromise) return loaderPromise;
+
+  loaderPromise = new Promise((resolve, reject) => {
+    if ((globalThis as typeof globalThis & { require?: AmdRequire }).require) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = LOADER_SRC;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load ${LOADER_SRC}`));
+    document.head.appendChild(script);
+  });
+
+  return loaderPromise;
+}
+
 /** Load Monaco via the AMD loader (same approach as the legacy popup). */
 export function requireMonaco(): Promise<void> {
-  return new Promise((resolve) => {
-    // Manifest V3 CSP forbids blob: workers; use vendored workers on the
-    // extension origin. JS/TS, CSS, and HTML language services are packaged;
-    // unused services (e.g. JSON) are not.
-    (self as typeof self & {
-      MonacoEnvironment?: {
-        getWorkerUrl: (_moduleId: string, label: string) => string;
-      };
-    }).MonacoEnvironment = {
-      getWorkerUrl(_moduleId, label) {
-        if (label === 'json') {
-          return '/monaco/vs/base/worker/workerMain.js';
-        }
-        if (label === 'css' || label === 'scss' || label === 'less') {
-          return '/monaco/vs/language/css/cssWorker.js';
-        }
-        if (label === 'html' || label === 'handlebars' || label === 'razor') {
-          return '/monaco/vs/language/html/htmlWorker.js';
-        }
-        if (label === 'typescript' || label === 'javascript') {
-          return '/monaco/vs/language/typescript/tsWorker.js';
-        }
-        return '/monaco/vs/base/worker/workerMain.js';
-      },
-    };
+  if (monacoPromise) return monacoPromise;
 
-    const amdRequire = (
-      globalThis as typeof globalThis & { require: AmdRequire }
-    ).require;
+  monacoPromise = loadAmdLoader()
+    .then(
+      () =>
+        new Promise<void>((resolve) => {
+          // Every language service boots from the AMD worker host, which pulls
+          // in the requested module itself. Pointing at the language modules
+          // directly hands `define()` to a plain worker, which throws and makes
+          // Monaco fall back to running the services on the main thread.
+          // Manifest V3 CSP forbids blob: workers, and this URL is same-origin,
+          // so Monaco uses it as-is.
+          (self as typeof self & {
+            MonacoEnvironment?: { getWorkerUrl: () => string };
+          }).MonacoEnvironment = {
+            getWorkerUrl: () => '/monaco/vs/base/worker/workerMain.js',
+          };
 
-    amdRequire.config({ paths: { vs: '/monaco/vs' } });
-    amdRequire(['vs/editor/editor.main'], () => {
-      configureMonacoLanguageServices();
-      resolve();
+          const amdRequire = (
+            globalThis as typeof globalThis & { require: AmdRequire }
+          ).require;
+
+          amdRequire.config({ paths: { vs: '/monaco/vs' } });
+          amdRequire(['vs/editor/editor.main'], () => {
+            configureMonacoLanguageServices();
+            resolve();
+          });
+        })
+    )
+    .catch((err: unknown) => {
+      // Let a later attempt retry instead of caching the failure forever.
+      loaderPromise = null;
+      monacoPromise = null;
+      throw err;
     });
-  });
+
+  return monacoPromise;
 }
 
 export function getMonaco(): typeof Monaco {
   return (globalThis as typeof globalThis & { monaco: typeof Monaco }).monaco;
+}
+
+/** Built-in Monaco theme matching the extension's current colour scheme. */
+export function monacoTheme(scheme: 'light' | 'dark'): string {
+  return scheme === 'dark' ? 'vs-dark' : 'vs';
+}
+
+/** No-op until Monaco is loaded; editors pick the theme up at creation. */
+export function applyMonacoTheme(scheme: 'light' | 'dark'): void {
+  const monaco = (globalThis as typeof globalThis & { monaco?: typeof Monaco })
+    .monaco;
+  monaco?.editor.setTheme(monacoTheme(scheme));
 }

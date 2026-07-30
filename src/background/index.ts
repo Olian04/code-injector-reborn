@@ -13,16 +13,13 @@ import type {
   Settings,
   TabData,
 } from '../shared/types';
+import { DEFAULT_SETTINGS } from '../shared/types';
 
 /** Path of the dynamically injected page script (scripts/ special folder). */
 const INJECT_SCRIPT = '/scripts/inject.js';
 
 let rules: ParsedRule[] = [];
-let settings: Settings = {
-  nightmode: false,
-  showcounter: false,
-  size: { width: 500, height: 500 },
-};
+let settings: Settings = { ...DEFAULT_SETTINGS };
 const activeTabsData: Record<number, TabData> = {};
 
 function createNewTabData(

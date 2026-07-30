@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/chrome-manifest.json",
   "manifest_version": 3,
-  "name": "Code Injector",
+  "name": "Code Injector Reborn",
   "version": "0.4.0",
   "author": "Oliver Anteros",
   "description": "Inject code into websites! (JavaScript, CSS, HTML and Files)",
@@ -33,7 +33,7 @@
       "64": "images/icon/icon-64px.png",
       "96": "images/icon/icon-96px.png"
     },
-    "default_title": "Code Injector",
+    "default_title": "Code Injector Reborn",
     "default_popup": "popup/index.html"
   },
 
@@ -48,7 +48,7 @@
 
   "firefox:browser_specific_settings": {
     "gecko": {
-      "id": "code-injector@olian04",
+      "id": "code-injector-reborn@olian04",
       "strict_min_version": "109.0"
     }
   }

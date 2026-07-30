@@ -11,6 +11,7 @@ export function InfoOverlay({ version, onHide }: InfoOverlayProps) {
           <div className="ih-logo" />
           <div className="ih-title" data-version={version ? `v${version}` : undefined}>
             Code Injector
+            <span className="ih-suffix">Reborn</span>
           </div>
         </div>
         <div className="info-content">
@@ -24,16 +25,27 @@ export function InfoOverlay({ version, onHide }: InfoOverlayProps) {
           <p>
             Visit the{' '}
             <a
-              href="https://github.com/Lor-Saba/Code-Injector"
+              href="https://github.com/Olian04/code-injector-reborn"
               target="_blank"
               rel="noreferrer"
             >
               github page
             </a>{' '}
-            for some documentation to better understand the addon mechanics.{' '}
+            for some documentation to better understand the addon mechanics.
+          </p>
+          <p>
+            A Manifest V3 revival of the original addon by{' '}
+            <a
+              href="https://github.com/Lor-Saba/Code-Injector"
+              target="_blank"
+              rel="noreferrer"
+            >
+              L. Sabatelli
+            </a>
+            .
           </p>
           <p>Happy Injection ;)</p>
-          <p>~ L.Sabatelli</p>
+          <p>~ Oliver Anteros</p>
         </div>
         <div className="info-controls">
           <button

@@ -45,10 +45,7 @@ test.describe('inline injection', () => {
     await expect(page.locator('#ci-inline-html')).toHaveText('inline-html');
   });
 
-  test('inserts an inline JS script node (execution blocked by page CSP in Playwright)', async ({
-    page,
-    seedRules,
-  }) => {
+  test('inserts an inline JS script node', async ({ page, seedRules, target }) => {
     const snippet = 'data-ci-inline-js';
     await seedRules([
       makeRule({
@@ -59,10 +56,16 @@ test.describe('inline injection', () => {
     await page.goto(server.targetUrl);
     await page.waitForLoadState('load');
 
-    // Playwright Chromium forbids unsafe-inline scripts, so the attribute will
-    // not be set — but the extension should still append the script element.
     await expectInlineJsScriptPresent(page, expect, snippet);
-    await expect(page.locator('html')).not.toHaveAttribute(snippet, '1');
+
+    // The two engines disagree on whether the page's CSP covers a script node
+    // that a content script appended: Chromium blocks it, Firefox runs it.
+    const html = page.locator('html');
+    if (target === 'firefox') {
+      await expect(html).toHaveAttribute(snippet, '1');
+    } else {
+      await expect(html).not.toHaveAttribute(snippet, '1');
+    }
   });
 
   test('injects inline CSS + HTML together from one rule', async ({ page, seedRules }) => {

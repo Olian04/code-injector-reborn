@@ -3,8 +3,10 @@
 > **Maintainership note**
 >
 > This is a maintained fork of the original [Code-Injector](https://github.com/Lor-Saba/Code-Injector) by **L. Sabatelli ([@Lor-Saba](https://github.com/Lor-Saba))**, who is the original author of this project. The upstream project has been abandoned, and since the Chrome Web Store no longer accepts Manifest V2 extensions, this fork has been migrated to **Manifest V3** and is now maintained by **Oliver Anteros ([@Olian04](https://github.com/Olian04))**. All credit for the original design and implementation goes to L. Sabatelli.
+>
+> The fork is published as **Code Injector Reborn** to keep it distinct from the original listings.
 
-# Code-Injector
+# Code Injector Reborn
 A [WebExtensions](https://developer.mozilla.org/en-US/Add-ons/WebExtensions) based addon which let the user inject code into the websites
 
 > This is an add-on which requires a minimum of knowledge of web programming to be able to properly use it.  
@@ -12,7 +14,9 @@ A [WebExtensions](https://developer.mozilla.org/en-US/Add-ons/WebExtensions) bas
 
 ## Installation
 
-You can install the official `Code Injector` from the following Web Stores:
+`Code Injector Reborn` is not on the Web Stores yet — see [Building from source](#building-from-source) to run it locally.
+
+The original `Code Injector` (Manifest V2, no longer maintained) is still listed here:
 
 <table>
   <tr>
@@ -73,14 +77,14 @@ I was usually getting around these boring stuff by opening the browser console t
 
 ## Quick start
 
-Get started creating a new *[Rule](https://github.com/Lor-Saba/Code-Injector#rules)*.  
-[<img src="readme-resources/screenshots/1.png" height="100">](https://raw.githubusercontent.com/Lor-Saba/Code-Injector/master/readme-resources/screenshots/1.png)
-[<img src="readme-resources/screenshots/2.png" height="100">](https://raw.githubusercontent.com/Lor-Saba/Code-Injector/master/readme-resources/screenshots/2.png)
+Get started creating a new *[Rule](#rules)*.  
+[<img src="readme-resources/screenshots/1.png" height="100">](readme-resources/screenshots/1.png)
+[<img src="readme-resources/screenshots/2.png" height="100">](readme-resources/screenshots/2.png)
 
-Complete the *Rule* by entering the [*URL Pattern* and *Contents*](https://github.com/Lor-Saba/Code-Injector#editor-view),  
+Complete the *Rule* by entering the [*URL Pattern* and *Contents*](#editor-view),  
 then save and reload the page (or navigate to the matching address) to apply your script.  
-[<img src="readme-resources/screenshots/3.png" height="100">](https://raw.githubusercontent.com/Lor-Saba/Code-Injector/master/readme-resources/screenshots/3.png)
-[<img src="readme-resources/screenshots/4.png" height="100">](https://raw.githubusercontent.com/Lor-Saba/Code-Injector/master/readme-resources/screenshots/4.png)
+[<img src="readme-resources/screenshots/3.png" height="100">](readme-resources/screenshots/3.png)
+[<img src="readme-resources/screenshots/4.png" height="100">](readme-resources/screenshots/4.png)
 
 --------------
 
@@ -107,7 +111,7 @@ A *Rule* may contain **JavaScript**, **CSS**, **HTML** and **Files** and will be
 The *Rule*'s element bar can be subdivided into 3 sections:  *Pattern*, *Insight* and *Actions*.
 
 - **Pattern:**  
-  The Rule's *Pattern*, as defined [here](https://github.com/Lor-Saba/Code-Injector#url-pattern) in the *Editor section*, specifies in what pages the rule should be applied.    
+  The Rule's *Pattern*, as defined [here](#url-pattern) in the *Editor section*, specifies in what pages the rule should be applied.    
   It will be highlighted in blue if it matches with the address of the current page. (it's dotted if injected in iframes)   
   If the rule is disabled the *Patern* is highlighted in red with a line over the text.  
   Also, the whole area is draggable allowing to move the *Rule* and change the injection order.
@@ -141,7 +145,7 @@ The *Rule*'s element bar can be subdivided into 3 sections:  *Pattern*, *Insight
 ## Editor view
 <img src="readme-resources/screenshots/view_editor.png">
 
-The *Editor view* is where can be defined a [*Rule*](https://github.com/Lor-Saba/Code-Injector#rules) codes and properties. 
+The *Editor view* is where can be defined a [*Rule*](#rules) codes and properties. 
 
 #### URL pattern
 
@@ -209,7 +213,7 @@ If the file extension is not recognized as one of the 3 types mentioned above th
 #### On page load:
 
 If `TRUE`, the rule will be injected on page load, else it will be injected on navigation.  
-Check the [Injection flow](https://github.com/Lor-Saba/Code-Injector#injection-flow) for more details.
+Check the [Injection flow](#injection-flow) for more details.
 
 #### Top frame only:
 
@@ -256,6 +260,10 @@ The selected *Rules* will be downloaded as a json file.
 > **Note:**
   A message should appear to tell whether the operation is successful or not. 
 
+#### Appearance
+
+Chooses between the light and dark themes. *System* is the default and follows your operating system's colour scheme; *Light* and *Dark* override it. The choice applies to the popup, the editor (Monaco switches to its dark theme) and this options page.
+
 #### Show counter
 
 If `true`, a badge with the number of currently injected rules will be visible over the icon.  
@@ -266,7 +274,7 @@ If `true`, a badge with the number of currently injected rules will be visible o
 
 ## Injection flow
 
-A *Rule* by default is set up to be injected on page load *(after the document and all its resources have finished loading)* but can be changed to be injected when the navigation is committed *(the DOM is recived and still loading)* by deselecting the property "[On page load](https://github.com/Lor-Saba/Code-Injector#on-page-load)" in the *Editor view*.
+A *Rule* by default is set up to be injected on page load *(after the document and all its resources have finished loading)* but can be changed to be injected when the navigation is committed *(the DOM is recived and still loading)* by deselecting the property "[On page load](#on-page-load)" in the *Editor view*.
 
 The rules whose *URL Pattern* match with the page address will be selected and queued for injection. (from top to bottom, grouped by type) 
 
@@ -284,39 +292,56 @@ The project uses [Extension.js](https://extension.js.org/) with React + TypeScri
 ```bash
 npm install
 npm run dev          # watch + launch Chrome (polyfill enabled)
-npm run build        # dist/chrome, dist/firefox, dist/edge
-npm run build:chrome # chrome only (used by tests)
-npm run zip          # build all targets and write store-ready zips
+npm run build        # dist/chrome, dist/firefox
+npm run build:chrome # chromium only (used by tests)
+npm run zip          # build both targets and write store-ready zips
 ```
 
+The two targets cover the browsers people actually run it in: the Chromium build
+works in Chrome, Edge, Brave and other Chromium forks, and the Firefox build
+works in Firefox and its forks such as Zen.
+
 To try it out, open `chrome://extensions`, enable **Developer mode**, click **Load unpacked** and select `dist/chrome`.
+
+> **Note:** each target is built in its own `extension build` invocation on purpose. Passing several browsers to a single invocation makes the first target come out as a development build (React Refresh, source maps, a dev-server client that reloads pages).
 
 > **Note on Manifest V3:** the *local file* injection feature (reading `file://` paths) is no longer available, because the Manifest V3 background service worker cannot access the file system. Inline code, remote files and remote URLs continue to work.
 
 ## Testing
 
-End-to-end tests use [Playwright](https://playwright.dev/docs/chrome-extensions) against the built MV3 extension in `dist/chrome`. Chromium is launched with a persistent context and `--load-extension` (use Playwright's bundled Chromium channel — installed Chrome/Edge no longer allow sideloading via those flags).
+End-to-end tests use [Playwright](https://playwright.dev/docs/chrome-extensions) against the real built extension, in both Chromium and Firefox. Each project rebuilds the bundle it needs in global setup, so no separate build step is required.
 
 ```bash
 npm install
-npx playwright install chromium   # one-time browser download
-npm test                          # build:chrome + e2e
-npm run test:e2e                  # e2e only (rebuilds dist/chrome via globalSetup)
+npx playwright install chromium firefox   # one-time browser download
+npm run test:e2e                          # both browsers
+npm run test:e2e:chromium
+npm run test:e2e:firefox
 ```
 
 Specs live under `tests/e2e/` and cover:
 
-- Smoke: service worker, popup UI, options page
+- Smoke: background context, popup UI, options page
 - Inline injection: CSS, HTML, JS script-node insertion, comment-only skip
 - File injection: remote JS/CSS, unsupported remote HTML, MV3 local-file error, unrecognized extensions
 - Timing/guards: onLoad vs onCommit, disabled rules, URL non-match, mixed rule lists
 - Popup: seeded rules list, insight dots, disabled styling
+- Popup shell: the pre-rendered list paints without the bundle
+- Appearance: system colour scheme and the options override
+
+### How each browser is driven
+
+Chromium is launched with a persistent context and `--load-extension`, using Playwright's bundled Chromium channel — installed Chrome/Edge no longer allow sideloading via those flags.
+
+Firefox has no Playwright API for installing extensions, so `tests/e2e/helpers/firefox-extension.js` talks to Firefox's remote debugging protocol: it installs the build as a temporary add-on, pins the extension's UUID through a profile preference, pre-grants host permissions, and evaluates code in the background script to seed rules (the counterpart to `serviceWorker.evaluate` in Chromium).
+
+Playwright's Firefox cannot navigate to privileged documents, `moz-extension://` pages included, so specs that open the popup or options page are skipped there and run in Chromium only. Everything about injection — the part that touches real web pages — runs in both.
 
 Rules are seeded through `chrome.storage.local` (Monaco editor interaction is intentionally out of scope). Executable JS is verified via remote `http://127.0.0.1` files because Playwright Chromium’s default page CSP blocks `unsafe-inline` scripts; inline JS is still asserted by checking the injected `<script>` node.
 
-## Publishing (Chrome Web Store)
+## Publishing
 
-Publishing is automated via GitHub Actions ([.github/workflows/publish-chrome.yml](.github/workflows/publish-chrome.yml)). When a GitHub **Release** is published, the workflow builds the extension, zips it, authenticates against the Chrome Web Store API v2 using a Google Cloud service account, and uploads + publishes the new version.
+Releases are automated via GitHub Actions ([.github/workflows/release.yml](.github/workflows/release.yml)). When a GitHub **Release** is published, the workflow builds and zips both targets. The Chromium zip is authenticated against the Chrome Web Store API v2 using a Google Cloud service account and published; the Firefox zip is attached to the release for upload to addons.mozilla.org, which still needs signing credentials to automate.
 
 The following repository **secrets** must be configured:
 
@@ -330,6 +355,12 @@ The service account must be granted access under the [Chrome Web Store Developer
 
 The workflow can also be triggered manually from the Actions tab via *workflow_dispatch*.
 
+## Privacy
+
+The extension collects nothing. There is no analytics, no crash reporting and no phoning home of any kind: rules and settings live in `storage.local` on your machine, and the only network requests it makes are the ones your own rules ask for when they reference a remote file. Build tooling telemetry is disabled too — every Extension.js invocation passes `--no-telemetry`.
+
+See [PRIVACY.md](PRIVACY.md) for the full policy.
+
 ## Credits
 
 - Built with [Extension.js](https://extension.js.org/).
@@ -341,5 +372,5 @@ The workflow can also be triggered manually from the Actions tab via *workflow_d
 ## Info
 
 *Code Injector* was originally written by [L. Sabatelli (@Lor-Saba)](https://github.com/Lor-Saba).  
-This Manifest V3 fork is maintained by [Oliver Anteros (@Olian04)](https://github.com/Olian04).  
+*Code Injector Reborn*, this Manifest V3 fork, is maintained by [Oliver Anteros (@Olian04)](https://github.com/Olian04).  
 License: [GPLv3](https://www.gnu.org/licenses/quick-guide-gplv3.html)

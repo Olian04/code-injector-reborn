@@ -1,3 +1,5 @@
+import type { ThemePreference } from './theme';
+
 export type FileExt = 'js' | 'css' | 'html' | '';
 
 export type FileType = 'local' | 'remote' | '';
@@ -42,7 +44,9 @@ export interface InjectionRule {
 }
 
 export interface Settings {
+  /** Kept for compatibility with rule files exported by the original addon. */
   nightmode: boolean;
+  theme: ThemePreference;
   showcounter: boolean;
   size: {
     width: number;
@@ -69,6 +73,7 @@ export interface NavigationInfo {
 
 export const DEFAULT_SETTINGS: Settings = {
   nightmode: false,
+  theme: 'auto',
   showcounter: false,
   size: {
     width: 500,

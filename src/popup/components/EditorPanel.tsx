@@ -3,6 +3,8 @@ import type { EditorTab } from '../types';
 import { FilesList, type EditorFile } from './FilesList';
 
 interface EditorPanelProps {
+  active: boolean;
+  loading: boolean;
   target: string;
   selector: string;
   selectorActive: boolean;
@@ -38,6 +40,8 @@ interface EditorPanelProps {
 }
 
 export function EditorPanel({
+  active,
+  loading,
   target,
   selector,
   selectorActive,
@@ -68,15 +72,23 @@ export function EditorPanel({
 }: EditorPanelProps) {
   const selectorRef = useRef<HTMLInputElement>(null);
 
+  // Only focus once this panel is on screen, and never let focus scroll the
+  // popup: while #editor is translated off-screen, scroll-into-view would shift
+  // the whole UI sideways.
   useEffect(() => {
+    if (!active) return;
     const t = window.setTimeout(() => {
-      selectorRef.current?.focus();
+      selectorRef.current?.focus({ preventScroll: true });
     }, 400);
     return () => window.clearTimeout(t);
-  }, [target]);
+  }, [active, target]);
 
   return (
-    <div id="editor" data-target={target}>
+    <div
+      id="editor"
+      data-target={target}
+      data-loading={loading ? 'true' : undefined}
+    >
       <div className="editor-selector">
         <table>
           <tbody>

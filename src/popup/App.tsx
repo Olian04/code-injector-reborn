@@ -7,13 +7,27 @@ import {
   useState,
 } from 'react';
 import type { Rule, Settings } from '../shared/types';
+import { DEFAULT_SETTINGS } from '../shared/types';
 import { getRules, setRules, getSettings } from '../shared/storage';
 import {
   containsCode,
   clearSelection,
   getPathHost,
 } from '../shared/utils';
-import { EDITOR_CONFIG, requireMonaco, getMonaco, type MonacoEditor } from './monaco';
+import {
+  EDITOR_CONFIG,
+  requireMonaco,
+  getMonaco,
+  monacoTheme,
+  applyMonacoTheme,
+  type MonacoEditor,
+} from './monaco';
+import {
+  applyTheme,
+  resolveTheme,
+  watchSystemTheme,
+  type ThemePreference,
+} from '../shared/theme';
 import { closest, getElementIndex } from './dom';
 import { InfoOverlay } from './components/InfoOverlay';
 import { RuleItem } from './components/RuleItem';
@@ -33,6 +47,20 @@ import {
   type RuleView,
 } from './types';
 import './styles/browser-action.scss';
+
+/** Stored rules → view models, filling in defaults for older rule records. */
+function toRuleViews(
+  stored: Rule[],
+  counter: { current: number }
+): RuleView[] {
+  return stored.map((rule) => ({
+    ...rule,
+    id: counter.current++,
+    enabled: rule.enabled === undefined ? true : rule.enabled,
+    onLoad: rule.onLoad === undefined ? true : rule.onLoad,
+    topFrameOnly: rule.topFrameOnly === undefined ? true : rule.topFrameOnly,
+  }));
+}
 
 const HIDDEN_CTX: CtxMenuState = {
   visible: false,
@@ -54,11 +82,14 @@ export function App() {
   })();
 
   const [rules, setRulesState] = useState<RuleView[]>([]);
+  const [rulesLoaded, setRulesLoaded] = useState(false);
+  const themeRef = useRef<ThemePreference>('auto');
   const [tabData, setTabData] = useState(EMPTY_TAB_DATA);
   const [editing, setEditing] = useState(false);
   const [info, setInfo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [monacoReady, setMonacoReady] = useState(false);
+  const [editorLoading, setEditorLoading] = useState(false);
 
   const [editorTarget, setEditorTarget] = useState('NEW');
   const [selector, setSelector] = useState('');
@@ -88,6 +119,7 @@ export function App() {
   });
 
   const rulesCounter = useRef(0);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const rulesListRef = useRef<HTMLUListElement>(null);
   const editorJsRef = useRef<HTMLDivElement>(null);
   const editorCssRef = useRef<HTMLDivElement>(null);
@@ -97,6 +129,12 @@ export function App() {
   const editorJS = useRef<MonacoEditor | null>(null);
   const editorCSS = useRef<MonacoEditor | null>(null);
   const editorHTML = useRef<MonacoEditor | null>(null);
+
+  // Monaco is loaded on demand, so code can be set before the editors exist.
+  // Buffer it here and flush once they are created.
+  const pendingCode = useRef<Record<'js' | 'css' | 'html', string> | null>(null);
+  const editorsPromise = useRef<Promise<void> | null>(null);
+  const disposed = useRef(false);
 
   const isDragging = useRef(false);
   const unsavedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -149,8 +187,19 @@ export function App() {
     setSaving(false);
   }, []);
 
+  /** Code from the live editors, or the buffer while Monaco is still loading. */
+  const readCode = useCallback((): Record<'js' | 'css' | 'html', string> => {
+    const pending = pendingCode.current;
+    return {
+      js: editorJS.current?.getValue() ?? pending?.js ?? '',
+      css: editorCSS.current?.getValue() ?? pending?.css ?? '',
+      html: editorHTML.current?.getValue() ?? pending?.html ?? '',
+    };
+  }, []);
+
   const getEditorPanelData = useCallback((): EditorState => {
     const meta = editorMetaRef.current;
+    const code = readCode();
     const data: EditorState = {
       target: meta.target,
       enabled: meta.enabled,
@@ -158,9 +207,7 @@ export function App() {
       topFrameOnly: meta.topFrameOnly,
       selector: meta.selector.trim(),
       code: {
-        js: editorJS.current?.getValue() ?? '',
-        css: editorCSS.current?.getValue() ?? '',
-        html: editorHTML.current?.getValue() ?? '',
+        ...code,
         files: [],
       },
     };
@@ -183,7 +230,7 @@ export function App() {
     }
 
     return data;
-  }, []);
+  }, [readCode]);
 
   const checkEditorDots = useCallback(() => {
     if (dotsTimeout.current) clearTimeout(dotsTimeout.current);
@@ -191,14 +238,15 @@ export function App() {
       const filesWithPath = editorFilesRef.current.filter((f) =>
         f.path.trim()
       );
+      const code = readCode();
       setCodeActive({
-        js: containsCode(editorJS.current?.getValue()),
-        css: containsCode(editorCSS.current?.getValue()),
-        html: containsCode(editorHTML.current?.getValue()),
+        js: containsCode(code.js),
+        css: containsCode(code.css),
+        html: containsCode(code.html),
         files: filesWithPath.length > 0,
       });
     }, 1000);
-  }, []);
+  }, [readCode]);
 
   const setLastSession = useCallback(() => {
     checkEditorDots();
@@ -243,9 +291,18 @@ export function App() {
       else if (active.html) activeTab = 'html';
       else if (active.files) activeTab = 'files';
 
-      editorJS.current?.setValue(next.code.js);
-      editorCSS.current?.setValue(next.code.css);
-      editorHTML.current?.setValue(next.code.html);
+      if (editorJS.current && editorCSS.current && editorHTML.current) {
+        editorJS.current.setValue(next.code.js);
+        editorCSS.current.setValue(next.code.css);
+        editorHTML.current.setValue(next.code.html);
+        pendingCode.current = null;
+      } else {
+        pendingCode.current = {
+          js: next.code.js,
+          css: next.code.css,
+          html: next.code.html,
+        };
+      }
 
       setCodeActive(active);
       setEditorFiles(filesFromRule(next.code.files));
@@ -268,6 +325,92 @@ export function App() {
     },
     []
   );
+
+  /**
+   * Load Monaco and create the three editors, at most once. Called from idle
+   * time after the rules list paints, and awaited if the user opens the editor
+   * before that finishes.
+   */
+  const ensureEditors = useCallback((): Promise<void> => {
+    if (editorsPromise.current) return editorsPromise.current;
+
+    setEditorLoading(true);
+
+    editorsPromise.current = requireMonaco()
+      .then(() => {
+        if (disposed.current) return;
+
+        const jsHost = editorJsRef.current;
+        const cssHost = editorCssRef.current;
+        const htmlHost = editorHtmlRef.current;
+        if (!jsHost || !cssHost || !htmlHost) {
+          // Containers are missing; let a later call retry.
+          editorsPromise.current = null;
+          return;
+        }
+
+        const m = getMonaco();
+        const theme = monacoTheme(resolveTheme(themeRef.current));
+        const js = m.editor.create(jsHost, {
+          ...EDITOR_CONFIG,
+          theme,
+          language: 'javascript',
+        });
+        const css = m.editor.create(cssHost, {
+          ...EDITOR_CONFIG,
+          theme,
+          language: 'css',
+        });
+        const html = m.editor.create(htmlHost, {
+          ...EDITOR_CONFIG,
+          theme,
+          language: 'html',
+        });
+
+        editorJS.current = js;
+        editorCSS.current = css;
+        editorHTML.current = html;
+
+        const onFocus = () => setTabFocus(true);
+        const onBlur = () => setTabFocus(false);
+
+        for (const editor of [js, css, html]) {
+          editor.onDidFocusEditorWidget(onFocus);
+          editor.onDidBlurEditorWidget(onBlur);
+          editor.onDidChangeModelContent(() => setLastSession());
+        }
+
+        for (const id of ['#editor-js', '#editor-css', '#editor-html']) {
+          const area = document.querySelector(
+            `${id} .inputarea`
+          ) as HTMLElement | null;
+          if (area) area.dataset.name = 'txt-editor-inputarea';
+        }
+
+        const pending = pendingCode.current;
+        if (pending) {
+          js.setValue(pending.js);
+          css.setValue(pending.css);
+          html.setValue(pending.html);
+          pendingCode.current = null;
+        }
+
+        js.layout();
+        css.layout();
+        html.layout();
+
+        setMonacoReady(true);
+      })
+      .catch((err: unknown) => {
+        console.error('[Code Injector Reborn] Monaco failed to load', err);
+        editorsPromise.current = null;
+      })
+      .finally(() => {
+        if (!disposed.current) setEditorLoading(false);
+      });
+
+    return editorsPromise.current;
+  }, [setLastSession]);
 
   const hideRuleContextMenu = useCallback(() => {
     setCtxMenu((prev) => {
@@ -301,13 +444,37 @@ export function App() {
     [rules]
   );
 
-  // Settings + Monaco init + tab data request
+  // First paint: size the popup and show the rules list. Monaco is deliberately
+  // not on this path — it is ~4 MB and used to delay the popup by ~1s.
   useEffect(() => {
+    disposed.current = false;
+
     void getSettings().then((settings: Settings) => {
       if (settings.size) {
         setBodySize(settings.size.width, settings.size.height);
       }
+      themeRef.current = settings.theme;
+      applyTheme(settings.theme);
+      applyMonacoTheme(resolveTheme(settings.theme));
     });
+
+    // Only relevant while following the OS; CSS handles the page, Monaco
+    // needs telling.
+    const unwatch = watchSystemTheme((scheme) => {
+      if (themeRef.current === 'auto') applyMonacoTheme(scheme);
+    });
+
+    // Read rules straight from storage rather than waiting for the service
+    // worker round-trip below; tab data only drives the "matches" highlight.
+    void getRules()
+      .then((stored) => {
+        if (disposed.current) return;
+        setRulesState(toRuleViews(stored, rulesCounter));
+      })
+      .finally(() => {
+        if (!disposed.current) setRulesLoaded(true);
+        delete document.body.dataset.loading;
+      });
 
     void browser.tabs
       .query({ active: true, currentWindow: true })
@@ -320,90 +487,49 @@ export function App() {
         }
       });
 
-    let disposed = false;
-
-    void requireMonaco()
-      .then(() => {
-        if (disposed) return;
-        if (
-          !editorJsRef.current ||
-          !editorCssRef.current ||
-          !editorHtmlRef.current
-        ) {
-          // Refs should exist after first paint; clear loading so UI is usable.
-          delete document.body.dataset.loading;
-          setMonacoReady(true);
-          return;
-        }
-
-        const m = getMonaco();
-
-        const js = m.editor.create(editorJsRef.current, {
-          ...EDITOR_CONFIG,
-          language: 'javascript',
-        });
-        const css = m.editor.create(editorCssRef.current, {
-          ...EDITOR_CONFIG,
-          language: 'css',
-        });
-        const html = m.editor.create(editorHtmlRef.current, {
-          ...EDITOR_CONFIG,
-          language: 'html',
-        });
-
-        editorJS.current = js;
-        editorCSS.current = css;
-        editorHTML.current = html;
-
-        const onFocus = () => setTabFocus(true);
-        const onBlur = () => setTabFocus(false);
-
-        js.onDidFocusEditorWidget(onFocus);
-        css.onDidFocusEditorWidget(onFocus);
-        html.onDidFocusEditorWidget(onFocus);
-        js.onDidBlurEditorWidget(onBlur);
-        css.onDidBlurEditorWidget(onBlur);
-        html.onDidBlurEditorWidget(onBlur);
-
-        const nameAreas = () => {
-          for (const id of ['#editor-js', '#editor-css', '#editor-html']) {
-            const area = document.querySelector(
-              `${id} .inputarea`
-            ) as HTMLElement | null;
-            if (area) area.dataset.name = 'txt-editor-inputarea';
-          }
-        };
-        nameAreas();
-
-        js.layout();
-        css.layout();
-        html.layout();
-
-        delete document.body.dataset.loading;
-        setMonacoReady(true);
-
-        void browser.storage.local
-          .get('lastSession')
-          .then((data: { lastSession?: EditorState }) => {
-            if (data.lastSession) {
-              applyEditorState(data.lastSession);
-              setEditing(true);
-            }
-          });
-      })
-      .catch((err) => {
-        console.error('[Code Injector] Monaco failed to load', err);
-        delete document.body.dataset.loading;
-        setMonacoReady(false);
-      });
+    // Warm the editor once the list is interactive, so opening a rule is
+    // instant in the common case without holding up the popup.
+    const warm = () => {
+      if (!disposed.current) void ensureEditors();
+    };
+    const idle = window.requestIdleCallback
+      ? window.requestIdleCallback(warm, { timeout: 1000 })
+      : window.setTimeout(warm, 200);
 
     return () => {
-      disposed = true;
+      disposed.current = true;
+      unwatch();
+      if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
       editorJS.current?.dispose();
       editorCSS.current?.dispose();
       editorHTML.current?.dispose();
     };
-  }, [applyEditorState, setBodySize]);
+  }, [ensureEditors, setBodySize]);
+
+  // The panels are positioned with transforms, so #body must never scroll:
+  // focusing anything in an off-screen panel would drag the popup sideways.
+  useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    const reset = () => {
+      if (el.scrollLeft !== 0) el.scrollLeft = 0;
+      if (el.scrollTop !== 0) el.scrollTop = 0;
+    };
+    el.addEventListener('scroll', reset);
+    return () => el.removeEventListener('scroll', reset);
+  }, []);
+
+  // Relayout Monaco after the editor panel finishes sliding in.
+  useEffect(() => {
+    if (!editing || !monacoReady) return;
+    const timer = window.setTimeout(() => {
+      editorJS.current?.layout();
+      editorCSS.current?.layout();
+      editorHTML.current?.layout();
+    }, 420);
+    return () => window.clearTimeout(timer);
+  }, [editing, monacoReady]);
 
   // Message listener
   useEffect(() => {
@@ -425,21 +551,9 @@ export function App() {
           break;
 
         case 'get-current-tab-data': {
-          const next = {
+          setTabData({
             topURL: mex.data?.topURL ?? '',
             innerURLs: mex.data?.innerURLs ?? [],
-          };
-          setTabData(next);
-          void getRules().then((stored) => {
-            const views: RuleView[] = stored.map((rule) => ({
-              ...rule,
-              id: rulesCounter.current++,
-              enabled: rule.enabled === undefined ? true : rule.enabled,
-              onLoad: rule.onLoad === undefined ? true : rule.onLoad,
-              topFrameOnly:
-                rule.topFrameOnly === undefined ? true : rule.topFrameOnly,
-            }));
-            setRulesState(views);
           });
           break;
         }
@@ -559,19 +673,6 @@ export function App() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [selectedTab, setLastSession]);
 
-  // Monaco content change → lastSession
-  useEffect(() => {
-    if (!monacoReady) return;
-    const disposables = [
-      editorJS.current?.onDidChangeModelContent(() => setLastSession()),
-      editorCSS.current?.onDidChangeModelContent(() => setLastSession()),
-      editorHTML.current?.onDidChangeModelContent(() => setLastSession()),
-    ];
-    return () => {
-      for (const d of disposables) d?.dispose();
-    };
-  }, [monacoReady, setLastSession]);
-
   const handleSelectorChange = (value: string) => {
     setSelector(value);
     setSelectorError(false);
@@ -590,6 +691,7 @@ export function App() {
 
   const handleAddRule = () => {
     applyEditorState(DEFAULT_NEW_RULE);
+    void ensureEditors();
     setEditing(true);
   };
 
@@ -652,6 +754,7 @@ export function App() {
       selector: rule.selector,
       code: rule.code,
     });
+    void ensureEditors();
     hideRuleContextMenu();
     setEditing(true);
   };
@@ -855,12 +958,7 @@ export function App() {
       editorHTML.current?.layout();
 
       void browser.storage.local.get('settings').then((data: { settings?: Settings }) => {
-        const settings: Settings = {
-          nightmode: false,
-          showcounter: false,
-          size: { width: 500, height: 500 },
-          ...data.settings,
-        };
+        const settings: Settings = { ...DEFAULT_SETTINGS, ...data.settings };
         settings.size = {
           width: window.innerWidth,
           height: window.innerHeight,
@@ -882,6 +980,7 @@ export function App() {
   return (
     <div
       id="body"
+      ref={bodyRef}
       data-editing={editing ? 'true' : undefined}
       data-info={info ? 'true' : undefined}
       data-saving={saving ? 'true' : undefined}
@@ -912,6 +1011,7 @@ export function App() {
           ref={rulesListRef}
           data-actionvisible={actionVisible ? 'true' : undefined}
         >
+          {!rulesLoaded && <li className="rule rule-placeholder" />}
           {rules.map((rule) => (
             <RuleItem
               key={rule.id}
@@ -963,6 +1063,8 @@ export function App() {
       </div>
 
       <EditorPanel
+        active={editing}
+        loading={editorLoading}
         target={editorTarget}
         selector={selector}
         selectorActive={selectorActive}

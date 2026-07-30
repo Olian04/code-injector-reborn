@@ -20,29 +20,12 @@
         padding: 0;
         color: $cBase;
 
+        // Keep the full popup size while loading; resizing the body here makes
+        // Chrome open a short popup that then jumps to full height.
         &[data-loading="true"]{
-            height: 80px !important;
-            min-height: 80px;
 
-            #rules{
-
-                &::before{
-                    content: 'Loading...';
-                    display: block;
-                    width: 100%;
-                    height: 60px;
-                    line-height: 60px;
-                    text-align: center;
-                    font-style: italic;
-                    font-size: 14px;
-                    color: #aaa;
-                }
-
-                .rules-list ,
-                .rules-controls {
-                    opacity: 0;
-                    pointer-events: none;
-                }
+            .rules-controls{
+                pointer-events: none;
             }
         }
 
@@ -62,6 +45,15 @@
 
     }
 
+    // React mount point must fill body so #body percentages resolve to the
+    // popup size (not the browser viewport when opened as a tab).
+    #root{
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
     #info,
     #rules,
     #editor,
@@ -71,7 +63,7 @@
         height: 100%;
         left: 0;
         top: 0;
-        transition: .4s;
+        transition: transform .4s, opacity .4s;
         padding: 10px;
     }
 
@@ -98,7 +90,7 @@
         & > div{
             display: none;
             opacity: 0;
-            transition: .4s;
+            transition: opacity .4s;
             position: relative;
             width: 100%;
             height: 100%;
@@ -112,7 +104,7 @@
         font-size: 30px;
         white-space: nowrap;
         pointer-events: none;
-        transition: .2s;
+        transition: opacity .2s;
         opacity: 0;
         z-index: 100;
 
@@ -137,7 +129,7 @@
         height: 100%;
         //width: 100vw;    <----- Causes an huge performance issue while dragging on firefox
         //height: 100vh;   <--'
-        position: fixed;
+        position: absolute;
         top: 0;
         left: 0;
         overflow: hidden;
@@ -145,7 +137,7 @@
         // show the editor page
         &[data-editing] {
             #editor{ 
-                transform: translateX(0%); 
+                transform: translateX(0%);
             }
             #rules { 
                 transform: translateX(-33%); 
@@ -157,7 +149,7 @@
         // show the info page
         &[data-info]{
             #info{ 
-                transform: translateX(0%); 
+                transform: translateX(0%);
 
                 & > div{
                     display: block;
@@ -327,6 +319,25 @@
                 transition: .2s;
             }
         }
+    }
+
+    // Monaco is fetched on demand, so the code area can be empty for a moment.
+    // The Files tab needs no editor, so it stays usable.
+    &[data-loading="true"] .tab:not([data-selected="files"]) .tab-contents::after{
+        content: 'Loading editor...';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        font-style: italic;
+        font-size: 14px;
+        color: #aaa;
+        z-index: 20;
     }
 
     .tab-contents li[data-target="js"]{ transform: translateX(0%); }
@@ -741,6 +752,20 @@
         }
     }
 
+    // Stand-in row shown by the static HTML shell and by React until the
+    // stored rules are read, so the popup never paints an empty list.
+    .rule-placeholder{
+        background: linear-gradient(90deg, #fff 0%, #f4f4f4 40%, #fff 80%);
+        background-size: 300% 100%;
+        animation: rule-placeholder-shimmer 1.2s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    @keyframes rule-placeholder-shimmer{
+        from{ background-position: 100% 0; }
+        to{ background-position: -100% 0; }
+    }
+
     .rules-list .ghost{
         position: relative;
         display: block;
@@ -1020,12 +1045,21 @@
     .info-header .ih-title{
         position: relative;
         font-size: 40px;
-        display: inline-block;
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
         height: 150px;
-        line-height: 150px;
+        line-height: 1.1;
         vertical-align: bottom;
         padding: 0 0 0 25px;
         color: #445;
+
+        .ih-suffix{
+            font-size: 18px;
+            letter-spacing: .3em;
+            text-transform: uppercase;
+            opacity: .45;
+        }
 
         &::before {
             content: attr(data-description);
@@ -1225,4 +1259,240 @@
             transform-origin: 50% 50%;
             opacity: 0; 
         }
+    }
+
+
+/* Dark theme */
+
+    // Only colours are restated here. `$s` scopes every rule so the same
+    // declarations can serve both the OS preference and an explicit override.
+    @mixin dark-theme($s) {
+
+        #{$s}{
+            background: $dBackdrop;
+            color-scheme: dark;
+        }
+
+        #{$s} body{ color: $dText; }
+
+        #{$s} #rules,
+        #{$s} #resize{ background: $dSurface; }
+
+        #{$s} #editor,
+        #{$s} #info{ background: $dSurface; }
+
+        #{$s} #resize{
+            color: $dTextMuted;
+
+            .r-size div{ color: $dText; }
+        }
+
+        #{$s} .rule{
+            background: $dRaised;
+            box-shadow: inset 0 -1px $dBorder;
+
+            &:hover{ outline: 1px solid $dBorderSoft; }
+        }
+
+        #{$s} .rule-placeholder{
+            background: linear-gradient(90deg, $dRaised 0%, $dRaisedHover 40%, $dRaised 80%);
+            background-size: 300% 100%;
+        }
+
+        #{$s} .rules-list .ghost,
+        #{$s} .files-list .ghost{ border-color: $dBorder; }
+
+        #{$s} .rules-controls{ border-top-color: $dBorderSoft; }
+
+        #{$s} .r-name{ color: $dText; }
+
+        #{$s} .r-details .d-info{ border-color: $dBorder; }
+
+        #{$s} .r-controls i{
+            box-shadow: -1px 0 $dBorderSoft;
+            color: rgba(255, 255, 255, .55);
+
+            &:hover{ color: rgba(255, 255, 255, .9); }
+        }
+
+        #{$s} .rule[data-active="true"]{
+            border-left-color: $dPrimaryText;
+
+            .r-name{ color: $dPrimaryText; }
+        }
+
+        #{$s} .rule[data-inner-active="true"]{
+            border-left-color: $dPrimaryText;
+
+            .r-name{ color: $dPrimaryText; }
+        }
+
+        #{$s} .rule[data-enabled="false"]{
+
+            &[data-active="true"]{ border-left-color: $dError; }
+
+            .r-name{ color: $dError; }
+        }
+
+        // Buttons and inputs
+        #{$s} .btn{
+            background: $dRaised;
+            color: $dText;
+            box-shadow: inset 0 -1px $dBorderSoft;
+
+            &:hover{ box-shadow: inset 0 -1px $dBorder; }
+        }
+        #{$s} .btn-left,
+        #{$s} .btn-icon{
+            box-shadow: inset 0 0 0 1px $dBorderSoft;
+
+            &:hover{ box-shadow: inset 0 0 0 1px $dBorder; }
+        }
+        #{$s} .btn-icon{ color: $dText; }
+        #{$s} .btn-primary{
+            background: $dPrimary;
+            color: #fff;
+        }
+        #{$s} .btn-error-fg{ color: $dError; }
+        #{$s} .add-rules:hover{ background: $dRaisedHover; }
+
+        #{$s} .inp{
+            background: $dRaised;
+            color: $dText;
+            border-color: $dBorder;
+
+            &:focus{ border-color: $dPrimaryText; }
+        }
+
+        // Editor tabs
+        #{$s} .tab-titles{
+            box-shadow: inset 0 -1px $dBorder;
+
+            & > li{
+                color: $dTextMuted;
+
+                &:hover{ color: $dText; }
+
+                span{ box-shadow: inset 0 0 0 1px $dBorder; }
+            }
+        }
+        #{$s} .tab-contents{ border-color: $dBorder; }
+        #{$s} .tab[data-selected="js"]    .tab-titles > li[data-for="js"],
+        #{$s} .tab[data-selected="css"]   .tab-titles > li[data-for="css"],
+        #{$s} .tab[data-selected="html"]  .tab-titles > li[data-for="html"],
+        #{$s} .tab[data-selected="files"] .tab-titles > li[data-for="files"]{
+            border-top-color: $dBorder;
+            border-left-color: $dBorder;
+            border-right-color: $dBorder;
+            box-shadow: 0 1px $dRaised;
+            background: $dRaised;
+        }
+        #{$s} .tab[data-focus="true"] .tab-contents{ border-color: $dPrimaryText; }
+        #{$s} .tab[data-focus="true"] .tab-titles{ box-shadow: inset 0 -1px $dPrimaryText; }
+        #{$s} .tab[data-focus="true"][data-selected="js"]    .tab-titles > li[data-for="js"],
+        #{$s} .tab[data-focus="true"][data-selected="css"]   .tab-titles > li[data-for="css"],
+        #{$s} .tab[data-focus="true"][data-selected="html"]  .tab-titles > li[data-for="html"]{
+            border-top-color: $dPrimaryText;
+            border-left-color: $dPrimaryText;
+            border-right-color: $dPrimaryText;
+            box-shadow: 0 1px $dRaised;
+            background: $dRaised;
+        }
+        #{$s} body[data-loading="true"] .tab:not([data-selected="files"]) .tab-contents::after{
+            background: $dSurface;
+            color: $dTextMuted;
+        }
+
+        #{$s} #container .monaco-editor .lines-content .cigr{
+            background: rgba(255, 255, 255, .1);
+        }
+
+        // Selector row
+        #{$s} .editor-selector table td:first-child input[data-active="true"]{
+            border-left-color: $dPrimaryText;
+            color: $dPrimaryText;
+        }
+        #{$s} .editor-selector table td:first-child input[data-error="true"]{
+            border-color: $dError;
+            color: $dError;
+        }
+        #{$s} .e-s-help{
+            color: $dTextMuted;
+
+            &:hover{ color: $dText; }
+        }
+        #{$s} .editor-controls label{
+            color: $dText;
+
+            &:hover{ color: #fff; }
+        }
+
+        // Files
+        #{$s} .file[data-dragging="true"]{
+            background: $dRaised;
+            box-shadow: 0 0 0 1px $dRaised;
+        }
+        #{$s} .file .f-type::after{
+            color: $dError;
+            text-shadow: 0px -1px $dRaised,
+                         1px -1px $dRaised,
+                         1px  0px $dRaised,
+                         1px  1px $dRaised,
+                         0px  1px $dRaised,
+                        -1px  1px $dRaised,
+                        -1px  0px $dRaised,
+                        -1px -1px $dRaised;
+        }
+        #{$s} .file .f-type i{ color: $dTextMuted; }
+        #{$s} .file .f-type:hover i{ color: $dText; }
+        #{$s} .file[data-ext="js"]   .f-type::after,
+        #{$s} .file[data-ext="css"]  .f-type::after,
+        #{$s} .file[data-ext="html"] .f-type::after{ color: $dPrimaryText; }
+
+        // Info page
+        #{$s} .info-header{
+            background: $dRaised;
+            box-shadow: inset 0 -1px $dBorderSoft;
+        }
+        #{$s} .info-content{
+            background: $dSurface;
+            color: $dText;
+        }
+        #{$s} .info-header .ih-title{
+            color: $dText;
+
+            &::after{ color: $dPrimaryText; }
+        }
+
+        // Context menu
+        #{$s} .ctx-menu ul{
+            background: $dRaised;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, .4), 0 2px 5px 2px rgba(0, 0, 0, .3);
+        }
+        #{$s} .ctx-menu li{
+            color: $dText;
+
+            i{ color: $dText; }
+
+            &.sep::before{ background: $dBorder; }
+
+            &:hover{
+                background: $dRaisedHover;
+                color: #fff;
+
+                i{ color: $dPrimaryText; }
+            }
+
+            &[data-action="success"] i{ color: $dSecondary; }
+            &[data-action="fail"] i{ color: $dError; }
+
+            &[data-name="btn-rule-delete"]:hover i{ color: $dError; }
+            &[data-name="btn-rule-delete"][data-confirm="true"]::after{ color: $dError; }
+        }
+    }
+
+    @include dark-theme('html[data-theme="dark"]');
+
+    @media (prefers-color-scheme: dark) {
+        @include dark-theme('html:not([data-theme="light"])');
     }
