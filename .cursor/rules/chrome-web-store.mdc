@@ -1,8 +1,0 @@
----
-description: CWS listing/assets/privacy/MV3. Skill chrome-web-store-best-practices.
-globs: >-
-  src/**/*.{ts,tsx,js,jsx},public/**/*.{js,css,html},src/manifest.json,PRIVACY.md,README.md,readme-resources/**/*
-alwaysApply: false
----
-
-Follow `.cursor/skills/chrome-web-store-best-practices/SKILL.md` + `reference.md`. Sole source; this file = glob trigger only.
