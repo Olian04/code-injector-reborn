@@ -1,8 +1,9 @@
 # react-best-practices (Code-Injector)
 
 Vercel’s React Best Practices rules for agents working on this extension’s
-popup/options React UI. Next/RSC/SSR-only rules are **removed**. A small set of
-retained rules is **adapted** for the browser extension (React built-ins /
+popup/options React UI. Next/RSC/SSR-only rules are **removed**. Rendering,
+JavaScript, and Advanced categories were also **dropped for focus**. A small
+set of retained rules is **adapted** for the browser extension (React built-ins /
 `browser.storage` instead of Next.js / SWR / RSC); the rest stay **verbatim**.
 
 **Attribution:** Upstream from
@@ -28,5 +29,6 @@ Companion Cursor rules (glob-scoped to `src/popup` / `src/options`):
 - `.cursor/rules/react-bp-*.mdc` — one file per **retained** practice rule; Cursor
   frontmatter plus the same markdown body as `rules/`
 
-N/A and non-mappable upstream rules are not present under `rules/` or
-`.cursor/rules/` — see [MISMATCHES.md](MISMATCHES.md) and [SKILL.md](SKILL.md).
+N/A, non-mappable, and focus-dropped upstream rules are not present under
+`rules/` or `.cursor/rules/` — see [MISMATCHES.md](MISMATCHES.md) and
+[SKILL.md](SKILL.md).

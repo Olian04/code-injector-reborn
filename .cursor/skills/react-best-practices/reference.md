@@ -64,41 +64,8 @@ the right `rules/<name>.md` file.
 | [rerender-use-deferred-value.md](rules/rerender-use-deferred-value.md) | Use useDeferredValue for Expensive Derived Renders |
 | [rerender-use-ref-transient-values.md](rules/rerender-use-ref-transient-values.md) | Use useRef for Transient Values |
 
-## 5. Rendering (`rendering-`)
+## Removed categories
 
-| File | Title |
-|------|-------|
-| [rendering-animate-svg-wrapper.md](rules/rendering-animate-svg-wrapper.md) | Animate SVG Wrapper Instead of SVG Element |
-| [rendering-conditional-render.md](rules/rendering-conditional-render.md) | Use Explicit Conditional Rendering |
-| [rendering-content-visibility.md](rules/rendering-content-visibility.md) | CSS content-visibility for Long Lists |
-| [rendering-hoist-jsx.md](rules/rendering-hoist-jsx.md) | Hoist Static JSX Elements |
-| [rendering-svg-precision.md](rules/rendering-svg-precision.md) | Optimize SVG Precision |
-| [rendering-usetransition-loading.md](rules/rendering-usetransition-loading.md) | Use useTransition Over Manual Loading States |
-
-## 6. JavaScript (`js-`)
-
-| File | Title | Notes |
-|------|-------|-------|
-| [js-batch-dom-css.md](rules/js-batch-dom-css.md) | Avoid Layout Thrashing | verbatim |
-| [js-cache-function-results.md](rules/js-cache-function-results.md) | Cache Repeated Function Calls | verbatim |
-| [js-cache-property-access.md](rules/js-cache-property-access.md) | Cache Property Access in Loops | verbatim |
-| [js-cache-storage.md](rules/js-cache-storage.md) | Cache Storage API Calls | adapted |
-| [js-combine-iterations.md](rules/js-combine-iterations.md) | Combine Multiple Array Iterations | verbatim |
-| [js-early-exit.md](rules/js-early-exit.md) | Early Return from Functions | verbatim |
-| [js-flatmap-filter.md](rules/js-flatmap-filter.md) | Use flatMap to Map and Filter in One Pass | verbatim |
-| [js-hoist-regexp.md](rules/js-hoist-regexp.md) | Hoist RegExp Creation | verbatim |
-| [js-index-maps.md](rules/js-index-maps.md) | Build Index Maps for Repeated Lookups | verbatim |
-| [js-length-check-first.md](rules/js-length-check-first.md) | Early Length Check for Array Comparisons | verbatim |
-| [js-min-max-loop.md](rules/js-min-max-loop.md) | Use Loop for Min/Max Instead of Sort | verbatim |
-| [js-request-idle-callback.md](rules/js-request-idle-callback.md) | Defer Non-Critical Work with requestIdleCallback | adapted |
-| [js-set-map-lookups.md](rules/js-set-map-lookups.md) | Use Set/Map for O(1) Lookups | verbatim |
-| [js-tosorted-immutable.md](rules/js-tosorted-immutable.md) | Use toSorted() Instead of sort() for Immutability | verbatim |
-
-## 7. Advanced (`advanced-`)
-
-| File | Title |
-|------|-------|
-| [advanced-effect-event-deps.md](rules/advanced-effect-event-deps.md) | Do Not Put Effect Events in Dependency Arrays |
-| [advanced-event-handler-refs.md](rules/advanced-event-handler-refs.md) | Store Event Handlers in Refs |
-| [advanced-init-once.md](rules/advanced-init-once.md) | Initialize App Once, Not Per Mount |
-| [advanced-use-latest.md](rules/advanced-use-latest.md) | useEffectEvent for Stable Callback Refs |
+Upstream sections **5 Rendering (`rendering-`)**, **6 JavaScript (`js-`)**, and
+**7 Advanced (`advanced-`)** were dropped to focus agents on extension-relevant
+async, bundle, client, and re-render guidance. See [`MISMATCHES.md`](MISMATCHES.md).

@@ -3,9 +3,11 @@
 This file defines all sections, their ordering, impact levels, and descriptions.
 The section ID (in parentheses) is the filename prefix used to group rules.
 
-Upstream originally included **Server-Side Performance (`server`)**; that
-entire category was removed for Code-Injector (client-only extension UI). See
-[`../MISMATCHES.md`](../MISMATCHES.md).
+Upstream originally included **Server-Side Performance (`server`)**,
+**Rendering Performance (`rendering`)**, **JavaScript Performance (`js`)**, and
+**Advanced Patterns (`advanced`)**; those categories were removed for
+Code-Injector (client-only extension UI; fewer rules focused on async/bundle/
+client/rerender). See [`../MISMATCHES.md`](../MISMATCHES.md).
 
 ---
 
@@ -28,18 +30,3 @@ entire category was removed for Code-Injector (client-only extension UI). See
 
 **Impact:** MEDIUM  
 **Description:** Reducing unnecessary re-renders minimizes wasted computation and improves UI responsiveness.
-
-## 5. Rendering Performance (rendering)
-
-**Impact:** MEDIUM  
-**Description:** Optimizing the rendering process reduces the work the browser needs to do.
-
-## 6. JavaScript Performance (js)
-
-**Impact:** LOW-MEDIUM  
-**Description:** Micro-optimizations for hot paths can add up to meaningful improvements.
-
-## 7. Advanced Patterns (advanced)
-
-**Impact:** LOW  
-**Description:** Advanced patterns for specific cases that require careful implementation.

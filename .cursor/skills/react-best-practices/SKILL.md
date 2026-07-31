@@ -40,6 +40,8 @@ and from `.cursor/rules/react-bp-*.mdc` (do not reintroduce or apply them):
 - `bundle-defer-third-party` — defer after **hydration**
 - `client-swr-dedup` — SWR; do not add SWR for this UI
 - `rendering-activity` — React `<Activity>` (needs React 19+); revisit on upgrade
+- all `rendering-*`, `js-*`, and `advanced-*` rules — dropped to focus on
+  extension-relevant async / bundle / client / rerender guidance
 
 Rationale, reworded rules, and apply-as-is lists: [`MISMATCHES.md`](MISMATCHES.md).
 
@@ -56,12 +58,12 @@ Rationale, reworded rules, and apply-as-is lists: [`MISMATCHES.md`](MISMATCHES.m
 | `async-suspense-boundaries` | Suspense for `lazy()` only; storage waterfalls → parallel / defer-await |
 | `async-dependencies` | Promise orchestration only; do **not** add `better-all` |
 | `client-localstorage-schema` | Version/minimize `browser.storage`; `localStorage` = theme mirror only |
-| `js-cache-storage` | Map-cache hot theme `localStorage` / optional `browser.storage`; invalidate via `storage.onChanged` |
-| `js-request-idle-callback` | Idle warm OK; cancel on unmount; not for must-finish work (Monaco warm exemplar) |
 | `client-event-listeners` | Module-level shared `window`/`document` listener (or one `browser.*.addListener`); never SWR |
 
 Removed rather than faked: `client-swr-dedup`, `rendering-activity` (see
-MISMATCHES “Removed — non-trivial / cannot map”).
+MISMATCHES “Removed — non-trivial / cannot map”). Rendering / JS / Advanced
+categories were later dropped entirely for focus (including former adaptations
+`js-cache-storage` and `js-request-idle-callback`).
 
 ## When to use
 
@@ -91,11 +93,10 @@ Apply this skill when you:
 | 2 | Bundle Size Optimization | `bundle-` |
 | 3 | Client-Side Data Fetching | `client-` |
 | 4 | Re-render Optimization | `rerender-` |
-| 5 | Rendering Performance | `rendering-` |
-| 6 | JavaScript Performance | `js-` |
-| 7 | Advanced Patterns | `advanced-` |
 
-Upstream priority 3 (`server-`) is omitted — all server rules were N/A and removed.
+Upstream priority 3 (`server-`) and priorities 5–7 (`rendering-`, `js-`,
+`advanced-`) are omitted — removed as N/A or to focus agents on
+extension-relevant guidance.
 
 Full index and extension applicability: [reference.md](reference.md), [MISMATCHES.md](MISMATCHES.md).
 

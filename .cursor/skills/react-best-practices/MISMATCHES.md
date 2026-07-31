@@ -59,6 +59,21 @@ Next/`Activity`.**
 
 ---
 
+## Removed — focus (rendering / js / advanced)
+
+Entire upstream categories **Rendering**, **JavaScript**, and **Advanced** were
+deleted so agents focus on async, bundle, client, and re-render guidance for
+this extension. Includes former on-disk adaptations `js-cache-storage` and
+`js-request-idle-callback`. Do not reintroduce unless product needs them.
+
+| Prefix | Count removed (this pass) | Examples |
+|--------|---------------------------|----------|
+| `rendering-` | 6 | `rendering-conditional-render`, `rendering-hoist-jsx`, … |
+| `js-` | 14 | `js-cache-storage`, `js-request-idle-callback`, `js-early-exit`, … |
+| `advanced-` | 4 | `advanced-use-latest`, `advanced-init-once`, … |
+
+---
+
 ## Reworded on disk
 
 Approved adaptations — rule bodies (and matching `.mdc` wrappers) updated.
@@ -71,8 +86,6 @@ Approved adaptations — rule bodies (and matching `.mdc` wrappers) updated.
 | `async-suspense-boundaries` | Suspense for `lazy()` only; storage waterfalls → parallel / defer-await; removed RSC / `use(promise)` streaming |
 | `async-dependencies` | Kept Promise orchestration; stripped `better-all` as recommended dep |
 | `client-localstorage-schema` | Primary API `browser.storage`; theme `localStorage` mirror (`THEME_CACHE_KEY` / theme-boot) as sync exception |
-| `js-cache-storage` | Map-cache for hot theme `localStorage` / optional `browser.storage`; invalidate via `storage.onChanged` |
-| `js-request-idle-callback` | Keep rIC; emphasize popup short lifetime, cancel on unmount, not for must-finish work (Monaco warm exemplar) |
 | `client-event-listeners` | Dropped `useSWRSubscription` / SWR; module-level shared subscriber for `window`/`document` (and same idea for `browser.storage.onChanged` / `browser.runtime.onMessage`) |
 
 ---
@@ -86,7 +99,8 @@ Open items are only future revisits:
 |------|--------|-------------------------|
 | `client-swr-dedup` | **Removed** (handled) | Do not add SWR; dedupe with shared promises / storage subscription if fan-out appears |
 | `rendering-activity` | **Removed** (handled) | Revisit on React 19+; until then keep expensive panels mounted after first open |
-| All nine reworded rules above | **Done on disk** | Treat as approved project conventions in `SKILL.md` |
+| All seven reworded rules above | **Done on disk** | Treat as approved project conventions in `SKILL.md` |
+| `rendering-*` / `js-*` / `advanced-*` | **Removed** (focus) | Do not restore whole categories; prefer async/bundle/client/rerender |
 
 ---
 
@@ -127,34 +141,3 @@ Pure client React / JS patterns that fit the extension popup/options UI
 - `rerender-transitions.md`
 - `rerender-use-deferred-value.md`
 - `rerender-use-ref-transient-values.md`
-
-### Rendering
-
-- `rendering-animate-svg-wrapper.md`
-- `rendering-conditional-render.md`
-- `rendering-content-visibility.md`
-- `rendering-hoist-jsx.md`
-- `rendering-svg-precision.md`
-- `rendering-usetransition-loading.md`
-
-### JavaScript
-
-- `js-batch-dom-css.md`
-- `js-cache-function-results.md`
-- `js-cache-property-access.md`
-- `js-combine-iterations.md`
-- `js-early-exit.md`
-- `js-flatmap-filter.md`
-- `js-hoist-regexp.md`
-- `js-index-maps.md`
-- `js-length-check-first.md`
-- `js-min-max-loop.md`
-- `js-set-map-lookups.md`
-- `js-tosorted-immutable.md`
-
-### Advanced
-
-- `advanced-effect-event-deps.md`
-- `advanced-event-handler-refs.md`
-- `advanced-init-once.md`
-- `advanced-use-latest.md`
