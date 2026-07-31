@@ -1,7 +1,6 @@
-
 # Privacy Policy of **Code Injector Reborn**
 
-**Oliver Anteros** (Owner) maintains **Code Injector Reborn** (Application), a fork of *Code Injector* by **L. Sabatelli**, as a Free app.  
+**Oliver Anteros** (Owner) maintains **Code Injector Reborn** (Application), a fork of _Code Injector_ by **L. Sabatelli**, as a Free app.
 
 No data is collected, transmitted or shared. The Application contains no analytics, tracking or crash reporting.
 
@@ -18,17 +17,14 @@ The only network requests the Application makes are the ones your own rules ask 
 
 Your data is 100% safe as it is saved and processed locally in your device.
 
-
 ## Links to Other Sites
 
-This Application may contain links to other sites. If you click on a third-party link, you will be directed to that site.  Note that these external sites are not operated by me. Therefore, I strongly advise you to review the Privacy Policy of these websites. I have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party sites or services.
-
+This Application may contain links to other sites. If you click on a third-party link, you will be directed to that site. Note that these external sites are not operated by me. Therefore, I strongly advise you to review the Privacy Policy of these websites. I have no control over and assume no responsibility for the content, privacy policies, or practices of any third-party sites or services.
 
 ## Changes to this privacy policy
 
 I may update this Privacy Policy from time to time. Thus, you are advised to review this page periodically for any changes.  
 These changes are effective immediately after they are posted on this page.
-
 
 ---
 
