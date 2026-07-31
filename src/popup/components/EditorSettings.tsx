@@ -1,10 +1,3 @@
-import { useRef } from 'react';
-import {
-  EnabledHelp,
-  OnPageLoadHelp,
-  TopFrameOnlyHelp,
-} from './EditorHelp';
-
 interface EditorSettingsProps {
   enabled: boolean;
   onLoad: boolean;
@@ -26,17 +19,9 @@ export function EditorSettings({
   onOnLoadChange,
   onTopFrameOnlyChange,
 }: EditorSettingsProps) {
-  const enabledRef = useRef<HTMLLabelElement>(null);
-  const onLoadRef = useRef<HTMLLabelElement>(null);
-  const topFrameOnlyRef = useRef<HTMLLabelElement>(null);
-
   return (
     <div className="editor-settings">
-      <label
-        ref={enabledRef}
-        className="editor-settings-field"
-        aria-describedby="help-enabled"
-      >
+      <label className="editor-settings-field">
         <span className="editor-settings-label">Enabled</span>
         <select
           className="inp"
@@ -48,13 +33,8 @@ export function EditorSettings({
           <option value="false">Disabled</option>
         </select>
       </label>
-      <EnabledHelp anchorRef={enabledRef} />
 
-      <label
-        ref={onLoadRef}
-        className="editor-settings-field"
-        aria-describedby="help-onpageload"
-      >
+      <label className="editor-settings-field">
         <span className="editor-settings-label">On page load</span>
         <select
           className="inp"
@@ -66,13 +46,8 @@ export function EditorSettings({
           <option value="false">As soon as possible</option>
         </select>
       </label>
-      <OnPageLoadHelp anchorRef={onLoadRef} />
 
-      <label
-        ref={topFrameOnlyRef}
-        className="editor-settings-field"
-        aria-describedby="help-topframeonly"
-      >
+      <label className="editor-settings-field">
         <span className="editor-settings-label">Top frame only</span>
         <select
           className="inp"
@@ -84,7 +59,6 @@ export function EditorSettings({
           <option value="false">All frames</option>
         </select>
       </label>
-      <TopFrameOnlyHelp anchorRef={topFrameOnlyRef} />
     </div>
   );
 }

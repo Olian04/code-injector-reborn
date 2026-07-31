@@ -29,12 +29,7 @@ import {
   watchSystemTheme,
   type ThemePreference,
 } from '../shared/theme';
-import {
-  closeOpenPopovers,
-  closest,
-  getElementIndex,
-  hasOpenPopover,
-} from './dom';
+import { closest, getElementIndex } from './dom';
 import { InfoOverlay } from './components/InfoOverlay';
 import { OptionsPanel } from './components/OptionsPanel';
 import { RuleItem } from './components/RuleItem';
@@ -622,14 +617,6 @@ export function App() {
           break;
         }
         case 27: {
-          // Escape dismisses a help bubble first, and only that: the bubbles
-          // are manual popovers, so nothing else will close them.
-          if (hasOpenPopover()) {
-            closeOpenPopovers();
-            e.preventDefault();
-            e.stopPropagation();
-            break;
-          }
           if (optionsRef.current) {
             setOptions(false);
             e.preventDefault();

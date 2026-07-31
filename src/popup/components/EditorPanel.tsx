@@ -1,7 +1,5 @@
 import { useEffect, useRef, type MouseEvent, type RefObject } from 'react';
 import type { EditorTab } from '../types';
-import { closeOpenPopovers } from '../dom';
-import { SelectorHelp } from './EditorHelp';
 import { EditorSettings } from './EditorSettings';
 
 interface EditorPanelProps {
@@ -65,12 +63,6 @@ export function EditorPanel({
 }: EditorPanelProps) {
   const selectorRef = useRef<HTMLInputElement>(null);
 
-  // The bubbles live in the top layer, so they would outlive a panel dismissed
-  // from the keyboard while the pointer still rests on a control.
-  useEffect(() => {
-    if (!active) closeOpenPopovers();
-  }, [active]);
-
   // Only focus once this panel is on screen, and never let focus scroll the
   // popup: while #editor is translated off-screen, scroll-into-view would shift
   // the whole UI sideways.
@@ -102,10 +94,8 @@ export function EditorPanel({
                   value={selector}
                   data-active={String(selectorActive)}
                   data-error={String(selectorError)}
-                  aria-describedby="help-selector"
                   onChange={(e) => onSelectorChange(e.target.value)}
                 />
-                <SelectorHelp anchorRef={selectorRef} />
               </td>
               <td>
                 <button

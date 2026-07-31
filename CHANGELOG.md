@@ -26,7 +26,6 @@ Maintainership of this project has moved to a fork maintained by Oliver Anteros 
 - End-to-end tests now run against Firefox as well as Chromium, in a CI matrix. Firefox has no Playwright API for loading extensions, so the harness installs the build over the remote debugging protocol and drives the background script through it.
 - A GitHub Actions workflow that publishes to the Chrome Web Store via a service-account on GitHub Release, and attaches the Firefox build to the release.
 - The HTML tab now completes the classes and ids defined in the same rule's CSS tab, including selectors nested in at-rules such as `@media`. Suggestions follow the CSS you are typing, saved or not.
-- Help popovers, built on the [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API). Hovering the *URL pattern* field brings up a regular-expression cheat sheet with worked examples, and hovering the Settings-tab controls (*Enabled*, *On page load*, *Top frame only*) explains what both states of each option do. Each bubble stays up long enough to move the pointer into it and read or scroll.
 
 #### Fixed
 - The *Top frame only* tooltip described the opposite of what the option does ("Set if this rule can be injected to iframes").
@@ -34,6 +33,7 @@ Maintainership of this project has moved to a fork maintained by Oliver Anteros 
 - `npm run build` no longer emits a development bundle for the first browser target.
 
 #### Removed
+- Editor help popovers (URL pattern cheat sheet and Settings-tab option explanations on hover).
 - The per-rule **Files** list, and with it `file://` injection. Reading local files is not possible from a Manifest V3 service worker, which left the feature half working, and the remote half is already expressible in the code tabs — `import("https://…")` in JavaScript, `@import url("…")` in CSS, tags in HTML — so a fourth tab that only accepted a URL was not earning its place. Rules that still carry a `files` array import cleanly; the list is ignored.
 - The Edge build target. The Chromium bundle already covers Edge, Brave and other Chromium forks, as the Firefox bundle does for Firefox forks.
 - The unimplemented "night mode" toggle, replaced by the *Appearance* setting.

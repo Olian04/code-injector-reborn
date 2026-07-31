@@ -66,61 +66,18 @@ test.describe('editor', () => {
     await expect(suggestions.filter({ hasText: 'fff' })).toHaveCount(0);
   });
 
-  test('explains the URL pattern while hovering the input', async ({
+  test('settings tab exposes rule options as selects', async ({
     page,
     openPopup,
     seedRules,
   }) => {
-    await seedRules([makeRule({ selector: 'editor-help', css: 'body{}' })]);
-    await openPopup(page);
-    await openEditor(page);
-
-    const panel = page.locator('[data-name="po-help-selector"]');
-    const input = page.locator('[data-name="txt-editor-selector"]');
-    await expect(panel).toBeHidden();
-    // The standalone `?` icon is gone; the input itself is the trigger.
-    await expect(page.locator('.e-s-help')).toHaveCount(0);
-
-    await input.hover();
-    await expect(panel).toBeVisible();
-    await expect(panel).toContainText('regular expression');
-    await expect(panel).toContainText('case-sensitive');
-    await expect(
-      panel.locator('code').filter({ hasText: '^https://example' }).first()
-    ).toBeVisible();
-
-    // It has to stay inside the popup window, which is only 500px tall.
-    const box = await panel.boundingBox();
-    const viewport = page.viewportSize() ?? { width: 500, height: 500 };
-    expect(box.x).toBeGreaterThanOrEqual(0);
-    expect(box.y).toBeGreaterThanOrEqual(0);
-    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
-    expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
-
-    await page.locator('[data-name="btn-editor-gethost"]').hover();
-    await expect(panel).toBeHidden();
-
-    await input.hover();
-    await expect(panel).toBeVisible();
-    await page.keyboard.press('Escape');
-    await expect(panel).toBeHidden();
-    // Escape dismissed the bubble, not the editor.
-    await expect(page.locator('#body')).toHaveAttribute('data-editing', 'true');
-  });
-
-  test('settings tab exposes rule options as selects with help', async ({
-    page,
-    openPopup,
-    seedRules,
-  }) => {
-    await seedRules([makeRule({ selector: 'editor-help-options', css: 'body{}' })]);
+    await seedRules([makeRule({ selector: 'editor-settings', css: 'body{}' })]);
     await openPopup(page);
     await openEditor(page);
 
     // Footer keeps Cancel / Save only; toggles live on the Settings tab.
     await expect(page.locator('.editor-controls label')).toHaveCount(0);
     await expect(page.locator('[data-name="cb-editor-onload"]')).toHaveCount(0);
-    await expect(page.locator('.help-trigger')).toHaveCount(0);
 
     await page.locator('[data-name="btn-tab"][data-for="settings"]').click();
     await expect(page.locator('.tab')).toHaveAttribute('data-selected', 'settings');
@@ -139,43 +96,6 @@ test.describe('editor', () => {
     await expect(onLoad).toHaveValue('false');
     await expect(topFrame).toHaveValue('false');
     await expect(enabled).toHaveValue('false');
-
-    const onLoadLabel = page.locator(
-      '.editor-settings-field:has([data-name="sel-editor-onload"])'
-    );
-    const topFrameLabel = page.locator(
-      '.editor-settings-field:has([data-name="sel-editor-topframeonly"])'
-    );
-    const onLoadHelp = page.locator('[data-name="po-help-onpageload"]');
-    const topFrameHelp = page.locator('[data-name="po-help-topframeonly"]');
-
-    await onLoadLabel.hover();
-    await expect(onLoadHelp).toBeVisible();
-    await expect(onLoadHelp).toContainText("page's load event");
-    await expect(onLoadHelp).toContainText('As soon as possible');
-
-    // Stacked fields sit under the open bubble; dismiss before aiming lower.
-    await page.keyboard.press('Escape');
-    await expect(onLoadHelp).toBeHidden();
-    await expect(page.locator('#body')).toHaveAttribute('data-editing', 'true');
-
-    await topFrameLabel.hover();
-    await expect(topFrameHelp).toBeVisible();
-    await expect(topFrameHelp).toContainText('iframes');
-    await expect(topFrameHelp).toContainText('All frames');
-
-    // Opening another bubble dismisses the one already up.
-    await onLoadLabel.hover();
-    await expect(onLoadHelp).toBeVisible();
-    await expect(topFrameHelp).toBeHidden();
-
-    // Moving into the bubble keeps it up, so it can be read and scrolled.
-    await onLoadHelp.hover();
-    await page.waitForTimeout(600);
-    await expect(onLoadHelp).toBeVisible();
-
-    await page.locator('[data-name="btn-editor-save"]').hover();
-    await expect(onLoadHelp).toBeHidden();
   });
 
   test('suggests ids from the CSS tab inside an id attribute', async ({
