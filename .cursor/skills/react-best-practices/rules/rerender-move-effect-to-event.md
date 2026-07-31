@@ -7,7 +7,7 @@ tags: rerender, useEffect, events, side-effects, dependencies
 
 ## Put Interaction Logic in Event Handlers
 
-If a side effect is triggered by a specific user action (submit, click, drag), run it in that event handler. Do not model the action as state + effect; it makes effects re-run on unrelated changes and can duplicate the action.
+User-action side effect (submit/click/drag) → run in handler. Not state+effect (re-runs on unrelated deps; can duplicate).
 
 **Incorrect (event modeled as state + effect):**
 
@@ -41,5 +41,3 @@ function Form() {
   return <button onClick={handleSubmit}>Submit</button>
 }
 ```
-
-Reference: [Should this code move to an event handler?](https://react.dev/learn/removing-effect-dependencies#should-this-code-move-to-an-event-handler)

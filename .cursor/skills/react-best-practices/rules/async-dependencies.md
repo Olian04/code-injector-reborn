@@ -9,9 +9,7 @@ tags: async, parallelization, dependencies
 
 ## Dependency-Based Parallelization
 
-For operations with partial dependencies, create dependent promises early and
-join with `Promise.all` so independent work overlaps. Do **not** add
-`better-all` or similar orchestration packages for the short-lived popup.
+Partial deps → start dependent promises early; join `Promise.all` so independent work overlaps. **No** `better-all` for short-lived popup.
 
 **Incorrect (profile waits for config unnecessarily):**
 
@@ -36,6 +34,4 @@ const [user, config, profile] = await Promise.all([
 ])
 ```
 
-Same idea for extension I/O: start `browser.storage` / messaging promises as
-soon as inputs are known, then await the join — don't serialize independent
-reads behind each other.
+Same for extension I/O: start `browser.storage` / messaging promises early; await join — don't serialize independent reads.

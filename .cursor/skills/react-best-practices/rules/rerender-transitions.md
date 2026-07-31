@@ -7,7 +7,7 @@ tags: rerender, transitions, startTransition, performance
 
 ## Use Transitions for Non-Urgent Updates
 
-Mark frequent, non-urgent state updates as transitions to maintain UI responsiveness.
+Frequent non-urgent updates → `startTransition` to keep UI responsive.
 
 **Incorrect (blocks UI on every scroll):**
 

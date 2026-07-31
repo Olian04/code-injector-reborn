@@ -7,11 +7,7 @@ tags: rerender, components, remount, performance
 
 ## Don't Define Components Inside Components
 
-**Impact: HIGH (prevents remount on every render)**
-
-Defining a component inside another component creates a new component type on every render. React sees a different component each time and fully remounts it, destroying all state and DOM.
-
-A common reason developers do this is to access parent variables without passing props. Always pass props instead.
+Inner component = new type each render → React remounts (lose state/DOM). Pass props instead of closing over parent.
 
 **Incorrect (remounts on every render):**
 
@@ -41,8 +37,6 @@ function UserProfile({ user, theme }) {
   )
 }
 ```
-
-Every time `UserProfile` renders, `Avatar` and `Stats` are new component types. React unmounts the old instances and mounts new ones, losing any internal state, running effects again, and recreating DOM nodes.
 
 **Correct (pass props instead):**
 
@@ -75,8 +69,4 @@ function UserProfile({ user, theme }) {
 }
 ```
 
-**Symptoms of this bug:**
-- Input fields lose focus on every keystroke
-- Animations restart unexpectedly
-- `useEffect` cleanup/setup runs on every parent render
-- Scroll position resets inside the component
+**Symptoms:** input lose focus; animations restart; effects re-run; scroll reset.

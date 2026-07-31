@@ -1,33 +1,14 @@
 # react-best-practices (Code-Injector)
 
-Vercel’s React Best Practices rules for agents working on this extension’s
-popup/options React UI. Next/RSC/SSR-only rules are **removed**. Rendering,
-JavaScript, and Advanced categories were also **dropped for focus**. A small
-set of retained rules is **adapted** for the browser extension (React built-ins /
-`browser.storage` instead of Next.js / SWR / RSC); the rest stay **verbatim**.
+Vercel React Best Practices for popup/options UI. Next/RSC/SSR removed. `rendering`/`js`/`advanced` dropped for focus. Small set adapted (`browser.storage`, React built-ins); rest verbatim.
 
-**Attribution:** Upstream from
-[`vercel-labs/agent-skills`](https://github.com/vercel-labs/agent-skills)
-(MIT), originally created by [@shuding](https://x.com/shuding) at
-[Vercel](https://vercel.com).
+**Credit:** [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills) (MIT) @ [`7c180d9`](https://github.com/vercel-labs/agent-skills/commit/7c180d9044c9ae2b442b567aad4e42a28dd5ed62) — [@shuding](https://x.com/shuding)/Vercel.
 
-**Pinned upstream commit:**
-[`7c180d9044c9ae2b442b567aad4e42a28dd5ed62`](https://github.com/vercel-labs/agent-skills/commit/7c180d9044c9ae2b442b567aad4e42a28dd5ed62)
+| Path | Role |
+|------|------|
+| [SKILL.md](SKILL.md) | Agent entry |
+| [rules/](rules/) | Rule bodies |
+| [reference.md](reference.md) | Index |
+| [MISMATCHES.md](MISMATCHES.md) | Removed / reworded |
 
-Source directory:
-https://github.com/vercel-labs/agent-skills/tree/7c180d9044c9ae2b442b567aad4e42a28dd5ed62/skills/react-best-practices/rules
-
-| File / path | Role |
-|-------------|------|
-| [SKILL.md](SKILL.md) | Agent entrypoint — points at `rules/` + approved adaptations |
-| [rules/](rules/) | Rule markdown (verbatim unless marked Adapted) |
-| [reference.md](reference.md) | Index of retained rule files (titles only) |
-| [MISMATCHES.md](MISMATCHES.md) | Removed / reworded / apply-as-is records |
-
-Companion Cursor rule (glob-scoped to `src/popup` / `src/options`):
-
-- `.cursor/rules/react-best-practices.mdc` — points at this skill; does not
-  restate individual rules. Skill `rules/` is the sole source of truth.
-
-N/A, non-mappable, and focus-dropped upstream rules are not present under
-`rules/` — see [MISMATCHES.md](MISMATCHES.md) and [SKILL.md](SKILL.md).
+Companion: `.cursor/rules/react-best-practices.mdc` — glob trigger; `rules/` canonical.

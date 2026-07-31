@@ -9,8 +9,7 @@ tags: client, event-listeners, subscription, browser-extension
 
 ## Deduplicate Global Event Listeners
 
-Share one event listener (or one extension subscription) across component
-instances instead of attaching N listeners in N `useEffect`s.
+Share one listener (or one extension sub) across instances — not N listeners in N `useEffect`s.
 
 **Incorrect (N instances = N listeners):**
 
@@ -27,9 +26,6 @@ function useKeyboardShortcut(key: string, callback: () => void) {
   }, [key, callback])
 }
 ```
-
-When using the `useKeyboardShortcut` hook multiple times, each instance
-registers a new `window` listener.
 
 **Correct (N instances = 1 listener):**
 
@@ -83,8 +79,4 @@ function EditorChrome() {
 }
 ```
 
-**Same idea for extension APIs** (`browser.storage.onChanged`,
-`browser.runtime.onMessage`): keep a module-level `Set` of callbacks and attach
-one `addListener` while any subscriber is active; remove it when the set is
-empty. Prefer this over each component calling `addListener` in its own
-`useEffect`.
+**Same for extension APIs** (`browser.storage.onChanged`, `browser.runtime.onMessage`): module-level `Set` + one `addListener` while subscribers exist. No per-component `addListener` in `useEffect`.

@@ -9,9 +9,7 @@ tags: client, browser-storage, localStorage, storage, versioning, data-minimizat
 
 ## Version and Minimize Extension Storage Data
 
-Primary persistence is `browser.storage.local` (via `src/shared/storage.ts`) for
-rules and settings — **not** `localStorage`. Version keys / shapes, store only
-needed fields, and migrate schemas deliberately.
+Primary persist: `browser.storage.local` (`src/shared/storage.ts`) — **not** `localStorage`. Version keys/shapes; store needed fields; migrate deliberately.
 
 **Incorrect:**
 
@@ -50,10 +48,7 @@ async function migrate() {
 }
 ```
 
-**Sync exception — theme first paint:** `localStorage` is used only for the
-theme mirror (`THEME_CACHE_KEY` / `public/theme-boot.js`) so the UI can paint
-without waiting on async `browser.storage`. Keep that path try/caught (see
-`applyTheme`); do **not** move rules/settings into `localStorage`.
+**Sync exception — theme first paint:** `localStorage` only for theme mirror (`THEME_CACHE_KEY` / `public/theme-boot.js`). Keep try/catch (`applyTheme`). Do **not** put rules/settings in `localStorage`.
 
 **Store minimal fields:**
 
@@ -66,6 +61,3 @@ await browser.storage.local.set({
   },
 })
 ```
-
-**Benefits:** Schema evolution via versioning, reduced storage size, prevents
-storing tokens/PII/internal flags in extension storage.

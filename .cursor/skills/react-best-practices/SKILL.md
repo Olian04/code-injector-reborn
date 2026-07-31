@@ -1,109 +1,59 @@
 ---
 name: react-best-practices
 description: >-
-  React performance guidance for Code-Injector's browser-extension UI
-  (popup + options), using Vercel Engineering React Best Practices rules
-  adapted where needed for the extension. Use when writing, reviewing, or
-  refactoring React under src/popup or src/options; when editing App.tsx;
-  when adding lazy-loaded panels, storage/async flows, or optimizing
-  re-renders and bundle size.
+  React perf for Code-Injector popup/options UI. Vercel rules adapted for
+  extension. Use when writing/reviewing/refactoring React under src/popup or
+  src/options; App.tsx; lazy panels; storage/async; re-renders; bundle size.
 ---
 
 # React Best Practices (Code-Injector)
 
-**Sole rule source:** the files in [`rules/`](rules/) — based on
-[vercel-labs/agent-skills — react-best-practices/rules](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules)
-at commit [`7c180d9044c9ae2b442b567aad4e42a28dd5ed62`](https://github.com/vercel-labs/agent-skills/commit/7c180d9044c9ae2b442b567aad4e42a28dd5ed62).
+**Sole source:** [`rules/`](rules/). Upstream [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules) @ [`7c180d9`](https://github.com/vercel-labs/agent-skills/commit/7c180d9044c9ae2b442b567aad4e42a28dd5ed62) (MIT, [@shuding](https://x.com/shuding)/Vercel).
 
-Originally by [@shuding](https://x.com/shuding) / [Vercel](https://vercel.com).
+Most rules verbatim. Adapted files note “Adapted for Code Injector Reborn” — see [`MISMATCHES.md`](MISMATCHES.md).
 
-Most retained rules are still **verbatim** upstream. A small set is **adapted
-on disk** for this browser-extension UI (React built-ins / `browser.storage`
-instead of Next.js / SWR / RSC). Adapted files carry an “Adapted for Code
-Injector Reborn” note at the top. See [`MISMATCHES.md`](MISMATCHES.md).
+Companion: `.cursor/rules/react-best-practices.mdc` (glob trigger only; no rule restatement).
 
-Companion Cursor rule: `.cursor/rules/react-best-practices.mdc` (glob-scoped to
-`src/popup` and `src/options`) points at this skill. It must not restate
-individual rules — `rules/` is canonical.
+## Excluded upstream (N/A)
 
-## Excluded upstream rules (N/A for this project)
+Client-only extension pages — no Next server/RSC/SSR/API routes. Removed from `rules/`:
 
-This UI is **client-only browser-extension pages** (`src/popup`, `src/options`) —
-no Next.js server, RSC, SSR hydration, API routes, or document-level Next
-resource pipeline. The following upstream rules were **removed** from `rules/`
-(do not reintroduce or apply them):
+- `async-api-routes`, all `server-*` (10)
+- `rendering-hydration-*`, `rendering-resource-hints`, `rendering-script-defer-async`
+- `bundle-defer-third-party` (hydration), `client-swr-dedup` (no SWR)
+- `rendering-activity` (needs React 19+; revisit on upgrade)
+- all `rendering-*`, `js-*`, `advanced-*` — focus cut
 
-- `async-api-routes` — Next.js API routes / server actions waterfalls
-- all `server-*` rules (10) — RSC/SSR/server-actions/server I/O
-- `rendering-hydration-no-flicker` / `rendering-hydration-suppress-warning` — SSR hydration
-- `rendering-resource-hints` / `rendering-script-defer-async` — document-level web resource loading
-- `bundle-defer-third-party` — defer after **hydration**
-- `client-swr-dedup` — SWR; do not add SWR for this UI
-- `rendering-activity` — React `<Activity>` (needs React 19+); revisit on upgrade
-- all `rendering-*`, `js-*`, and `advanced-*` rules — dropped to focus on
-  extension-relevant async / bundle / client / rerender guidance
-
-Rationale, reworded rules, and apply-as-is lists: [`MISMATCHES.md`](MISMATCHES.md).
+Detail: [`MISMATCHES.md`](MISMATCHES.md).
 
 ## Project adaptations
 
-**Approved conventions** (rewritten on disk under `rules/`):
-
 | Rule | Convention |
 |------|------------|
-| `bundle-dynamic-imports` | `React.lazy` + `Suspense` (see `OptionsPanel`) — never `next/dynamic` |
-| `bundle-preload` | Bare `import()` / idle warm; no SSR `typeof window` framing |
-| `bundle-conditional` | Load-on-feature-activation; mount-on-first-open like `OptionsPanel` |
-| `async-suspense-boundaries` | Suspense for `lazy()` only; storage waterfalls → parallel / defer-await |
-| `async-dependencies` | Promise orchestration only; do **not** add `better-all` |
+| `bundle-dynamic-imports` | `React.lazy` + `Suspense` — never `next/dynamic` |
+| `bundle-preload` | Bare `import()` / idle warm; no SSR framing |
+| `bundle-conditional` | Load-on-activation; mount-on-first-open (`OptionsPanel`) |
+| `async-suspense-boundaries` | Suspense for `lazy()` only; storage → parallel / defer-await |
+| `async-dependencies` | Promise orchestration; **no** `better-all` |
 | `client-localstorage-schema` | Version/minimize `browser.storage`; `localStorage` = theme mirror only |
-| `client-event-listeners` | Module-level shared `window`/`document` listener (or one `browser.*.addListener`); never SWR |
+| `client-event-listeners` | Module-level shared listener; never SWR |
 
-Removed rather than faked: `client-swr-dedup`, `rendering-activity` (see
-MISMATCHES “Removed — non-trivial / cannot map”). Rendering / JS / Advanced
-categories were later dropped entirely for focus (including former adaptations
-`js-cache-storage` and `js-request-idle-callback`).
+## When / how
 
-## When to use
+Touch `src/popup/**`, `src/options/**`, async `browser.*`/storage, Monaco/panels, or review re-renders/waterfalls/bundle → apply.
 
-Apply this skill when you:
+1. Open matching [`rules/`](rules/) file; follow Incorrect/Correct.
+2. Order/impact: [`rules/_sections.md`](rules/_sections.md).
+3. Check [`MISMATCHES.md`](MISMATCHES.md) before insisting. No Next/SWR/RSC APIs.
+4. Prefer extract under `components/` vs growing `App.tsx` (`EditorPanel`, `RuleItem`, …).
 
-- Add or change UI in `src/popup/**` or `src/options/**`
-- Touch `src/popup/App.tsx` or `src/options/App.tsx`
-- Introduce async `browser.*` / storage work, heavy editors (Monaco), or new panels
-- Review React for re-renders, waterfalls, or bundle size
+## Categories (retained)
 
-## How to apply
-
-1. Open the matching file under [`rules/`](rules/) and follow its
-   incorrect/correct guidance.
-2. Section ordering and impact levels: [`rules/_sections.md`](rules/_sections.md).
-3. Before insisting on a rule, check [`MISMATCHES.md`](MISMATCHES.md) for
-   removed vs reworded vs apply-as-is. Do not reintroduce Next.js / SWR / RSC APIs.
-4. Repo structure preference (not from upstream): when touching App roots, prefer
-   extracting focused components/hooks under `components/` rather than growing
-   `App.tsx` further. Match existing naming (`EditorPanel`, `RuleItem`, etc.).
-
-## Rule categories (retained)
-
-| Priority | Category | Prefix |
-|----------|----------|--------|
+| Pri | Category | Prefix |
+|-----|----------|--------|
 | 1 | Eliminating Waterfalls | `async-` |
-| 2 | Bundle Size Optimization | `bundle-` |
-| 3 | Client-Side Data Fetching | `client-` |
-| 4 | Re-render Optimization | `rerender-` |
+| 2 | Bundle Size | `bundle-` |
+| 3 | Client-Side Data | `client-` |
+| 4 | Re-render | `rerender-` |
 
-Upstream priority 3 (`server-`) and priorities 5–7 (`rendering-`, `js-`,
-`advanced-`) are omitted — removed as N/A or to focus agents on
-extension-relevant guidance.
-
-Full index and extension applicability: [reference.md](reference.md), [MISMATCHES.md](MISMATCHES.md).
-
-## Attribution
-
-Rules from
-[vercel-labs/agent-skills — react-best-practices](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices)
-(MIT), originally created by [@shuding](https://x.com/shuding) at Vercel.
-Pinned upstream commit: `7c180d9044c9ae2b442b567aad4e42a28dd5ed62`.
-Some rules adapted for Code Injector Reborn (browser extension); see
-[`MISMATCHES.md`](MISMATCHES.md).
+Index: [reference.md](reference.md).

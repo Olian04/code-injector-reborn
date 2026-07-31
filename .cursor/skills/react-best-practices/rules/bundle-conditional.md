@@ -9,9 +9,7 @@ tags: bundle, conditional-loading, lazy-loading
 
 ## Conditional Module Loading
 
-Load large modules only when a feature is activated (mount-on-open / lazy on
-first use). Prefer `React.lazy` + keep-mounted-after-first-open over eager
-static imports for Monaco/options-scale UI.
+Load large modules on feature activation. Prefer `React.lazy` + keep-mounted-after-first-open over eager static import for Monaco/options-scale UI.
 
 **Example (load on feature activation):**
 

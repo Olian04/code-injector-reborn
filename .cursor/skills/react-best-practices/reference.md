@@ -1,22 +1,10 @@
-# React Best Practices — reference index
+# React Best Practices — index
 
-Authority: files in [`rules/`](rules/), based on
-[vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules)
-at `7c180d9044c9ae2b442b567aad4e42a28dd5ed62`, then trimmed and (where noted)
-adapted for this browser-extension project (see [`MISMATCHES.md`](MISMATCHES.md)).
+Authority: [`rules/`](rules/). Upstream @ `7c180d9`; adapted → [`MISMATCHES.md`](MISMATCHES.md). Index only — open rule file for body.
 
-Most rules are still verbatim upstream. Adapted rules are marked in
-[`MISMATCHES.md` → Reworded on disk](MISMATCHES.md#reworded-on-disk) and carry
-an “Adapted for Code Injector Reborn” note in the file body.
+Metadata: [`rules/_sections.md`](rules/_sections.md)
 
-Do not use this file as a substitute for the rule bodies. Use it only to find
-the right `rules/<name>.md` file.
-
-## Metadata
-
-- [`rules/_sections.md`](rules/_sections.md) — section order, impact, descriptions
-
-## 1. Eliminating Waterfalls (`async-`)
+## 1. Waterfalls (`async-`)
 
 | File | Title | Notes |
 |------|-------|-------|
@@ -26,7 +14,7 @@ the right `rules/<name>.md` file.
 | [async-parallel.md](rules/async-parallel.md) | Promise.all() for Independent Operations | verbatim |
 | [async-suspense-boundaries.md](rules/async-suspense-boundaries.md) | Strategic Suspense Boundaries | adapted |
 
-## 2. Bundle Size (`bundle-`)
+## 2. Bundle (`bundle-`)
 
 | File | Title | Notes |
 |------|-------|-------|
@@ -36,7 +24,7 @@ the right `rules/<name>.md` file.
 | [bundle-dynamic-imports.md](rules/bundle-dynamic-imports.md) | Dynamic Imports for Heavy Components | adapted |
 | [bundle-preload.md](rules/bundle-preload.md) | Preload Based on User Intent | adapted |
 
-## 3. Client-Side Data (`client-`)
+## 3. Client (`client-`)
 
 | File | Title | Notes |
 |------|-------|-------|
@@ -64,8 +52,6 @@ the right `rules/<name>.md` file.
 | [rerender-use-deferred-value.md](rules/rerender-use-deferred-value.md) | Use useDeferredValue for Expensive Derived Renders |
 | [rerender-use-ref-transient-values.md](rules/rerender-use-ref-transient-values.md) | Use useRef for Transient Values |
 
-## Removed categories
+## Removed
 
-Upstream sections **5 Rendering (`rendering-`)**, **6 JavaScript (`js-`)**, and
-**7 Advanced (`advanced-`)** were dropped to focus agents on extension-relevant
-async, bundle, client, and re-render guidance. See [`MISMATCHES.md`](MISMATCHES.md).
+Upstream `rendering-` / `js-` / `advanced-` dropped — focus async/bundle/client/rerender. See [`MISMATCHES.md`](MISMATCHES.md).

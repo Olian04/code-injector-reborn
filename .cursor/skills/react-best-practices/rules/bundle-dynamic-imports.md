@@ -9,7 +9,7 @@ tags: bundle, dynamic-import, code-splitting, react-lazy
 
 ## Dynamic Imports for Heavy Components
 
-Use `React.lazy` + `Suspense` to lazy-load large components not needed on initial render.
+`React.lazy` + `Suspense` for heavy components not needed on first paint. Never `next/dynamic`.
 
 **Incorrect (Monaco / options UI bundles with main chunk):**
 
@@ -39,5 +39,4 @@ function CodePanel({ code }: { code: string }) {
 }
 ```
 
-Project pattern: `src/popup/components/OptionsPanel.tsx` lazy-loads the options
-app and keeps it mounted after first open so re-opening is instant.
+Pattern: `src/popup/components/OptionsPanel.tsx` — lazy options app; keep mounted after first open.

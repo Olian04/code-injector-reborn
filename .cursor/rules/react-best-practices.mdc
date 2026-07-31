@@ -1,14 +1,7 @@
 ---
-description: >-
-  React performance for popup/options UI. Follow the project skill
-  react-best-practices (rules under .cursor/skills/react-best-practices/).
+description: React perf popup/options. Skill react-best-practices.
 globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
 alwaysApply: false
 ---
 
-Follow the project skill `.cursor/skills/react-best-practices/SKILL.md` and every
-file under `.cursor/skills/react-best-practices/rules/` (except `_sections.md`,
-which is section metadata only).
-
-That skill directory is the sole source of truth. Do not restate individual
-rules here — this file is only a Cursor glob trigger.
+Follow `.cursor/skills/react-best-practices/SKILL.md` + `rules/` (skip `_sections.md` — metadata). Sole source; this file = glob trigger only.

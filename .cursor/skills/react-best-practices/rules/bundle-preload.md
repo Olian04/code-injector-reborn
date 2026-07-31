@@ -9,9 +9,7 @@ tags: bundle, preload, user-intent, hover, idle
 
 ## Preload Based on User Intent
 
-Preload heavy bundles before they're needed to reduce perceived latency. Use a
-bare dynamic `import()` (or an existing idle warm helper) — there is no Next.js
-preload API and no SSR.
+Preload heavy bundles before need. Bare `import()` or idle warm helper — no Next preload API / SSR.
 
 **Example (preload on hover/focus):**
 
@@ -55,5 +53,4 @@ useEffect(() => {
 }, [ensureEditors])
 ```
 
-Prefer idle warm for must-feel-instant editors (Monaco). Use hover/focus preload
-when idle warm is insufficient (e.g. options chunk on gear-icon hover).
+Prefer idle warm for Monaco-class editors. Hover/focus if idle warm not enough (e.g. options chunk on gear hover).

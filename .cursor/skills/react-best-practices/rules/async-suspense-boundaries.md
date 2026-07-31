@@ -9,9 +9,7 @@ tags: async, suspense, lazy, code-splitting
 
 ## Strategic Suspense Boundaries
 
-In this extension, `Suspense` is for `React.lazy` code-split boundaries so the
-shell paints while a heavy chunk loads. There is no RSC streaming and no
-`use(promise)` data-loading convention here.
+`Suspense` = `React.lazy` code-split so shell paints while chunk loads. No RSC streaming; no `use(promise)` data convention.
 
 **Incorrect (eager import blocks the shell):**
 
@@ -50,12 +48,6 @@ function OptionsPanel({ active }: { active: boolean }) {
 }
 ```
 
-**Storage / messaging waterfalls:** do **not** model them as Suspense data
-boundaries. Prefer `async-parallel` and `async-defer-await` (start promises
-early, `Promise.all` where independent, await only when needed).
+**Storage / messaging waterfalls:** not Suspense data boundaries. Prefer `async-parallel` / `async-defer-await`.
 
-**When NOT to wrap in Suspense:**
-
-- Critical UI needed before the user can act (save/inject controls)
-- Tiny modules where lazy overhead isn't worth it
-- Async `browser.storage` reads — use effects / parallel promises instead
+**Skip Suspense:** critical UI before user can act; tiny modules; `browser.storage` reads → effects / parallel promises.

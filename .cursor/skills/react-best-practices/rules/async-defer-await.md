@@ -7,7 +7,7 @@ tags: async, await, conditional, optimization
 
 ## Defer Await Until Needed
 
-Move `await` operations into the branches where they're actually used to avoid blocking code paths that don't need them.
+Move `await` into branches that use result. Don't block unused paths.
 
 **Incorrect (blocks both branches):**
 
@@ -77,6 +77,4 @@ async function updateResource(resourceId: string, userId: string) {
 }
 ```
 
-This optimization is especially valuable when the skipped branch is frequently taken, or when the deferred operation is expensive.
-
-For `await getFlag()` combined with a cheap synchronous guard (`flag && someCondition`), see [Check Cheap Conditions Before Async Flags](./async-cheap-condition-before-await.md).
+High value when skipped branch frequent or deferred op expensive. `await getFlag()` + cheap sync guard → [Check Cheap Conditions Before Async Flags](./async-cheap-condition-before-await.md).
