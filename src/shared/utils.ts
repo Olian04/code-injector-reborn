@@ -6,32 +6,6 @@ export function containsCode(value: string | undefined | null): boolean {
     .trim();
 }
 
-export function isLocalURL(path: string): boolean {
-  return !/^(?:[a-z]+:)?\/\//i.test(path);
-}
-
-export function getPathExtension(path: string): '' | 'js' | 'css' | 'html' {
-  if (!path) return '';
-
-  try {
-    let normalized = path.trim();
-    normalized = isLocalURL(normalized)
-      ? 'file://local/' + normalized
-      : 'https://' + normalized;
-
-    const url = new URL(normalized);
-    const spl = url.pathname.split('.');
-    let ext = spl.length > 1 && spl[0] ? (spl.pop() || '').toLowerCase() : '';
-    if (ext === false as unknown as string) ext = '';
-
-    return ext && ['js', 'css', 'html'].includes(ext)
-      ? (ext as 'js' | 'css' | 'html')
-      : '';
-  } catch {
-    return '';
-  }
-}
-
 export function parseURL(path: string): URL | null {
   try {
     return new URL(path);

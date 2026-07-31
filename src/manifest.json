@@ -4,7 +4,7 @@
   "name": "Code Injector Reborn",
   "version": "0.4.0",
   "author": "Oliver Anteros",
-  "description": "Inject code into websites! (JavaScript, CSS, HTML and Files)",
+  "description": "Inject code into websites! (JavaScript, CSS and HTML)",
 
   "permissions": [
     "tabs",

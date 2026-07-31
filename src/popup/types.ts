@@ -1,6 +1,6 @@
-import type { Rule, RuleFile, TabData } from '../shared/types';
+import type { Rule, TabData } from '../shared/types';
 
-export type EditorTab = 'js' | 'css' | 'html' | 'files';
+export type EditorTab = 'js' | 'css' | 'html';
 
 export interface RuleView extends Rule {
   id: number;
@@ -16,7 +16,6 @@ export interface EditorState {
     js: string;
     css: string;
     html: string;
-    files: RuleFile[];
   };
 }
 
@@ -73,6 +72,5 @@ export const DEFAULT_NEW_RULE: EditorState = {
     js: '// Type your JavaScript code here.\n\n',
     css: '/* Type your CSS code here. */\n\n',
     html: '<!-- Type your HTML code here. -->\n\n',
-    files: [],
   },
 };

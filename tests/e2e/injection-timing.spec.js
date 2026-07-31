@@ -1,12 +1,14 @@
 import { test, expect } from './fixtures.js';
 import { startFixtureServer } from './helpers/fixture-server.js';
-import { makeRule, remoteFile } from './helpers/rules.js';
+import { makeRule } from './helpers/rules.js';
 import {
   expectInlineCssInjected,
   expectInlineHtmlInjected,
-  expectRemoteJsInjected,
   expectNoInjection,
 } from './helpers/assertions.js';
+
+const MARKER_JS =
+  "document.documentElement.setAttribute('data-ci-injected', '1');";
 
 test.describe('injection timing and guards', () => {
   /** @type {Awaited<ReturnType<typeof startFixtureServer>>} */
@@ -56,7 +58,7 @@ test.describe('injection timing and guards', () => {
         enabled: false,
         css: 'html { background-color: rgb(1, 2, 3) !important; }',
         html: '<div id="ci-inline-html">disabled</div>',
-        files: [remoteFile(server.origin, 'marker.js', 'js')],
+        js: MARKER_JS,
       }),
     ]);
 
@@ -72,7 +74,7 @@ test.describe('injection timing and guards', () => {
         selector: 'no-such-host\\.example',
         css: 'html { background-color: rgb(1, 2, 3) !important; }',
         html: '<div id="ci-inline-html">no-match</div>',
-        files: [remoteFile(server.origin, 'marker.js', 'js')],
+        js: MARKER_JS,
       }),
     ]);
 
@@ -90,7 +92,7 @@ test.describe('injection timing and guards', () => {
       }),
       makeRule({
         selector: '127\\.0\\.0\\.1',
-        files: [remoteFile(server.origin, 'marker.js', 'js')],
+        css: 'html { background-color: rgb(1, 2, 3) !important; }',
         html: '<div id="ci-inline-html">matched</div>',
       }),
     ]);
@@ -98,7 +100,30 @@ test.describe('injection timing and guards', () => {
     await page.goto(server.targetUrl);
     await page.waitForLoadState('load');
 
-    await expectRemoteJsInjected(page, expect);
+    await expectInlineCssInjected(page, expect);
+    await expectInlineHtmlInjected(page, expect);
+    await expect(page.locator('#ci-should-not-exist')).toHaveCount(0);
+  });
+
+  test('an unparseable URL pattern skips only its own rule', async ({ page, seedRules }) => {
+    await seedRules([
+      // Needs real code, or it would never be serialized far enough to be
+      // matched against the page URL in the first place.
+      makeRule({
+        selector: '(',
+        html: '<div id="ci-should-not-exist">nope</div>',
+      }),
+      makeRule({
+        selector: '127\\.0\\.0\\.1',
+        css: 'html { background-color: rgb(1, 2, 3) !important; }',
+        html: '<div id="ci-inline-html">still injected</div>',
+      }),
+    ]);
+
+    await page.goto(server.targetUrl);
+    await page.waitForLoadState('load');
+
+    await expectInlineCssInjected(page, expect);
     await expectInlineHtmlInjected(page, expect);
     await expect(page.locator('#ci-should-not-exist')).toHaveCount(0);
   });

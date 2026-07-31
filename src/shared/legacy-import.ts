@@ -1,14 +1,12 @@
 import type { Rule } from './types';
-import { getPathExtension, isLocalURL } from './utils';
 
 /** Convert a legacy JS-Injector rule into a Code-Injector rule. */
 export function convertRuleJSItoCI(legacy: {
   url: string;
   enabled: boolean;
   code: string;
-  files: Array<{ url: string }>;
 }): Rule {
-  const rule: Rule = {
+  return {
     selector: legacy.url,
     enabled: legacy.enabled,
     onLoad: true,
@@ -17,19 +15,8 @@ export function convertRuleJSItoCI(legacy: {
       js: legacy.code,
       css: '',
       html: '',
-      files: [],
     },
   };
-
-  for (const file of legacy.files || []) {
-    rule.code.files.push({
-      path: file.url,
-      type: isLocalURL(file.url) ? 'local' : 'remote',
-      ext: getPathExtension(file.url),
-    });
-  }
-
-  return rule;
 }
 
 export interface ImportResult {
@@ -60,11 +47,11 @@ export function parseImportedRules(raw: unknown): Rule[] | null {
           url: string;
           enabled: boolean;
           code: string;
-          files: Array<{ url: string }>;
         }
       ) as unknown as Record<string, unknown>;
     }
 
+    // Exports from the original addon carry a `files` list; it is ignored.
     const code = loadedRule.code as Rule['code'] | undefined;
     if (!code) continue;
 
@@ -77,7 +64,6 @@ export function parseImportedRules(raw: unknown): Rule[] | null {
         js: code.js,
         css: code.css,
         html: code.html,
-        files: code.files,
       },
     };
 
@@ -86,7 +72,6 @@ export function parseImportedRules(raw: unknown): Rule[] | null {
     if (typeof rule.code.js !== 'string') continue;
     if (typeof rule.code.css !== 'string') continue;
     if (typeof rule.code.html !== 'string') continue;
-    if (!(rule.code.files && Array.isArray(rule.code.files))) continue;
 
     newRules.push(rule);
   }

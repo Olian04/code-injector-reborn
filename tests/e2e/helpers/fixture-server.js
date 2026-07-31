@@ -9,15 +9,12 @@ const FILES = {
   '/': { type: 'text/html; charset=utf-8', file: 'target.html' },
   '/target.html': { type: 'text/html; charset=utf-8', file: 'target.html' },
   '/marker.js': { type: 'text/javascript; charset=utf-8', file: 'marker.js' },
-  '/marker.css': { type: 'text/css; charset=utf-8', file: 'marker.css' },
-  '/marker.html': { type: 'text/html; charset=utf-8', file: 'marker.html' },
 };
 
 /**
  * Serve fixture assets over http://127.0.0.1.
- * Playwright Chromium's default page CSP allows http://127.0.0.1:* script/style
- * sources but blocks unsafe-inline scripts — so remote file injection is how we
- * verify executable JS under test.
+ * Chromium's default MV3 policy whitelists http://127.0.0.1:*, so a module
+ * served from here is one an injected `import()` is allowed to fetch.
  */
 export async function startFixtureServer() {
   const server = http.createServer((req, res) => {

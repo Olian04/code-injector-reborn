@@ -34,10 +34,6 @@ import { RuleItem } from './components/RuleItem';
 import { ContextMenu } from './components/ContextMenu';
 import { EditorPanel } from './components/EditorPanel';
 import {
-  filesFromRule,
-  type EditorFile,
-} from './components/FilesList';
-import {
   DEFAULT_NEW_RULE,
   EMPTY_TAB_DATA,
   type CtxMenuState,
@@ -100,14 +96,10 @@ export function App() {
   const [enabled, setEnabled] = useState(true);
   const [onLoad, setOnLoad] = useState(true);
   const [topFrameOnly, setTopFrameOnly] = useState(true);
-  const [editorFiles, setEditorFiles] = useState<EditorFile[]>(() =>
-    filesFromRule([])
-  );
   const [codeActive, setCodeActive] = useState({
     js: false,
     css: false,
     html: false,
-    files: false,
   });
 
   const [ctxMenu, setCtxMenu] = useState<CtxMenuState>(HIDDEN_CTX);
@@ -141,7 +133,6 @@ export function App() {
   const dotsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editingRef = useRef(editing);
   const tabDataRef = useRef(tabData);
-  const editorFilesRef = useRef(editorFiles);
   const editorMetaRef = useRef({
     target: editorTarget,
     enabled,
@@ -152,7 +143,6 @@ export function App() {
 
   editingRef.current = editing;
   tabDataRef.current = tabData;
-  editorFilesRef.current = editorFiles;
   editorMetaRef.current = {
     target: editorTarget,
     enabled,
@@ -206,21 +196,8 @@ export function App() {
       onLoad: meta.onLoad,
       topFrameOnly: meta.topFrameOnly,
       selector: meta.selector.trim(),
-      code: {
-        ...code,
-        files: [],
-      },
+      code,
     };
-
-    for (const file of editorFilesRef.current) {
-      const path = file.path.trim();
-      if (!path) continue;
-      data.code.files.push({
-        path,
-        type: file.type,
-        ext: file.ext,
-      });
-    }
 
     try {
       // Validate regex; invalid patterns become empty (blocked on save)
@@ -235,15 +212,11 @@ export function App() {
   const checkEditorDots = useCallback(() => {
     if (dotsTimeout.current) clearTimeout(dotsTimeout.current);
     dotsTimeout.current = setTimeout(() => {
-      const filesWithPath = editorFilesRef.current.filter((f) =>
-        f.path.trim()
-      );
       const code = readCode();
       setCodeActive({
         js: containsCode(code.js),
         css: containsCode(code.css),
         html: containsCode(code.html),
-        files: filesWithPath.length > 0,
       });
     }, 1000);
   }, [readCode]);
@@ -274,7 +247,6 @@ export function App() {
           js: data.code?.js ?? '',
           css: data.code?.css ?? '',
           html: data.code?.html ?? '',
-          files: data.code?.files ?? [],
         },
       };
 
@@ -282,14 +254,12 @@ export function App() {
         js: containsCode(next.code.js),
         css: containsCode(next.code.css),
         html: containsCode(next.code.html),
-        files: next.code.files.length > 0,
       };
 
       let activeTab: EditorTab = 'js';
       if (active.js) activeTab = 'js';
       else if (active.css) activeTab = 'css';
       else if (active.html) activeTab = 'html';
-      else if (active.files) activeTab = 'files';
 
       if (editorJS.current && editorCSS.current && editorHTML.current) {
         editorJS.current.setValue(next.code.js);
@@ -305,7 +275,6 @@ export function App() {
       }
 
       setCodeActive(active);
-      setEditorFiles(filesFromRule(next.code.files));
       setSelectedTab(activeTab);
       setSelector(next.selector.trim());
       try {
@@ -599,45 +568,6 @@ export function App() {
                     ?.querySelector<HTMLTextAreaElement>('textarea.inputarea')
                     ?.focus();
                   break;
-                case 'files': {
-                  const list = document.querySelector('.files-list');
-                  const input = e.shiftKey
-                    ? list?.lastElementChild?.querySelector('input')
-                    : list?.firstElementChild?.querySelector('input');
-                  (input as HTMLInputElement | null)?.focus();
-                  break;
-                }
-              }
-            } else if (name === 'txt-file-path') {
-              const file = closest(target, '.file');
-              if (file) {
-                if (e.ctrlKey) {
-                  // forced tab switch left as no-op matching commented legacy path
-                } else if (e.shiftKey) {
-                  const prev = file.previousElementSibling?.querySelector(
-                    'input'
-                  ) as HTMLInputElement | null;
-                  if (prev) prev.focus();
-                  else {
-                    (
-                      document.querySelector(
-                        '[data-name="txt-editor-selector"]'
-                      ) as HTMLInputElement | null
-                    )?.focus();
-                  }
-                } else {
-                  const next = file.nextElementSibling?.querySelector(
-                    'input'
-                  ) as HTMLInputElement | null;
-                  if (next) next.focus();
-                  else {
-                    (
-                      document.querySelector(
-                        '[data-name="txt-editor-selector"]'
-                      ) as HTMLInputElement | null
-                    )?.focus();
-                  }
-                }
               }
             }
           }
@@ -911,16 +841,6 @@ export function App() {
           void persistRules(next);
           return next;
         });
-      } else if (item.classList.contains('file')) {
-        const keys = Array.from(parent.children)
-          .filter((el) => el.classList.contains('file'))
-          .map((el) => (el as HTMLElement).dataset.key || '');
-        setEditorFiles((prev) => {
-          const map = new Map(prev.map((f) => [f.key, f]));
-          return keys
-            .map((key) => map.get(key))
-            .filter((f): f is EditorFile => !!f);
-        });
       }
 
       isDragging.current = false;
@@ -1077,7 +997,6 @@ export function App() {
         enabled={enabled}
         onLoad={onLoad}
         topFrameOnly={topFrameOnly}
-        files={editorFiles}
         codeActive={codeActive}
         editorJsRef={editorJsRef}
         editorCssRef={editorCssRef}
@@ -1097,17 +1016,9 @@ export function App() {
           setTopFrameOnly(v);
           setLastSession();
         }}
-        onFilesChange={setEditorFiles}
         onCancel={handleCancel}
         onSave={handleSave}
         onGetHost={handleGetHost}
-        onFilesDirty={setLastSession}
-        onFileGripMouseDown={(e) => {
-          const list = document.querySelector(
-            '.files-list'
-          ) as HTMLElement | null;
-          startDragReorder(e, list);
-        }}
         onResizeGripMouseDown={handleResizeGrip}
       />
 

@@ -303,8 +303,7 @@
     }
 
     // Monaco is fetched on demand, so the code area can be empty for a moment.
-    // The Files tab needs no editor, so it stays usable.
-    &[data-loading="true"] .tab:not([data-selected="files"]) .tab-contents::after{
+    &[data-loading="true"] .tab-contents::after{
         content: 'Loading editor...';
         position: absolute;
         left: 0;
@@ -324,12 +323,10 @@
     .tab-contents li[data-target="js"]{ transform: translateX(0%); }
     .tab-contents li[data-target="css"]{ transform: translateX(100%); }
     .tab-contents li[data-target="html"]{ transform: translateX(200%); }
-    .tab-contents li[data-target="files"]{ transform: translateX(300%); }
 
     .tab[data-selected="js"]    .tab-titles > li[data-for="js"],
     .tab[data-selected="css"]   .tab-titles > li[data-for="css"],
-    .tab[data-selected="html"]  .tab-titles > li[data-for="html"],
-    .tab[data-selected="files"] .tab-titles > li[data-for="files"]{   
+    .tab[data-selected="html"]  .tab-titles > li[data-for="html"]{
         border-top-color: #ddd;
         border-left-color: #ddd;
         border-right-color: #ddd;
@@ -340,12 +337,10 @@
     .tab[data-selected="js"]    .tab-contents > ul{ transform: translateX(0%); }
     .tab[data-selected="css"]   .tab-contents > ul{ transform: translateX(-100%); }
     .tab[data-selected="html"]  .tab-contents > ul{ transform: translateX(-200%); }
-    .tab[data-selected="files"] .tab-contents > ul{ transform: translateX(-300%); }
 
     .tab[data-selected="js"]    li[data-target="js"],
     .tab[data-selected="css"]   li[data-target="css"],
-    .tab[data-selected="html"]  li[data-target="html"],
-    .tab[data-selected="files"] li[data-target="files"]{ 
+    .tab[data-selected="html"]  li[data-target="html"]{
         opacity: 1; 
         pointer-events: all; 
     }
@@ -502,160 +497,6 @@
                 cursor: pointer;
             }
         }
-    }
-
-
-/* Files */
-
-    .files-list{
-        padding: 0;
-        margin: 0;
-        position: relative;
-        display: inline-block;
-        width: 100%;
-        height: 100%;
-        padding: 10px;
-        padding-left: 5px;
-        overflow: hidden;
-    }
-    .files-list .ghost,
-    .file{
-        position: relative;
-        display: block;
-        width: 100%;
-        height: 30px;
-        line-height: 30px;
-        margin-bottom: 5px;
-
-        &[data-removing="true"] {
-            height: 0;
-            opacity: 0;
-            margin-bottom: 0;
-            pointer-events: none;
-            overflow: hidden;
-            transition: .2s;
-        }
-
-        &[data-dragging="true"] {
-            position: absolute;
-            width: calc(100% - 15px);
-            left: 5px;
-            z-index: 100;
-            pointer-events: none;
-            margin-top: -35px;
-            background: #fff;
-            box-shadow: 0 0 0 1px #fff;
-        }
-
-        &[data-new="true"]{
-            animation: new-file .2s ease-out;
-        }
-    }
-    .file .f-grip{
-        position: relative;
-        display: inline-block;
-        width: 25px;
-        height: 30px;
-        cursor: ns-resize;
-    }
-    .file .f-grip::before{
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 25px;
-        height: 100%;
-        background-image: url(/images/drag-grip.png);
-        background-repeat: no-repeat;
-        background-position: 4px 2px;
-    }
-    .file .f-grip:hover::before{
-        opacity: .9;
-    }
-    .file .f-input{
-        width: calc(100% - 60px);
-    }
-    .file .f-delete{
-        background: $cError;
-        color: #eee;
-        text-shadow: 0 1px rgba(0,0,0,.2);
-        width: 30px;
-        padding: 0;
-        font-size: 16px;
-        margin-left: 5px;
-        transition: 0s;
-    }
-    .file .f-type{
-        display: inline-block;
-        position: absolute;
-        top: 0;
-        right: 40px;
-        width: 30px;
-        height: 30px;
-        text-rendering: optimizeLegibility !important;
-        -webkit-font-smoothing: antialiased !important;
-    }
-    .file .f-type::after {
-        content: 'X';
-        font-size: 10px;
-        font-family: "Lucida Console", Monaco, monospace;
-        color: $cError;
-        height: 10px;
-        position: absolute;
-        bottom: 3px;
-        right: 3px;
-        line-height: 10px;
-        pointer-events: none;
-        text-transform: uppercase;
-        text-rendering: optimizeLegibility !important;
-        -webkit-font-smoothing: antialiased !important;
-        text-shadow:  0px -1px #fff, 
-                      1px -1px #fff, 
-                      1px  0px #fff, 
-                      1px  1px #fff, 
-                      0px  1px #fff, 
-                     -1px  1px #fff, 
-                     -1px  0px #fff, 
-                     -1px -1px #fff;
-    }
-    .file .f-type i{
-        display: none;
-        color: #bbb;
-        line-height: 30px;
-        font-weight: normal;
-        text-align: center;
-        cursor: pointer;
-    }
-    .file .f-type select{
-        display: inline-block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        cursor: pointer;
-        opacity: 0;
-    }
-    .file .f-type:hover i{
-        color: #aaa;
-    }
-    .file[data-type=""] .f-type{
-        pointer-events: none;
-    }
-    .file[data-type=""] .f-type::after{
-        display: none;
-    }
-    .file[data-type="local"]  .f-type i[data-for="local"],
-    .file[data-type="remote"] .f-type i[data-for="remote"]{
-        display: block;
-    }
-    .file[data-ext="js"]   .f-type::after { content: 'js';   color: $cPrimary; right:  1px; font-size: 8px; bottom: 2px; }
-    .file[data-ext="css"]  .f-type::after { content: 'css';  color: $cPrimary; right: -1px; font-size: 8px; bottom: 2px; }
-    .file[data-ext="html"] .f-type::after { content: 'html'; color: $cPrimary; right: -2px; font-size: 8px; bottom: 2px; }
-
-    @keyframes new-file{
-        0%  { opacity: 0; }
-        100%{ opacity: 1; }
     }
 
 
@@ -1050,11 +891,6 @@
         box-shadow: inset 0 -1px rgba(0,0,0,.2) !important;
         border: none !important;
     }
-    .color-files[data-active="true"]{ 
-        background: $cCodeFILES !important;
-        box-shadow: inset 0 -1px rgba(0,0,0,.2) !important;
-        border: none !important;
-    }
 
 /* Info page */
 
@@ -1351,8 +1187,7 @@
             background-size: 300% 100%;
         }
 
-        #{$s} .rules-list .ghost,
-        #{$s} .files-list .ghost{ border-color: $dBorder; }
+        #{$s} .rules-list .ghost{ border-color: $dBorder; }
 
         // The "add your first rule" arrow is black line art, so it needs
         // flipping to read against a dark list.
@@ -1438,8 +1273,7 @@
         #{$s} .tab-contents{ border-color: $dBorder; }
         #{$s} .tab[data-selected="js"]    .tab-titles > li[data-for="js"],
         #{$s} .tab[data-selected="css"]   .tab-titles > li[data-for="css"],
-        #{$s} .tab[data-selected="html"]  .tab-titles > li[data-for="html"],
-        #{$s} .tab[data-selected="files"] .tab-titles > li[data-for="files"]{
+        #{$s} .tab[data-selected="html"]  .tab-titles > li[data-for="html"]{
             border-top-color: $dBorder;
             border-left-color: $dBorder;
             border-right-color: $dBorder;
@@ -1457,7 +1291,7 @@
             box-shadow: 0 1px $dRaised;
             background: $dRaised;
         }
-        #{$s} body[data-loading="true"] .tab:not([data-selected="files"]) .tab-contents::after{
+        #{$s} body[data-loading="true"] .tab-contents::after{
             background: $dSurface;
             color: $dTextMuted;
         }
@@ -1497,28 +1331,6 @@
 
             &:hover{ color: #fff; }
         }
-
-        // Files
-        #{$s} .file[data-dragging="true"]{
-            background: $dRaised;
-            box-shadow: 0 0 0 1px $dRaised;
-        }
-        #{$s} .file .f-type::after{
-            color: $dError;
-            text-shadow: 0px -1px $dRaised,
-                         1px -1px $dRaised,
-                         1px  0px $dRaised,
-                         1px  1px $dRaised,
-                         0px  1px $dRaised,
-                        -1px  1px $dRaised,
-                        -1px  0px $dRaised,
-                        -1px -1px $dRaised;
-        }
-        #{$s} .file .f-type i{ color: $dTextMuted; }
-        #{$s} .file .f-type:hover i{ color: $dText; }
-        #{$s} .file[data-ext="js"]   .f-type::after,
-        #{$s} .file[data-ext="css"]  .f-type::after,
-        #{$s} .file[data-ext="html"] .f-type::after{ color: $dPrimaryText; }
 
         // Info page
         #{$s} .info-header{

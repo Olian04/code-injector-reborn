@@ -1,6 +1,5 @@
 import { useEffect, useRef, type MouseEvent, type RefObject } from 'react';
 import type { EditorTab } from '../types';
-import { FilesList, type EditorFile } from './FilesList';
 import {
   OnPageLoadHelp,
   SelectorHelp,
@@ -19,12 +18,10 @@ interface EditorPanelProps {
   enabled: boolean;
   onLoad: boolean;
   topFrameOnly: boolean;
-  files: EditorFile[];
   codeActive: {
     js: boolean;
     css: boolean;
     html: boolean;
-    files: boolean;
   };
   editorJsRef: RefObject<HTMLDivElement>;
   editorCssRef: RefObject<HTMLDivElement>;
@@ -35,12 +32,9 @@ interface EditorPanelProps {
   onEnabledChange: (v: boolean) => void;
   onOnLoadChange: (v: boolean) => void;
   onTopFrameOnlyChange: (v: boolean) => void;
-  onFilesChange: (files: EditorFile[]) => void;
   onCancel: () => void;
   onSave: () => void;
   onGetHost: () => void;
-  onFilesDirty: () => void;
-  onFileGripMouseDown: (e: MouseEvent) => void;
   onResizeGripMouseDown: (e: MouseEvent) => void;
 }
 
@@ -56,7 +50,6 @@ export function EditorPanel({
   enabled,
   onLoad,
   topFrameOnly,
-  files,
   codeActive,
   editorJsRef,
   editorCssRef,
@@ -67,12 +60,9 @@ export function EditorPanel({
   onEnabledChange,
   onOnLoadChange,
   onTopFrameOnlyChange,
-  onFilesChange,
   onCancel,
   onSave,
   onGetHost,
-  onFilesDirty,
-  onFileGripMouseDown,
   onResizeGripMouseDown,
 }: EditorPanelProps) {
   const selectorRef = useRef<HTMLInputElement>(null);
@@ -161,17 +151,6 @@ export function EditorPanel({
               data-active={String(codeActive.html)}
             />
           </li>
-          <li
-            data-name="btn-tab"
-            data-for="files"
-            onClick={() => onTabSelect('files')}
-          >
-            Files{' '}
-            <span
-              className="color-files"
-              data-active={String(codeActive.files)}
-            />
-          </li>
         </ul>
         <div className="tab-contents" ref={tabContentsRef}>
           <ul>
@@ -192,17 +171,6 @@ export function EditorPanel({
               data-selected={selectedTab === 'html' ? 'true' : undefined}
             >
               <div className="editor" id="editor-html" ref={editorHtmlRef} />
-            </li>
-            <li
-              data-target="files"
-              data-selected={selectedTab === 'files' ? 'true' : undefined}
-            >
-              <FilesList
-                files={files}
-                onChange={onFilesChange}
-                onGripMouseDown={onFileGripMouseDown}
-                onDirty={onFilesDirty}
-              />
             </li>
           </ul>
         </div>

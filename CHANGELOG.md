@@ -33,7 +33,7 @@ Maintainership of this project has moved to a fork maintained by Oliver Anteros 
 - `npm run build` no longer emits a development bundle for the first browser target.
 
 #### Removed
-- Local `file://` injection, which is not possible from a Manifest V3 service worker. A clear error is now logged when a local-file rule is used.
+- The per-rule **Files** list, and with it `file://` injection. Reading local files is not possible from a Manifest V3 service worker, which left the feature half working, and the remote half is already expressible in the code tabs — `import("https://…")` in JavaScript, `@import url("…")` in CSS, tags in HTML — so a fourth tab that only accepted a URL was not earning its place. Rules that still carry a `files` array import cleanly; the list is ignored.
 - The Edge build target. The Chromium bundle already covers Edge, Brave and other Chromium forks, as the Firefox bundle does for Firefox forks.
 - The unimplemented "night mode" toggle, replaced by the *Appearance* setting.
 

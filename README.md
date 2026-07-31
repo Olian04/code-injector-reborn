@@ -53,7 +53,6 @@ The original `Code Injector` (Manifest V2, no longer maintained) is still listed
 * [Editor view](#editor-view)
   * [URL Pattern](#url-pattern)
   * [Editors](#editors)
-  * [Files](#files)
   * [Enabled](#enabled)
   * [On page load](#on-page-load)
 * [Options view](#options-view)
@@ -95,12 +94,11 @@ The *Main view* is the initial and main page of the addon where you can create a
 
 #### Rules
 
-A *Rule* may contain **JavaScript**, **CSS**, **HTML** and **Files** and will be splitted and injected with the following order:  
+A *Rule* may contain **JavaScript**, **CSS** and **HTML** and will be splitted and injected with the following order:  
 
- 1. Files (from top to bottom) 
- 2. CSS
- 3. HTML
- 4. JavaScript
+ 1. CSS
+ 2. HTML
+ 3. JavaScript
 
 >**Note:**  
 >Each rule will inherit the previous injected code. 
@@ -117,8 +115,8 @@ The *Rule*'s element bar can be subdivided into 3 sections:  *Pattern*, *Insight
   Also, the whole area is draggable allowing to move the *Rule* and change the injection order.
 
 - **Insight:**  
-  Shows a minimal description of the Rule whether contains or not a language using 4 coloured dots.  
-  (from left to right: *JavaScript*, *CSS*, *HTML* and *Files*)
+  Shows a minimal description of the Rule whether contains or not a language using 3 coloured dots.  
+  (from left to right: *JavaScript*, *CSS* and *HTML*)
 
 - **Actions:** 
   - **Edit**  
@@ -183,32 +181,12 @@ In depth example in case of *google* as url pattern:
 
 The main section of the *Editor view*.  
 
-From left to right you can access the *JavaScript*, *CSS*, *HTML* editors and the *Files* manager by clicking on the tabs.  
+From left to right you can access the *JavaScript*, *CSS* and *HTML* editors by clicking on the tabs.  
 
 >**Note:**  
 >If an editor contains just comments the code wont be injected. 
 
-
-
-#### Files
-
-In the *Files* tab you can manage the injection of __local*__ or __remote__ files.  
-
-While typing the file path, an icon should appear on the right side of the input area indicating whether the file is remote or local and it's type (js/css/html) in blue.  
-If the file extension is not recognized as one of the 3 types mentioned above then the icon will show a red "X" on the edge and the file will be skipped from injection.  
-
->**Note:**  
->The file type can forced by clicking on the icon and selecting the supposed language from the dropdown menu.
-
->**Note: (Firefox 57+ on Windows)**  
->While playing around a bit with the injection of local files (using firefox on windows) I noticed that there's something which is blocking the add-on from reading files in some folders. 
->(maybe some kind of user read access control introduced in the newer versions of firefox? 57+ ). 
->For example, it is possible to read without problems from the root folder ( C:\ ) but not from the Desktop or Documents. 
->Checking the folders permissions (right click > properties > Security) there is "Everyone" listed in "Users & groups" section where it's possible to read the file.  
->I'm not sure if this is the main reason for that behavior, further investigations are required.  
-
->**IMPORTANT:**  
->The injection of *local* files is experimental and could stop working anytime with browser's updates.
+To pull in code hosted elsewhere, reference it from the editor that suits it: `import("https://…")` in *JavaScript*, `@import url("…")` in *CSS*, or a tag in *HTML*.
 
 #### On page load:
 
@@ -307,7 +285,7 @@ To try it out, open `chrome://extensions`, enable **Developer mode**, click **Lo
 
 > **Note:** each target is built in its own `extension build` invocation on purpose. Passing several browsers to a single invocation makes the first target come out as a development build (React Refresh, source maps, a dev-server client that reloads pages).
 
-> **Note on Manifest V3:** the *local file* injection feature (reading `file://` paths) is no longer available, because the Manifest V3 background service worker cannot access the file system. Inline code, remote files and remote URLs continue to work.
+> **Note on Manifest V3:** the per-rule *Files* list is gone. Its local half (reading `file://` paths) is not possible from a Manifest V3 service worker, and its remote half is already covered by the code editors — `import("https://…")`, `@import url("…")` and HTML tags.
 
 ## Testing
 
@@ -325,8 +303,8 @@ Specs live under `tests/e2e/` and cover:
 
 - Smoke: background context, popup UI, options page
 - Inline injection: CSS, HTML, JS script-node insertion, comment-only skip
-- File injection: remote JS/CSS, unsupported remote HTML, MV3 local-file error, unrecognized extensions
-- Timing/guards: onLoad vs onCommit, disabled rules, URL non-match, mixed rule lists
+- ESM import: a rule whose JavaScript imports a module served over http
+- Timing/guards: onLoad vs onCommit, disabled rules, URL non-match, unparseable URL pattern, mixed rule lists
 - Popup: seeded rules list, insight dots, disabled styling
 - Popup shell: the pre-rendered list paints without the bundle
 - Appearance: system colour scheme and the options override
@@ -339,7 +317,9 @@ Firefox has no Playwright API for installing extensions, so `tests/e2e/helpers/f
 
 Playwright's Firefox cannot navigate to privileged documents, `moz-extension://` pages included, so specs that open the popup or options page are skipped there and run in Chromium only. Everything about injection — the part that touches real web pages — runs in both.
 
-Rules are seeded through `chrome.storage.local` (Monaco editor interaction is intentionally out of scope). Executable JS is verified via remote `http://127.0.0.1` files because Playwright Chromium’s default page CSP blocks `unsafe-inline` scripts; inline JS is still asserted by checking the injected `<script>` node.
+Rules are seeded through `chrome.storage.local` (Monaco editor interaction is intentionally out of scope).
+
+The two engines disagree about injected JavaScript, and the specs assert each one's actual behaviour. Firefox applies the *page's* content security policy to a `<script>` node that a content script appended, so it runs. Chromium applies the *extension's own* Manifest V3 policy to DOM work done from the content script's isolated world, so it refuses to run that node however permissive the page is — the specs therefore assert the node's presence in Chromium rather than its side effects.
 
 ## Publishing
 

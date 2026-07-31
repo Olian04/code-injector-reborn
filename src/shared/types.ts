@@ -1,20 +1,9 @@
 import type { ThemePreference } from './theme';
 
-export type FileExt = 'js' | 'css' | 'html' | '';
-
-export type FileType = 'local' | 'remote' | '';
-
-export interface RuleFile {
-  path: string;
-  type: FileType;
-  ext: FileExt;
-}
-
 export interface RuleCode {
   js: string;
   css: string;
   html: string;
-  files: RuleFile[];
 }
 
 export interface Rule {
@@ -31,16 +20,13 @@ export interface ParsedRule {
   selector: string;
   topFrameOnly: boolean;
   onLoad: boolean;
-  code?: string;
-  path?: string;
-  local?: boolean;
+  code: string;
 }
 
 export interface InjectionRule {
   type: 'js' | 'css' | 'html';
   onLoad: boolean;
-  code?: string;
-  path?: string;
+  code: string;
 }
 
 export interface Settings {
@@ -91,7 +77,6 @@ export function emptyRule(): Rule {
       js: '',
       css: '',
       html: '',
-      files: [],
     },
   };
 }

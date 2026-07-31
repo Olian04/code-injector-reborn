@@ -1,11 +1,8 @@
 import type { InjectionRule, NavigationInfo, ParsedRule, Rule } from './types';
 import { containsCode } from './utils';
 
-const LOCAL_FILE_ERROR =
-  "console.error('Code-Injector [ERROR]: local file injection is no longer supported in Manifest V3. Use a remote URL or paste the code directly instead.')";
-
 /**
- * Flatten storage rules into injection units (files → css → html → js).
+ * Flatten storage rules into injection units (css → html → js).
  * Disabled rules are skipped entirely.
  */
 export function serializeRules(rules: Rule[]): ParsedRule[] {
@@ -13,21 +10,6 @@ export function serializeRules(rules: Rule[]): ParsedRule[] {
 
   for (const rule of rules) {
     if (!rule.enabled) continue;
-
-    if (rule.code.files?.length) {
-      for (const file of rule.code.files) {
-        if (!file.ext) continue;
-        result.push({
-          type: file.ext as 'js' | 'css' | 'html',
-          enabled: rule.enabled,
-          selector: rule.selector,
-          topFrameOnly: rule.topFrameOnly,
-          path: file.path,
-          local: file.type === 'local',
-          onLoad: rule.onLoad,
-        });
-      }
-    }
 
     if (containsCode(rule.code.css)) {
       result.push({
@@ -76,29 +58,20 @@ export function getInvolvedRules(
   for (const rule of rules) {
     if (!rule.enabled) continue;
     if (rule.topFrameOnly && info.parentFrameId !== -1) continue;
-    if (!new RegExp(rule.selector).test(info.url)) continue;
 
-    if (rule.path) {
-      if (rule.local) {
-        result.push({
-          type: 'js',
-          onLoad: rule.onLoad,
-          code: LOCAL_FILE_ERROR,
-        });
-      } else {
-        result.push({
-          type: rule.type,
-          onLoad: rule.onLoad,
-          path: rule.path,
-        });
-      }
-    } else {
-      result.push({
-        type: rule.type,
-        onLoad: rule.onLoad,
-        code: rule.code,
-      });
+    // A saved pattern can be invalid; skip only that rule instead of letting
+    // the throw take down every other rule's injection.
+    try {
+      if (!new RegExp(rule.selector).test(info.url)) continue;
+    } catch {
+      continue;
     }
+
+    result.push({
+      type: rule.type,
+      onLoad: rule.onLoad,
+      code: rule.code,
+    });
   }
 
   return result;

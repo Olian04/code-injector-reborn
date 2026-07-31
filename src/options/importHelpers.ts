@@ -107,7 +107,6 @@ export async function getGitHubRule(data: {
       js: '',
       css: '',
       html: '',
-      files: [],
     },
   };
 

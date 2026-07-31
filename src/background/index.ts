@@ -76,12 +76,20 @@ function countInvolvedRules(tabData: TabData, cb: () => void): void {
     tabData.inner = 0;
 
     for (const rule of stored) {
-      if (new RegExp(rule.selector).test(tabData.topURL)) {
+      // A saved pattern can be invalid; it must not abort the whole count.
+      let selector: RegExp;
+      try {
+        selector = new RegExp(rule.selector);
+      } catch {
+        continue;
+      }
+
+      if (selector.test(tabData.topURL)) {
         if (rule.enabled) tabData.top++;
       } else {
         if (rule.topFrameOnly) continue;
         for (const url of tabData.innerURLs) {
-          if (new RegExp(rule.selector).test(url)) {
+          if (selector.test(url)) {
             if (rule.enabled) tabData.inner++;
             break;
           }
@@ -216,27 +224,11 @@ function handleOnMessage(
         // Manual inject: force through same path; serializeRules already filtered.
         // Original forced both buckets via split of serializeRules output.
         const split = splitRulesByInjectionType(
-          serialized.map((r) => {
-            if (r.path) {
-              if (r.local) {
-                return {
-                  type: 'js' as const,
-                  onLoad: r.onLoad,
-                  code: "console.error('Code-Injector [ERROR]: local file injection is no longer supported in Manifest V3. Use a remote URL or paste the code directly instead.')",
-                };
-              }
-              return {
-                type: r.type,
-                onLoad: r.onLoad,
-                path: r.path,
-              };
-            }
-            return {
-              type: r.type,
-              onLoad: r.onLoad,
-              code: r.code,
-            };
-          })
+          serialized.map((r) => ({
+            type: r.type,
+            onLoad: r.onLoad,
+            code: r.code,
+          }))
         );
 
         // Use involved for URL match? Original used serializeRules + split without URL re-match for manual inject.

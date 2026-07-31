@@ -62,12 +62,6 @@ export function RuleItem({
               data-active={String(containsCode(rule.code.html))}
             />
           </li>
-          <li title="Files">
-            <div
-              className="d-info color-files"
-              data-active={String(rule.code.files.length > 0)}
-            />
-          </li>
         </ul>
       </div>
       <div className="r-controls">
@@ -84,11 +78,6 @@ export function RuleItem({
         <textarea className="d-js" readOnly value={rule.code.js} />
         <textarea className="d-css" readOnly value={rule.code.css} />
         <textarea className="d-html" readOnly value={rule.code.html} />
-        <textarea
-          className="d-files"
-          readOnly
-          value={JSON.stringify(rule.code.files)}
-        />
       </div>
     </li>
   );
