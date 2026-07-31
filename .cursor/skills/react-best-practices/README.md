@@ -24,12 +24,10 @@ https://github.com/vercel-labs/agent-skills/tree/7c180d9044c9ae2b442b567aad4e42a
 | [reference.md](reference.md) | Index of retained rule files (titles only) |
 | [MISMATCHES.md](MISMATCHES.md) | Removed / reworded / apply-as-is records |
 
-Companion Cursor rules (glob-scoped to `src/popup` / `src/options`):
+Companion Cursor rule (glob-scoped to `src/popup` / `src/options`):
 
-- `.cursor/rules/react-bp-*.mdc` — one file per **retained** practice rule;
-  **glob triggers only** (frontmatter + pointer to `rules/<name>.md`). Skill
-  `rules/` is the sole source of truth; do not duplicate rule bodies in `.mdc`.
+- `.cursor/rules/react-best-practices.mdc` — points at this skill; does not
+  restate individual rules. Skill `rules/` is the sole source of truth.
 
 N/A, non-mappable, and focus-dropped upstream rules are not present under
-`rules/` or `.cursor/rules/` — see [MISMATCHES.md](MISMATCHES.md) and
-[SKILL.md](SKILL.md).
+`rules/` — see [MISMATCHES.md](MISMATCHES.md) and [SKILL.md](SKILL.md).

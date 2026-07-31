@@ -22,18 +22,16 @@ on disk** for this browser-extension UI (React built-ins / `browser.storage`
 instead of Next.js / SWR / RSC). Adapted files carry an “Adapted for Code
 Injector Reborn” note at the top. See [`MISMATCHES.md`](MISMATCHES.md).
 
-Companion Cursor rules: one `.cursor/rules/react-bp-*.mdc` per retained practice
-rule (glob-scoped to `src/popup` and `src/options`). Those `.mdc` files are
-**glob triggers only** (Cursor frontmatter + a pointer to the matching
-`rules/<name>.md`). They must not duplicate the rule body — `rules/` is
-canonical.
+Companion Cursor rule: `.cursor/rules/react-best-practices.mdc` (glob-scoped to
+`src/popup` and `src/options`) points at this skill. It must not restate
+individual rules — `rules/` is canonical.
 
 ## Excluded upstream rules (N/A for this project)
 
 This UI is **client-only browser-extension pages** (`src/popup`, `src/options`) —
 no Next.js server, RSC, SSR hydration, API routes, or document-level Next
 resource pipeline. The following upstream rules were **removed** from `rules/`
-and from `.cursor/rules/react-bp-*.mdc` (do not reintroduce or apply them):
+(do not reintroduce or apply them):
 
 - `async-api-routes` — Next.js API routes / server actions waterfalls
 - all `server-*` rules (10) — RSC/SSR/server-actions/server I/O
@@ -49,8 +47,7 @@ Rationale, reworded rules, and apply-as-is lists: [`MISMATCHES.md`](MISMATCHES.m
 
 ## Project adaptations
 
-**Approved conventions** (rewritten on disk under `rules/`; `.mdc` wrappers
-only point here):
+**Approved conventions** (rewritten on disk under `rules/`):
 
 | Rule | Convention |
 |------|------------|
@@ -79,8 +76,7 @@ Apply this skill when you:
 ## How to apply
 
 1. Open the matching file under [`rules/`](rules/) and follow its
-   incorrect/correct guidance (`.cursor/rules/react-bp-*.mdc` only triggers
-   that file — do not treat the `.mdc` as a second copy of the rule).
+   incorrect/correct guidance.
 2. Section ordering and impact levels: [`rules/_sections.md`](rules/_sections.md).
 3. Before insisting on a rule, check [`MISMATCHES.md`](MISMATCHES.md) for
    removed vs reworded vs apply-as-is. Do not reintroduce Next.js / SWR / RSC APIs.

@@ -1,0 +1,15 @@
+---
+description: >-
+  Chrome Web Store listing, assets, privacy disclosures, MV3 / permissions UX,
+  and extension quality for store review. Follow the project skill
+  chrome-web-store-best-practices.
+globs: >-
+  src/**/*.{ts,tsx,js,jsx},public/**/*.{js,css,html},src/manifest.json,PRIVACY.md,README.md,readme-resources/**/*
+alwaysApply: false
+---
+
+Follow the project skill `.cursor/skills/chrome-web-store-best-practices/SKILL.md`
+and `.cursor/skills/chrome-web-store-best-practices/reference.md`.
+
+That skill is the sole source of truth. Do not restate checklists here — this
+file is only a Cursor glob trigger.

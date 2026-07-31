@@ -1,9 +1,0 @@
----
-description: Dependency-Based Parallelization (CRITICAL)
-globs: src/popup/**/*.{tsx,ts,jsx,js},src/options/**/*.{tsx,ts,jsx,js}
-alwaysApply: false
----
-
-Follow `.cursor/skills/react-best-practices/rules/async-dependencies.md` verbatim / as adapted in that file.
-
-That skill rule is the sole source of truth. Do not paste or maintain a duplicate rule body in this `.mdc` — this file is only a Cursor glob trigger (`description` / `globs` / `alwaysApply`).

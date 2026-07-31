@@ -12,17 +12,17 @@ start with:
 
 > Adapted for Code Injector Reborn (browser extension). Upstream: vercel-labs/agent-skills @ 7c180d9.
 
-`.cursor/rules/react-bp-*.mdc` are glob triggers only (frontmatter + pointer to
-`rules/<name>.md`); they do not duplicate rule bodies.
+Cursor applies this skill via `.cursor/rules/react-best-practices.mdc` (one
+glob trigger). Per-rule content lives only under [`rules/`](rules/).
 
 ---
 
 ## Removed — N/A / skip for this project
 
 No Next.js server, RSC, SSR hydration, API routes, or document-level Next
-resource pipeline. These upstream rules were **deleted** from `rules/` and from
-`.cursor/rules/react-bp-*.mdc` (confirmed skip for this extension). Do not
-reintroduce them unless the product gains a matching runtime.
+resource pipeline. These upstream rules were **deleted** from `rules/`
+(confirmed skip for this extension). Do not reintroduce them unless the product
+gains a matching runtime.
 
 | Rule basename | Why removed |
 |---------------|-------------|
@@ -48,9 +48,8 @@ reintroduce them unless the product gains a matching runtime.
 ## Removed — non-trivial / cannot map
 
 Could not be trivially mapped to React built-ins or extension APIs without
-inventing fakes or adding deps. Deleted from `rules/` and
-`.cursor/rules/react-bp-*.mdc`. **User decision: do not add SWR; do not mimic
-Next/`Activity`.**
+inventing fakes or adding deps. Deleted from `rules/`. **User decision: do not
+add SWR; do not mimic Next/`Activity`.**
 
 | Rule basename | Why removed | Revisit? |
 |---------------|-------------|----------|
@@ -76,7 +75,7 @@ this extension. Includes former on-disk adaptations `js-cache-storage` and
 
 ## Reworded on disk
 
-Approved adaptations — rule bodies (and matching `.mdc` wrappers) updated.
+Approved adaptations — rule bodies under `rules/` updated.
 
 | Rule | Adaptation |
 |------|------------|
