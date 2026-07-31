@@ -1,0 +1,49 @@
+---
+description: >-
+  Chrome Web Store extension quality — MV3, permissions, privacy disclosures,
+  security, bfcache/performance, and UX for store review. Use when editing
+  extension runtime, manifest, privacy policy, inject scripts, or preparing
+  a CWS submission. Not for React UI performance (see react-bp-* rules).
+globs: src/**/*.{ts,tsx,js,jsx},public/**/*.{js,css,html},src/manifest.json,PRIVACY.md
+alwaysApply: false
+---
+
+# CWS extension quality (Chromium store)
+
+Official: [Chrome Web Store best practices](https://developer.chrome.com/docs/webstore/best-practices).
+Full checklists: `.cursor/skills/chrome-web-store-best-practices/`. Firefox/AMO is separate.
+
+## Hard constraints for this repo
+
+- Stay **MV3** (service worker background). No MV2 persistent background.
+- **Privacy-first**: no analytics, tracking, or crash reporters. Keep behavior
+  aligned with `PRIVACY.md` and CWS Privacy tab answers.
+- Request only permissions needed for inject-by-URL-pattern. Justify
+  `<all_urls>` honestly — do not widen “just in case.”
+- Prefer HTTPS for extension-initiated network; user rule fetches are
+  user-directed and must stay disclosed as such.
+
+## bfcache (do not regress)
+
+In extension page/content scripts (`public/scripts/inject.js` and anything
+injected by the extension itself):
+
+- Never add `unload` / `beforeunload` — use `pagehide` or `tabs.onRemoved`.
+- Never open WebSocket/WebRTC from content scripts — use the service worker +
+  `runtime.connect` if ever required.
+
+Current inject path is fine (message + `load` only). User-authored rule code
+may still break bfcache; that is not an extension-code defect unless we add
+those APIs ourselves.
+
+## Quality bar before store-bound changes
+
+- Keep Playwright e2e meaningful (`npm run test:e2e`) for inject/popup/options.
+- Permission changes: verify install/update warning UI on a packed build.
+- If data flows change, update `PRIVACY.md` in the same change.
+
+## UX
+
+- Permissions: optional / `activeTab` only when the feature truly does not need
+  standing host access; core matching inject may still need broad hosts.
+- Persistent UI should stay low-distraction and on-purpose.
