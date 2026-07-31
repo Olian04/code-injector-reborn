@@ -56,9 +56,8 @@ The original `Code Injector` (Manifest V2, no longer maintained) is still listed
       - [URL pattern](#url-pattern)
       - [Editors](#editors)
       - [Settings](#settings)
-      - [On page load](#on-page-load)
-      - [Top frame only](#top-frame-only)
-      - [Enabled](#enabled)
+      - [Injection timing](#injection-timing)
+      - [Frame scope](#frame-scope)
   - [Options view](#options-view)
       - [Saved rules](#saved-rules)
       - [Size](#size)
@@ -196,20 +195,16 @@ To pull in code hosted elsewhere, reference it from the editor that suits it: `i
 
 #### Settings
 
-Rule injection options live on the _Settings_ tab (dropdowns, not footer checkboxes):
+Rule injection options live on the _Settings_ tab (dropdowns, not footer checkboxes). Toggle **Enabled** from the rule's context menu in the [list view](#main-view-rules-list).
 
-#### On page load
+#### Injection timing
 
 **On page load** (default): inject after the page load event. **As soon as possible**: inject when navigation commits.  
 Check the [Injection flow](#injection-flow) for more details.
 
-#### Top frame only
+#### Frame scope
 
 **Top frame only** (default): inject only into the top page. **All frames**: also inject into matching iframes.
-
-#### Enabled
-
-**Enabled** (default): the rule can be injected. **Disabled**: kept in the list but never injected. You can also toggle this from the rule's context menu.
 
 ## Options view
 
@@ -263,7 +258,7 @@ If `true`, a badge with the number of currently injected rules will be visible o
 
 ## Injection flow
 
-A _Rule_ by default is set up to be injected on page load _(after the document and all its resources have finished loading)_ but can be changed to inject when the navigation is committed _(the DOM is received and still loading)_ by choosing **As soon as possible** under "[On page load](#on-page-load)" on the editor's _Settings_ tab.
+A _Rule_ by default is set up to be injected on page load _(after the document and all its resources have finished loading)_ but can be changed to inject when the navigation is committed _(the DOM is received and still loading)_ by choosing **As soon as possible** under "[Injection timing](#injection-timing)" on the editor's _Settings_ tab.
 
 The rules whose _URL Pattern_ match with the page address will be selected and queued for injection. (from top to bottom, grouped by type)
 

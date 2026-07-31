@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 Maintainership of this project has moved to a fork maintained by Oliver Anteros (@Olian04). The original author remains L. Sabatelli (@Lor-Saba).
 
 #### Changed
-- Rule injection toggles (*Enabled*, *On page load*, *Top frame only*) moved from the editor footer into a **Settings** tab as dropdown selects; Cancel / Save stay in the footer.
+- Rule injection toggles moved from the editor footer into a **Settings** tab as dropdown selects (*Injection timing*, *Frame scope*); *Enabled* stays on the rule list / context menu. Cancel / Save stay in the footer.
 - Renamed the extension to **Code Injector Reborn**, to keep the fork distinct from the original store listings.
 - Migrated the extension from Manifest V2 to **Manifest V3** (required for continued distribution on the Chrome Web Store).
   - `browser_action` is now `action`.

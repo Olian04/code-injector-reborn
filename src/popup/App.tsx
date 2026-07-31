@@ -593,7 +593,7 @@ export function App() {
                 case 'settings':
                   document
                     .querySelector<HTMLSelectElement>(
-                      '[data-name="sel-editor-enabled"]'
+                      '[data-name="sel-editor-onload"]'
                     )
                     ?.focus();
                   break;
@@ -1040,7 +1040,6 @@ export function App() {
         selectorError={selectorError}
         selectedTab={selectedTab}
         tabFocus={tabFocus}
-        enabled={enabled}
         onLoad={onLoad}
         topFrameOnly={topFrameOnly}
         codeActive={codeActive}
@@ -1050,10 +1049,6 @@ export function App() {
         tabContentsRef={tabContentsRef}
         onSelectorChange={handleSelectorChange}
         onTabSelect={setSelectedTab}
-        onEnabledChange={(v) => {
-          setEnabled(v);
-          setLastSession();
-        }}
         onOnLoadChange={(v) => {
           setOnLoad(v);
           setLastSession();

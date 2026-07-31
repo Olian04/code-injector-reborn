@@ -11,7 +11,6 @@ interface EditorPanelProps {
   selectorError: boolean;
   selectedTab: EditorTab;
   tabFocus: boolean;
-  enabled: boolean;
   onLoad: boolean;
   topFrameOnly: boolean;
   codeActive: {
@@ -25,7 +24,6 @@ interface EditorPanelProps {
   tabContentsRef: RefObject<HTMLDivElement>;
   onSelectorChange: (value: string) => void;
   onTabSelect: (tab: EditorTab) => void;
-  onEnabledChange: (v: boolean) => void;
   onOnLoadChange: (v: boolean) => void;
   onTopFrameOnlyChange: (v: boolean) => void;
   onCancel: () => void;
@@ -43,7 +41,6 @@ export function EditorPanel({
   selectorError,
   selectedTab,
   tabFocus,
-  enabled,
   onLoad,
   topFrameOnly,
   codeActive,
@@ -53,7 +50,6 @@ export function EditorPanel({
   tabContentsRef,
   onSelectorChange,
   onTabSelect,
-  onEnabledChange,
   onOnLoadChange,
   onTopFrameOnlyChange,
   onCancel,
@@ -179,10 +175,8 @@ export function EditorPanel({
               data-selected={selectedTab === 'settings' ? 'true' : undefined}
             >
               <EditorSettings
-                enabled={enabled}
                 onLoad={onLoad}
                 topFrameOnly={topFrameOnly}
-                onEnabledChange={onEnabledChange}
                 onOnLoadChange={onOnLoadChange}
                 onTopFrameOnlyChange={onTopFrameOnlyChange}
               />

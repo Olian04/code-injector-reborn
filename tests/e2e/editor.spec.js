@@ -82,20 +82,23 @@ test.describe('editor', () => {
     await page.locator('[data-name="btn-tab"][data-for="settings"]').click();
     await expect(page.locator('.tab')).toHaveAttribute('data-selected', 'settings');
 
-    const enabled = page.locator('[data-name="sel-editor-enabled"]');
+    // Enabled stays on the list / context menu — not on Settings.
+    await expect(page.locator('[data-name="sel-editor-enabled"]')).toHaveCount(0);
+
     const onLoad = page.locator('[data-name="sel-editor-onload"]');
     const topFrame = page.locator('[data-name="sel-editor-topframeonly"]');
 
-    await expect(enabled).toHaveValue('true');
     await expect(onLoad).toHaveValue('true');
     await expect(topFrame).toHaveValue('true');
+    await expect(page.locator('.editor-settings-label')).toHaveText([
+      'Injection timing',
+      'Frame scope',
+    ]);
 
     await onLoad.selectOption('false');
     await topFrame.selectOption('false');
-    await enabled.selectOption('false');
     await expect(onLoad).toHaveValue('false');
     await expect(topFrame).toHaveValue('false');
-    await expect(enabled).toHaveValue('false');
   });
 
   test('suggests ids from the CSS tab inside an id attribute', async ({
