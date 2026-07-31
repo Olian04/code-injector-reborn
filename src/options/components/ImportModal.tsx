@@ -11,9 +11,19 @@ import type { ImportResult } from '../../shared/legacy-import';
 
 interface ImportModalProps {
   onDone: (result: 'success' | 'fail', detail: string) => void;
+  /**
+   * Chromium dismisses the action popup when a native file picker opens, so
+   * the local-file method hands off to the standalone options page instead.
+   */
+  embedded?: boolean;
+  onOpenStandalone?: () => void;
 }
 
-export function ImportModal({ onDone }: ImportModalProps) {
+export function ImportModal({
+  onDone,
+  embedded = false,
+  onOpenStandalone,
+}: ImportModalProps) {
   const [method, setMethod] = useState('0');
   const [fileValue, setFileValue] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -38,20 +48,23 @@ export function ImportModal({ onDone }: ImportModalProps) {
   useEffect(() => {
     let enable = false;
     if (method === '0') {
-      enable = !!(fileValue && fileInputRef.current?.validity.valid);
+      // Embedded local-file uses a handoff control, not the Import button.
+      enable = embedded
+        ? false
+        : !!(fileValue && fileInputRef.current?.validity.valid);
     } else if (method === '1') {
       enable = !!remote;
     } else if (method === '2') {
       enable = validGithub;
     }
     setCanImport(enable);
-  }, [method, fileValue, remote, validGithub]);
+  }, [method, fileValue, remote, validGithub, embedded]);
 
   useEffect(() => {
-    if (method === '0') fileInputRef.current?.focus();
+    if (method === '0' && !embedded) fileInputRef.current?.focus();
     else if (method === '1') remoteInputRef.current?.focus();
     else if (method === '2') githubInputRef.current?.focus();
-  }, [method]);
+  }, [method, embedded]);
 
   const resetPanels = () => {
     setFileValue('');
@@ -152,17 +165,34 @@ export function ImportModal({ onDone }: ImportModalProps) {
     <>
       <ul className="import-methods">
         <li data-for="0" data-active={method === '0' ? 'true' : 'false'}>
-          <input
-            ref={fileInputRef}
-            type="file"
-            data-name="inp-import-file"
-            accept="*.json"
-            onChange={(e) => {
-              const f = e.target.files?.[0] || null;
-              setFile(f);
-              setFileValue(e.target.value);
-            }}
-          />
+          {embedded ? (
+            <div className="import-local-handoff">
+              <p>
+                Picking a local file closes the action popup in Chromium. Use the
+                full options page instead.
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary"
+                data-name="btn-import-open-options"
+                onClick={() => onOpenStandalone?.()}
+              >
+                Open options page
+              </button>
+            </div>
+          ) : (
+            <input
+              ref={fileInputRef}
+              type="file"
+              data-name="inp-import-file"
+              accept="*.json"
+              onChange={(e) => {
+                const f = e.target.files?.[0] || null;
+                setFile(f);
+                setFileValue(e.target.value);
+              }}
+            />
+          )}
         </li>
         <li data-for="1" data-active={method === '1' ? 'true' : 'false'}>
           <input

@@ -1,37 +1,16 @@
 
 @use '../../shared/styles/init' as *;
 
-/* Base */
+/* Shared options chrome — scoped so lazy-loading into the popup cannot
+   restyle the rules list / editor. Standalone keeps `html.options-page`;
+   the action popup mounts the same tree under `.options-embedded`. */
+
+@mixin options-content {
 
     ul{
         margin: 0;
         padding: 0;
         list-style: none;
-    }
-
-    body{
-        margin: 15px;
-        padding: 0;
-        font-size: 0;
-        font-family: sans-serif;
-        color: $cBase;
-        transition: background .2s;
-
-        &[data-modalvisible="true"]{
-            background: #eee;
-
-            #body{
-                filter: blur(2px);
-            }
-            #modal{
-                display: block;
-            }
-
-        }
-    }
-
-    #body{
-        transition: filter .2s;
     }
 
     #clipboard{
@@ -53,9 +32,6 @@
         top: -999px;
         left: -999px;
     }
-
-
-/* Table with content */
 
     #options-list {
         width: 100%;
@@ -153,14 +129,11 @@
             _margin-left: -5px;
         }
     }
-    
+
     .opt-size input{
         width: 50px;
         text-align: center;
     }
-    
-
-/* Buttons & components */
 
     .btn{
         font-size: 14px;
@@ -198,7 +171,7 @@
         background: #0000;
         color: #aaa;
     }
-    
+
     .btn-icon{
         font-size: 20px;
         width: 30px;
@@ -214,7 +187,7 @@
         &:hover{
             color: $cError;
         }
-        
+
         &::after {
             content: 'Confirm?';
             position: absolute;
@@ -305,10 +278,10 @@
         }
     }
 
-    input[type=number]::-webkit-inner-spin-button, 
-    input[type=number]::-webkit-outer-spin-button { 
-        -webkit-appearance: none; 
-        margin: 0; 
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
 
     label.cb-custom {
@@ -349,11 +322,6 @@
             }
         }
     }
-    
-
-/* Modal */
-
-    // data-modalvisible="true"
 
     #modal{
         display: none;
@@ -378,7 +346,7 @@
         transform: translate(-50%, -50%) scale(.7);
         animation: modal-show .2s;
         animation-fill-mode: forwards;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1), 
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1),
                     0 1px 5px rgba(0,0,0,0.3);
 
         // Fix blurred div for webkit browsers
@@ -424,19 +392,6 @@
         position: relative;
     }
 
-    @keyframes modal-show{
-        from{
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(.7);
-        }
-        to{
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
-    }
-
-/* modal - export */
-
     .export-rulesList {
         overflow-x: hidden;
         overflow-y: scroll;
@@ -468,8 +423,6 @@
         }
     }
 
-/* modal - import */
-
     .import-methods{
         position: relative;
         width: 300px;
@@ -497,6 +450,18 @@
 
         input[type="file"]{
             height: 30px;
+        }
+
+        .import-local-handoff{
+            font-size: 13px;
+            line-height: 1.4;
+            white-space: normal;
+            color: $cBase;
+            max-width: 300px;
+
+            p{
+                margin: 0 0 12px;
+            }
         }
 
         .import-github-info{
@@ -576,14 +541,6 @@
         }
     }
 
-    @keyframes github-show{
-        0%{ height: 0; opacity: 0; }
-        45%{ height: 56px; }
-        100%{ opacity: 1; }
-    }
-
-/* Code colors */
-
     .color{
         width: 10px;
         height: 10px;
@@ -594,121 +551,228 @@
         box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
     }
 
-    .color-js[data-active="true"]{   
+    .color-js[data-active="true"]{
         background: $cCodeJS !important;
         box-shadow: inset 0 -1px rgba(0,0,0,.2) !important;
         border: none !important;
     }
-    .color-css[data-active="true"]{  
+    .color-css[data-active="true"]{
         background: $cCodeCSS !important;
         box-shadow: inset 0 -1px rgba(0,0,0,.2) !important;
-        border: none !important; 
+        border: none !important;
     }
-    .color-html[data-active="true"]{ 
+    .color-html[data-active="true"]{
         background: $cCodeHTML !important;
         box-shadow: inset 0 -1px rgba(0,0,0,.2) !important;
         border: none !important;
     }
+}
+
+@keyframes modal-show{
+    from{
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(.7);
+    }
+    to{
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes github-show{
+    0%{ height: 0; opacity: 0; }
+    45%{ height: 56px; }
+    100%{ opacity: 1; }
+}
+
+/* Standalone options page */
+
+html.options-page {
+    body{
+        margin: 15px;
+        padding: 0;
+        font-size: 0;
+        font-family: sans-serif;
+        color: $cBase;
+        transition: background .2s;
+
+        &[data-modalvisible="true"]{
+            background: #eee;
+
+            #body{
+                filter: blur(2px);
+            }
+            #modal{
+                display: block;
+            }
+        }
+    }
+
+    #body{
+        transition: filter .2s;
+    }
+
+    @include options-content;
+}
+
+/* Embedded in the action popup */
+
+.options-embedded{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    padding: 15px;
+    padding-bottom: 50px;
+    font-size: 0;
+    font-family: sans-serif;
+    color: $cBase;
+    transition: background .2s;
+    box-sizing: border-box;
+
+    &[data-modalvisible="true"]{
+        background: #eee;
+
+        .options-ui-body{
+            filter: blur(2px);
+        }
+        #modal{
+            display: block;
+        }
+    }
+
+    .options-ui-body{
+        transition: filter .2s;
+    }
+
+    @include options-content;
+
+    // Popup is narrow; keep the table from forcing a huge right gutter and
+    // contain the modal to this panel instead of the whole window.
+    #options-list td:last-child{
+        padding-right: 12px;
+    }
+
+    #modal{
+        position: absolute;
+    }
+
+    .export-rulesList,
+    .import-methods{
+        max-height: 40vh;
+    }
+}
 
 /* Dark theme */
 
-    // Colour-only counterpart to the rules above; `$s` scopes each rule so the
-    // same block serves the OS preference and an explicit override.
-    @mixin dark-theme($s) {
+@mixin options-dark-content {
 
-        #{$s}{
-            background: $dBackdrop;
-            color-scheme: dark;
+    #options-list tr.spacer td{ border-top-color: $dBorder; }
+
+    #rules-counter{ color: $dPrimaryText; }
+
+    .btn{
+        color: $dText;
+        box-shadow: inset 0 0 0 1px $dBorderSoft;
+
+        &:hover{ box-shadow: inset 0 0 0 1px $dBorder; }
+    }
+    .btn[disabled]{ color: $dTextMuted; }
+    .btn-primary{
+        background: $dPrimary;
+        color: #fff;
+    }
+    .btn-error-hover{
+
+        &:hover{ color: $dError; }
+
+        &::after{ color: $dError; }
+
+        &[data-confirm]{
+            color: #fff;
+            background: $dError;
         }
+    }
 
-        #{$s} body{
+    select{
+        color: $dText;
+        background: $dRaised;
+        box-shadow: inset 0 0 0 1px $dBorderSoft;
+
+        &:hover{ box-shadow: inset 0 0 0 1px $dBorder; }
+    }
+
+    .inp{
+        color: $dText;
+        box-shadow: inset 0 -1px $dBorder;
+
+        &:hover{ box-shadow: inset 0 -1px rgba(255, 255, 255, .3); }
+        &:focus{ box-shadow: inset 0 -1px $dPrimaryText; }
+    }
+
+    label.cb-custom{
+        color: $dText;
+
+        &:hover{ color: #fff; }
+
+        i{ color: $dTextMuted; }
+
+        i.cb-check{ color: $dPrimaryText; }
+    }
+
+    .import-info.success,
+    .export-info.success{ color: $dSecondary; }
+    .import-info.fail,
+    .export-info.fail{ color: $dError; }
+
+    .import-local-handoff{ color: $dText; }
+
+    .m-wrapper{
+        background: $dSurface;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 1px 5px rgba(0, 0, 0, .5);
+    }
+    .m-head{ border-bottom-color: $dBorder; }
+
+    .export-controls,
+    .import-controls{ border-top-color: $dBorder; }
+
+    .import-methods .import-github-info > table{
+        box-shadow: 0 0 0 1px $dBorder;
+    }
+    .import-methods .import-github-info .import-gh-icon{
+        filter: invert(1);
+    }
+
+    .color{ box-shadow: inset 0 0 0 1px $dBorder; }
+}
+
+@mixin dark-theme($s) {
+
+    #{$s}.options-page{
+        background: $dBackdrop;
+        color-scheme: dark;
+
+        body{
             background: $dBackdrop;
             color: $dText;
 
             &[data-modalvisible="true"]{ background: $dSurface; }
         }
 
-        #{$s} #options-list tr.spacer td{ border-top-color: $dBorder; }
-
-        #{$s} #rules-counter{ color: $dPrimaryText; }
-
-        #{$s} .btn{
-            color: $dText;
-            box-shadow: inset 0 0 0 1px $dBorderSoft;
-
-            &:hover{ box-shadow: inset 0 0 0 1px $dBorder; }
-        }
-        #{$s} .btn[disabled]{ color: $dTextMuted; }
-        #{$s} .btn-primary{
-            background: $dPrimary;
-            color: #fff;
-        }
-        #{$s} .btn-error-hover{
-
-            &:hover{ color: $dError; }
-
-            &::after{ color: $dError; }
-
-            &[data-confirm]{
-                color: #fff;
-                background: $dError;
-            }
-        }
-
-        #{$s} select{
-            color: $dText;
-            background: $dRaised;
-            box-shadow: inset 0 0 0 1px $dBorderSoft;
-
-            &:hover{ box-shadow: inset 0 0 0 1px $dBorder; }
-        }
-
-        #{$s} .inp{
-            color: $dText;
-            box-shadow: inset 0 -1px $dBorder;
-
-            &:hover{ box-shadow: inset 0 -1px rgba(255, 255, 255, .3); }
-            &:focus{ box-shadow: inset 0 -1px $dPrimaryText; }
-        }
-
-        #{$s} label.cb-custom{
-            color: $dText;
-
-            &:hover{ color: #fff; }
-
-            i{ color: $dTextMuted; }
-
-            i.cb-check{ color: $dPrimaryText; }
-        }
-
-        #{$s} .import-info.success,
-        #{$s} .export-info.success{ color: $dSecondary; }
-        #{$s} .import-info.fail,
-        #{$s} .export-info.fail{ color: $dError; }
-
-        // Modal
-        #{$s} .m-wrapper{
-            background: $dSurface;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 1px 5px rgba(0, 0, 0, .5);
-        }
-        #{$s} .m-head{ border-bottom-color: $dBorder; }
-
-        #{$s} .export-controls,
-        #{$s} .import-controls{ border-top-color: $dBorder; }
-
-        #{$s} .import-methods .import-github-info > table{
-            box-shadow: 0 0 0 1px $dBorder;
-        }
-        // Solid black mark; the usual treatment on a dark background.
-        #{$s} .import-methods .import-github-info .import-gh-icon{
-            filter: invert(1);
-        }
-
-        #{$s} .color{ box-shadow: inset 0 0 0 1px $dBorder; }
+        @include options-dark-content;
     }
 
-    @include dark-theme('html[data-theme="dark"]');
+    #{$s} .options-embedded{
+        color: $dText;
 
-    @media (prefers-color-scheme: dark) {
-        @include dark-theme('html:not([data-theme="light"])');
+        &[data-modalvisible="true"]{ background: $dSurface; }
+
+        @include options-dark-content;
     }
+}
+
+@include dark-theme('html[data-theme="dark"]');
+
+@media (prefers-color-scheme: dark) {
+    @include dark-theme('html:not([data-theme="light"])');
+}

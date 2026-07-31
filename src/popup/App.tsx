@@ -24,6 +24,7 @@ import {
 } from './monaco';
 import {
   applyTheme,
+  isThemePreference,
   resolveTheme,
   watchSystemTheme,
   type ThemePreference,
@@ -35,6 +36,7 @@ import {
   hasOpenPopover,
 } from './dom';
 import { InfoOverlay } from './components/InfoOverlay';
+import { OptionsPanel } from './components/OptionsPanel';
 import { RuleItem } from './components/RuleItem';
 import { ContextMenu } from './components/ContextMenu';
 import { EditorPanel } from './components/EditorPanel';
@@ -88,6 +90,7 @@ export function App() {
   const [tabData, setTabData] = useState(EMPTY_TAB_DATA);
   const [editing, setEditing] = useState(false);
   const [info, setInfo] = useState(false);
+  const [options, setOptions] = useState(false);
   const [saving, setSaving] = useState(false);
   const [monacoReady, setMonacoReady] = useState(false);
   const [editorLoading, setEditorLoading] = useState(false);
@@ -137,6 +140,7 @@ export function App() {
   const unsavedTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dotsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const editingRef = useRef(editing);
+  const optionsRef = useRef(options);
   const tabDataRef = useRef(tabData);
   const editorMetaRef = useRef({
     target: editorTarget,
@@ -147,6 +151,7 @@ export function App() {
   });
 
   editingRef.current = editing;
+  optionsRef.current = options;
   tabDataRef.current = tabData;
   editorMetaRef.current = {
     target: editorTarget,
@@ -432,6 +437,22 @@ export function App() {
       applyMonacoTheme(resolveTheme(settings.theme));
     });
 
+    // Embedded options persist theme via storage; keep Monaco / themeRef in sync
+    // without letting the options tree call applyTheme itself.
+    const onSettingsChanged = (changes: {
+      settings?: { newValue?: Settings };
+    }) => {
+      const next = changes.settings?.newValue;
+      if (!next || !isThemePreference(next.theme)) return;
+      themeRef.current = next.theme;
+      applyTheme(next.theme);
+      applyMonacoTheme(resolveTheme(next.theme));
+      if (next.size) {
+        setBodySize(next.size.width, next.size.height);
+      }
+    };
+    browser.storage.onChanged.addListener(onSettingsChanged);
+
     // Only relevant while following the OS; CSS handles the page, Monaco
     // needs telling.
     const unwatch = watchSystemTheme((scheme) => {
@@ -473,6 +494,7 @@ export function App() {
     return () => {
       disposed.current = true;
       unwatch();
+      browser.storage.onChanged.removeListener(onSettingsChanged);
       if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
       else window.clearTimeout(idle);
       editorJS.current?.dispose();
@@ -601,6 +623,12 @@ export function App() {
             e.stopPropagation();
             break;
           }
+          if (optionsRef.current) {
+            setOptions(false);
+            e.preventDefault();
+            e.stopPropagation();
+            break;
+          }
           if (e.shiftKey) setEditing(false);
           setInfo(false);
           e.preventDefault();
@@ -635,6 +663,8 @@ export function App() {
   const handleAddRule = () => {
     applyEditorState(DEFAULT_NEW_RULE);
     void ensureEditors();
+    setOptions(false);
+    setInfo(false);
     setEditing(true);
   };
 
@@ -699,6 +729,8 @@ export function App() {
     });
     void ensureEditors();
     hideRuleContextMenu();
+    setOptions(false);
+    setInfo(false);
     setEditing(true);
   };
 
@@ -916,6 +948,7 @@ export function App() {
       ref={bodyRef}
       data-editing={editing ? 'true' : undefined}
       data-info={info ? 'true' : undefined}
+      data-options={options ? 'true' : undefined}
       data-saving={saving ? 'true' : undefined}
     >
       <input className="txt-hidden" type="text" readOnly tabIndex={-1} />
@@ -924,6 +957,8 @@ export function App() {
         version={manifest.version || ''}
         onHide={() => setInfo(false)}
       />
+
+      <OptionsPanel active={options} onHide={() => setOptions(false)} />
 
       <div id="rules" className="unselectable">
         <ContextMenu
@@ -970,7 +1005,10 @@ export function App() {
             title="Info"
             tabIndex={-1}
             type="button"
-            onClick={() => setInfo(true)}
+            onClick={() => {
+              setOptions(false);
+              setInfo(true);
+            }}
           >
             &#xE88F;
           </button>
@@ -979,7 +1017,11 @@ export function App() {
             data-name="btn-general-options-show"
             tabIndex={-1}
             type="button"
-            onClick={() => void browser.runtime.openOptionsPage()}
+            onClick={() => {
+              setEditing(false);
+              setInfo(false);
+              setOptions(true);
+            }}
           >
             Options
           </button>
