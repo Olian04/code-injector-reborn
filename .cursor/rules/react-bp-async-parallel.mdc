@@ -4,31 +4,6 @@ globs: src/popup/**/*.{tsx,ts,jsx,js},src/options/**/*.{tsx,ts,jsx,js}
 alwaysApply: false
 ---
 
----
-title: Promise.all() for Independent Operations
-impact: CRITICAL
-impactDescription: 2-10× improvement
-tags: async, parallelization, promises, waterfalls
----
+Follow `.cursor/skills/react-best-practices/rules/async-parallel.md` verbatim / as adapted in that file.
 
-## Promise.all() for Independent Operations
-
-When async operations have no interdependencies, execute them concurrently using `Promise.all()`.
-
-**Incorrect (sequential execution, 3 round trips):**
-
-```typescript
-const user = await fetchUser()
-const posts = await fetchPosts()
-const comments = await fetchComments()
-```
-
-**Correct (parallel execution, 1 round trip):**
-
-```typescript
-const [user, posts, comments] = await Promise.all([
-  fetchUser(),
-  fetchPosts(),
-  fetchComments()
-])
-```
+That skill rule is the sole source of truth. Do not paste or maintain a duplicate rule body in this `.mdc` — this file is only a Cursor glob trigger (`description` / `globs` / `alwaysApply`).

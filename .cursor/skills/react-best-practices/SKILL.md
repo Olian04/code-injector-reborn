@@ -23,8 +23,10 @@ instead of Next.js / SWR / RSC). Adapted files carry an “Adapted for Code
 Injector Reborn” note at the top. See [`MISMATCHES.md`](MISMATCHES.md).
 
 Companion Cursor rules: one `.cursor/rules/react-bp-*.mdc` per retained practice
-rule (glob-scoped to `src/popup` and `src/options`), each embedding the same
-rule markdown body (wrappers keep Cursor frontmatter).
+rule (glob-scoped to `src/popup` and `src/options`). Those `.mdc` files are
+**glob triggers only** (Cursor frontmatter + a pointer to the matching
+`rules/<name>.md`). They must not duplicate the rule body — `rules/` is
+canonical.
 
 ## Excluded upstream rules (N/A for this project)
 
@@ -47,8 +49,8 @@ Rationale, reworded rules, and apply-as-is lists: [`MISMATCHES.md`](MISMATCHES.m
 
 ## Project adaptations
 
-**Approved conventions** (rewritten on disk under `rules/` and matching
-`.cursor/rules/react-bp-*.mdc`):
+**Approved conventions** (rewritten on disk under `rules/`; `.mdc` wrappers
+only point here):
 
 | Rule | Convention |
 |------|------------|
@@ -76,8 +78,9 @@ Apply this skill when you:
 
 ## How to apply
 
-1. Open the matching file under [`rules/`](rules/) (or the corresponding
-   `react-bp-*.mdc`) and follow its incorrect/correct guidance.
+1. Open the matching file under [`rules/`](rules/) and follow its
+   incorrect/correct guidance (`.cursor/rules/react-bp-*.mdc` only triggers
+   that file — do not treat the `.mdc` as a second copy of the rule).
 2. Section ordering and impact levels: [`rules/_sections.md`](rules/_sections.md).
 3. Before insisting on a rule, check [`MISMATCHES.md`](MISMATCHES.md) for
    removed vs reworded vs apply-as-is. Do not reintroduce Next.js / SWR / RSC APIs.

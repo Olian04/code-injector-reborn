@@ -4,48 +4,6 @@ globs: src/popup/**/*.{tsx,ts,jsx,js},src/options/**/*.{tsx,ts,jsx,js}
 alwaysApply: false
 ---
 
----
-title: Narrow Effect Dependencies
-impact: LOW
-impactDescription: minimizes effect re-runs
-tags: rerender, useEffect, dependencies, optimization
----
+Follow `.cursor/skills/react-best-practices/rules/rerender-dependencies.md` verbatim / as adapted in that file.
 
-## Narrow Effect Dependencies
-
-Specify primitive dependencies instead of objects to minimize effect re-runs.
-
-**Incorrect (re-runs on any user field change):**
-
-```tsx
-useEffect(() => {
-  console.log(user.id)
-}, [user])
-```
-
-**Correct (re-runs only when id changes):**
-
-```tsx
-useEffect(() => {
-  console.log(user.id)
-}, [user.id])
-```
-
-**For derived state, compute outside effect:**
-
-```tsx
-// Incorrect: runs on width=767, 766, 765...
-useEffect(() => {
-  if (width < 768) {
-    enableMobileMode()
-  }
-}, [width])
-
-// Correct: runs only on boolean transition
-const isMobile = width < 768
-useEffect(() => {
-  if (isMobile) {
-    enableMobileMode()
-  }
-}, [isMobile])
-```
+That skill rule is the sole source of truth. Do not paste or maintain a duplicate rule body in this `.mdc` — this file is only a Cursor glob trigger (`description` / `globs` / `alwaysApply`).

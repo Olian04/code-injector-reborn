@@ -4,46 +4,6 @@ globs: src/popup/**/*.{tsx,ts,jsx,js},src/options/**/*.{tsx,ts,jsx,js}
 alwaysApply: false
 ---
 
----
-title: Dynamic Imports for Heavy Components
-impact: CRITICAL
-impactDescription: directly affects TTI and LCP
-tags: bundle, dynamic-import, code-splitting, react-lazy
----
+Follow `.cursor/skills/react-best-practices/rules/bundle-dynamic-imports.md` verbatim / as adapted in that file.
 
-> Adapted for Code Injector Reborn (browser extension). Upstream: vercel-labs/agent-skills @ 7c180d9.
-
-## Dynamic Imports for Heavy Components
-
-Use `React.lazy` + `Suspense` to lazy-load large components not needed on initial render.
-
-**Incorrect (Monaco / options UI bundles with main chunk):**
-
-```tsx
-import { MonacoEditor } from './monaco-editor'
-
-function CodePanel({ code }: { code: string }) {
-  return <MonacoEditor value={code} />
-}
-```
-
-**Correct (heavy UI loads on demand):**
-
-```tsx
-import { lazy, Suspense } from 'react'
-
-const MonacoEditor = lazy(() =>
-  import('./monaco-editor').then((m) => ({ default: m.MonacoEditor }))
-)
-
-function CodePanel({ code }: { code: string }) {
-  return (
-    <Suspense fallback={<div className="loading" />}>
-      <MonacoEditor value={code} />
-    </Suspense>
-  )
-}
-```
-
-Project pattern: `src/popup/components/OptionsPanel.tsx` lazy-loads the options
-app and keeps it mounted after first open so re-opening is instant.
+That skill rule is the sole source of truth. Do not paste or maintain a duplicate rule body in this `.mdc` — this file is only a Cursor glob trigger (`description` / `globs` / `alwaysApply`).

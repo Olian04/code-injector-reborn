@@ -9,41 +9,6 @@ globs: README.md,readme-resources/**/*,PRIVACY.md
 alwaysApply: false
 ---
 
-# CWS store listing
+Follow `.cursor/skills/chrome-web-store-best-practices/SKILL.md` (Store listing sections) and `.cursor/skills/chrome-web-store-best-practices/reference.md` (store listing checklist / asset sizes) as the canonical guidance for Chrome Web Store listing copy and assets.
 
-Official: [Creating a great listing page](https://developer.chrome.com/docs/webstore/best-listing),
-[best practices — store listing](https://developer.chrome.com/docs/webstore/best-practices).
-Skill + checklists: `.cursor/skills/chrome-web-store-best-practices/`.
-
-Listing is not live yet — optimize for **accurate first publish**, not hype.
-
-## Copy
-
-- **Title:** clear function, concise, unique — no keyword stuffing.
-- **Summary:** ≤132 characters; real use case; no “best/fastest” or competitor digs.
-- **Description:** overview + short feature bullets; no keyword spam.
-- Match shipped behavior and `PRIVACY.md` (no analytics; local rules/storage).
-
-## Images
-
-| Asset | Size |
-|-------|------|
-| Screenshots | 1280×800 or 640×400; 1–5; full bleed; square corners; no padding |
-| Small promo tile | 440×280 |
-| Marquee | 1400×560 |
-
-- Sharp, current UI; light text; consistent branding with icon.
-- No fake “Editor's Choice” / “#1” claims; avoid busy/white-heavy promos.
-- Drafts may exist in `readme-resources/screenshots/` — refresh if UI drifted.
-
-## Category & trust
-
-- Default fit: **Developer Tools** (confirm in dashboard before submit).
-- Set homepage + support URLs in the developer dashboard.
-- Screenshots/video should teach onboarding before install.
-
-## Do not
-
-- Treat this as Firefox/AMO guidance.
-- Contradict privacy-first claims for marketing.
-- Invent React/Next.js listing advice.
+Skill docs are the sole source of truth. Do not paste or maintain duplicate checklist content in this `.mdc` — this file is only a Cursor glob trigger (`description` / `globs` / `alwaysApply`).

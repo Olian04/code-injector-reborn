@@ -26,8 +26,9 @@ https://github.com/vercel-labs/agent-skills/tree/7c180d9044c9ae2b442b567aad4e42a
 
 Companion Cursor rules (glob-scoped to `src/popup` / `src/options`):
 
-- `.cursor/rules/react-bp-*.mdc` — one file per **retained** practice rule; Cursor
-  frontmatter plus the same markdown body as `rules/`
+- `.cursor/rules/react-bp-*.mdc` — one file per **retained** practice rule;
+  **glob triggers only** (frontmatter + pointer to `rules/<name>.md`). Skill
+  `rules/` is the sole source of truth; do not duplicate rule bodies in `.mdc`.
 
 N/A, non-mappable, and focus-dropped upstream rules are not present under
 `rules/` or `.cursor/rules/` — see [MISMATCHES.md](MISMATCHES.md) and

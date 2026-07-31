@@ -29,7 +29,10 @@ not treat this skill as covering AMO review.
 
 Detailed checklists: [reference.md](reference.md).
 
-Companion Cursor rules: `cws-extension-quality.mdc`, `cws-store-listing.mdc`.
+Companion Cursor rules: `cws-extension-quality.mdc`, `cws-store-listing.mdc`
+— **glob triggers only** (frontmatter + pointer here / to
+[reference.md](reference.md)). Do not duplicate checklist content in those
+`.mdc` files; this skill is canonical.
 
 ## Project context (this repo)
 

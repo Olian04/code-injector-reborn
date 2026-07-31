@@ -12,8 +12,8 @@ start with:
 
 > Adapted for Code Injector Reborn (browser extension). Upstream: vercel-labs/agent-skills @ 7c180d9.
 
-Matching `.cursor/rules/react-bp-*.mdc` bodies stay in sync (wrappers keep
-Cursor frontmatter).
+`.cursor/rules/react-bp-*.mdc` are glob triggers only (frontmatter + pointer to
+`rules/<name>.md`); they do not duplicate rule bodies.
 
 ---
 
