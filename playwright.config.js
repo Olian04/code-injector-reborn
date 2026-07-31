@@ -2,8 +2,10 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'tests/e2e',
+  // Specs share beforeAll fixture servers within a file; keep those serial.
+  // Different files still run across workers (each launches its own browser).
   fullyParallel: false,
-  workers: 1,
+  workers: process.env.CI ? 2 : 4,
   retries: process.env.CI ? 2 : 0,
   timeout: 60_000,
   expect: {
@@ -11,14 +13,16 @@ export default defineConfig({
   },
   reporter: [['list'], ['html', { open: 'never' }]],
   globalSetup: './tests/e2e/global-setup.js',
-  // Extension tests use a custom persistent Chromium context from fixtures;
-  // do not launch a default browser project.
+  // Browsers are launched by tests/e2e/fixtures.js, which needs a persistent
+  // profile per target; the projects only select which build to install.
   projects: [
     {
-      name: 'chromium-extension',
-      use: {
-        // Real browser launch is owned by tests/e2e/fixtures.js
-      },
+      name: 'chromium',
+      use: { target: 'chromium' },
+    },
+    {
+      name: 'firefox',
+      use: { target: 'firefox' },
     },
   ],
 });

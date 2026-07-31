@@ -1,0 +1,7 @@
+---
+description: React perf popup/options. Skill react-best-practices.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+Follow `.cursor/skills/react-best-practices/SKILL.md` + `rules/` (skip `_sections.md` — metadata). Sole source; this file = glob trigger only.

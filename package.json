@@ -1,26 +1,51 @@
 {
-  "name": "code-injector",
+  "name": "code-injector-reborn",
   "version": "0.4.0",
-  "description": "Inject code into websites! (JavaScript, CSS, HTML and Files)",
+  "description": "Inject code into websites! (JavaScript, CSS and HTML)",
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "node build.mjs",
-    "zip": "node build.mjs --zip",
-    "publish:chrome": "node scripts/publish-chrome.mjs",
-    "test": "npm run build && playwright test",
-    "test:e2e": "playwright test"
+    "dev": "extension dev --browser=chrome --polyfill --no-telemetry",
+    "start": "extension start --browser=chrome --polyfill --no-telemetry",
+    "build": "npm run build:chrome && npm run build:firefox",
+    "build:chrome": "extension build --browser=chrome --polyfill --no-telemetry",
+    "build:firefox": "extension build --browser=firefox --polyfill --no-telemetry",
+    "zip": "npm run zip:chrome && npm run zip:firefox",
+    "zip:chrome": "extension build --browser=chrome --polyfill --zip --no-telemetry",
+    "zip:firefox": "extension build --browser=firefox --polyfill --zip --no-telemetry",
+    "preview": "extension preview --browser=chrome --polyfill --no-telemetry",
+    "install:chrome": "extension install --browser=chrome",
+    "install:firefox": "extension install --browser=firefox",
+    "test": "playwright test",
+    "test:e2e": "playwright test",
+    "test:e2e:chromium": "playwright test --project=chromium",
+    "test:e2e:firefox": "playwright test --project=firefox",
+    "typecheck": "tsc --noEmit",
+    "publish:chrome": "node tools/publish-chrome.mjs",
+    "postinstall": "node tools/copy-monaco.mjs && npm run install:chrome && npm run install:firefox"
+  },
+  "engines": {
+    "node": ">=22.12"
   },
   "author": "Oliver Anteros (@Olian04)",
   "contributors": [
     "L. Sabatelli (@Lor-Saba) - original author"
   ],
   "license": "GPL-3.0",
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
   "devDependencies": {
     "@playwright/test": "^1.54.2",
-    "archiver": "7.0.1",
+    "@types/chrome": "^0.2.2",
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@types/webextension-polyfill": "^0.12.5",
+    "extension": "^4.0.22",
     "monaco-editor": "0.52.2",
-    "sass": "1.101.0",
-    "webextension-polyfill": "0.12.0"
+    "sass": "^1.102.0",
+    "typescript": "^5.8.2",
+    "webextension-polyfill": "^0.12.0"
   }
 }

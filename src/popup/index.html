@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="description"
+      content="Inject code into websites! (JavaScript, CSS and HTML)"
+    />
+    <meta name="author" content="Oliver Anteros" />
+    <title>Code Injector Reborn</title>
+    <link rel="stylesheet" href="/material-icons.css" />
+    <!-- Applies a saved light/dark override before the first paint. -->
+    <script src="/theme-boot.js"></script>
+  </head>
+  <body class="unselectable" data-loading="true">
+    <!--
+      Painted before any script runs. React renders the same shell with the
+      same placeholder row, so mounting swaps the markup without a visible
+      change; the row is replaced once the stored rules arrive.
+    -->
+    <div id="root">
+      <div id="body">
+        <div id="rules" class="unselectable">
+          <ul class="rules-list">
+            <li class="rule rule-placeholder"></li>
+          </ul>
+          <div class="rules-controls">
+            <button class="btn btn-left btn-icon" type="button" tabindex="-1"></button>
+            <button class="btn btn-left" type="button" tabindex="-1">Options</button>
+            <button class="btn btn-primary" type="button" tabindex="-1">Add rule</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="./scripts.tsx"></script>
+  </body>
+</html>

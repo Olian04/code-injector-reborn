@@ -9,18 +9,37 @@ All notable changes to this project will be documented in this file.
 Maintainership of this project has moved to a fork maintained by Oliver Anteros (@Olian04). The original author remains L. Sabatelli (@Lor-Saba).
 
 #### Changed
+- Rule injection toggles moved from the editor footer into a **Settings** tab as dropdown selects (*Injection timing*, *Frame scope*); *Enabled* stays on the rule list / context menu. Cancel / Save stay in the footer.
+- Renamed the extension to **Code Injector Reborn**, to keep the fork distinct from the original store listings.
 - Migrated the extension from Manifest V2 to **Manifest V3** (required for continued distribution on the Chrome Web Store).
   - `browser_action` is now `action`.
   - The background page is now a service worker.
   - `<all_urls>` moved to `host_permissions`; added the `scripting` permission.
   - Code injection now uses `chrome.scripting.executeScript` instead of the removed `tabs.executeScript`.
+- The code editors name their monospace font stack explicitly instead of relying on Monaco's per-platform default, and the minimap is gone — it cost horizontal space the popup does not have.
 
 #### Added
 - A build toolchain (`npm run build` / `npm run zip`) that assembles a loadable `dist/` folder (SCSS compilation, vendored Monaco editor and webextension-polyfill, script bundling).
-- A GitHub Actions workflow that publishes to the Chrome Web Store via a service-account on GitHub Release.
+- The popup now paints the rules list before loading Monaco, then warms the editor in idle time, so opening the action no longer waits on ~4 MB of editor code.
+- The popup document ships the rules shell, so the first paint no longer waits for React either; the placeholder row is swapped for the real list once the stored rules are read.
+- **Dark mode.** It follows the system colour scheme, including Monaco's theme, and the new *Appearance* setting in the options page overrides it. The choice is cached so an override applies before the popup's first paint.
+- End-to-end tests now run against Firefox as well as Chromium, in a CI matrix. Firefox has no Playwright API for loading extensions, so the harness installs the build over the remote debugging protocol and drives the background script through it.
+- A GitHub Actions workflow that publishes to the Chrome Web Store via a service-account on GitHub Release, and attaches the Firefox build to the release.
+- The HTML tab now completes the classes and ids defined in the same rule's CSS tab, including selectors nested in at-rules such as `@media`. Suggestions follow the CSS you are typing, saved or not.
+
+#### Fixed
+- The *Top frame only* tooltip described the opposite of what the option does ("Set if this rule can be injected to iframes").
+- Monaco's language services now run in web workers again; they were falling back to the main thread, which left JavaScript validation and completions dead.
+- `npm run build` no longer emits a development bundle for the first browser target.
 
 #### Removed
-- Local `file://` injection, which is not possible from a Manifest V3 service worker. A clear error is now logged when a local-file rule is used.
+- Editor help popovers (URL pattern cheat sheet and Settings-tab option explanations on hover).
+- The per-rule **Files** list, and with it `file://` injection. Reading local files is not possible from a Manifest V3 service worker, which left the feature half working, and the remote half is already expressible in the code tabs — `import("https://…")` in JavaScript, `@import url("…")` in CSS, tags in HTML — so a fourth tab that only accepted a URL was not earning its place. Rules that still carry a `files` array import cleanly; the list is ignored.
+- The Edge build target. The Chromium bundle already covers Edge, Brave and other Chromium forks, as the Firefox bundle does for Firefox forks.
+- The unimplemented "night mode" toggle, replaced by the *Appearance* setting.
+
+#### Security
+- Build tooling telemetry stays off (`--no-telemetry` on every Extension.js invocation), and the extension itself contains no analytics, tracking or remote reporting of any kind.
 
 ## [0.3.3] - 2022-01-12 
    
@@ -121,7 +140,7 @@ The initial Beta release
 
 
 
-[0.4.0]: https://github.com/Olian04/Code-Injector/releases/tag/v0.4.0
+[0.4.0]: https://github.com/Olian04/code-injector-reborn/releases/tag/v0.4.0
 [0.3.3]: https://github.com/Lor-Saba/Code-Injector/releases/tag/v0.3.3
 [0.3.2]: https://github.com/Lor-Saba/Code-Injector/releases/tag/v0.3.2
 [0.3.0]: https://github.com/Lor-Saba/Code-Injector/releases/tag/v0.3.0

@@ -1,0 +1,46 @@
+
+// base colors
+$cPrimary: #0080dd;
+$cSecondary: #4CAF50;
+$cError: #d22;
+$cBase: #334;
+
+// dark theme palette
+// Dark rules live in per-page `dark-theme` mixins that re-state only the
+// colours of the light theme, so light styling stays the single source of
+// layout truth.
+$dBackdrop: #0f1012;
+$dSurface: #1b1d20;
+$dRaised: #24262b;
+$dRaisedHover: #2c2f35;
+$dText: #dfe1e5;
+$dTextMuted: #8b9099;
+$dBorder: rgba(255, 255, 255, .14);
+$dBorderSoft: rgba(255, 255, 255, .07);
+$dPrimary: #2f80ed;
+$dPrimaryText: #6db3ff;
+$dError: #ff6b6b;
+$dSecondary: #5ec269;
+
+// languages colors
+$cCodeJS: #f1bf26;
+$cCodeCSS: #30a9dc;
+$cCodeHTML: #f1672c;
+
+// formatting
+html {
+    box-sizing: border-box;
+    // Keeps form controls, scrollbars and carets in step with the theme.
+    color-scheme: light;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+.unselectable {
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json.schemastore.org/chrome-manifest.json",
+  "manifest_version": 3,
+  "name": "Code Injector Reborn",
+  "version": "0.4.0",
+  "author": "Oliver Anteros",
+  "description": "Inject code into websites! (JavaScript, CSS and HTML)",
+
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "storage",
+    "webNavigation",
+    "scripting"
+  ],
+  "host_permissions": ["<all_urls>"],
+
+  "icons": {
+    "16": "images/icon/icon-16px.png",
+    "24": "images/icon/icon-24px.png",
+    "32": "images/icon/icon-32px.png",
+    "48": "images/icon/icon-48px.png",
+    "64": "images/icon/icon-64px.png",
+    "96": "images/icon/icon-96px.png"
+  },
+
+  "action": {
+    "default_icon": {
+      "16": "images/icon/icon-16px.png",
+      "24": "images/icon/icon-24px.png",
+      "32": "images/icon/icon-32px.png",
+      "48": "images/icon/icon-48px.png",
+      "64": "images/icon/icon-64px.png",
+      "96": "images/icon/icon-96px.png"
+    },
+    "default_title": "Code Injector Reborn",
+    "default_popup": "popup/index.html"
+  },
+
+  "background": {
+    "service_worker": "background/index.ts"
+  },
+
+  "options_ui": {
+    "page": "options/index.html",
+    "open_in_tab": false
+  },
+
+  "firefox:browser_specific_settings": {
+    "gecko": {
+      "id": "code-injector-reborn@olian04",
+      "strict_min_version": "109.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
+}
