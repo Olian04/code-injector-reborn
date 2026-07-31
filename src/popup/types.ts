@@ -1,6 +1,6 @@
 import type { Rule, TabData } from '../shared/types';
 
-export type EditorTab = 'js' | 'css' | 'html';
+export type EditorTab = 'js' | 'css' | 'html' | 'settings';
 
 export interface RuleView extends Rule {
   id: number;

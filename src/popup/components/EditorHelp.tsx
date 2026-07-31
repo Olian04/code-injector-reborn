@@ -74,6 +74,21 @@ export function SelectorHelp({ anchorRef }: HelpProps) {
   );
 }
 
+export function EnabledHelp({ anchorRef }: HelpProps) {
+  return (
+    <HelpPopover id="help-enabled" heading="Enabled" anchorRef={anchorRef}>
+      <p>
+        <strong>Enabled:</strong> the rule can be injected when its URL pattern
+        matches.
+      </p>
+      <p>
+        <strong>Disabled:</strong> the rule is kept but never injected. You can
+        also toggle this from the rule's context menu.
+      </p>
+    </HelpPopover>
+  );
+}
+
 export function OnPageLoadHelp({ anchorRef }: HelpProps) {
   return (
     <HelpPopover
@@ -82,14 +97,14 @@ export function OnPageLoadHelp({ anchorRef }: HelpProps) {
       anchorRef={anchorRef}
     >
       <p>
-        <strong>Checked:</strong> wait for the page's load event — markup,
+        <strong>On page load:</strong> wait for the page's load event — markup,
         images, stylesheets and its own scripts have all finished — then inject.
         Choose this when the code looks for elements on the page.
       </p>
       <p>
-        <strong>Unchecked:</strong> inject as soon as the navigation commits,
-        before the document is parsed. The page may still be empty, so a
-        selector can come back with nothing, but the code runs before the
+        <strong>As soon as possible:</strong> inject as soon as the navigation
+        commits, before the document is parsed. The page may still be empty, so
+        a selector can come back with nothing, but the code runs before the
         page's own scripts do.
       </p>
     </HelpPopover>
@@ -104,10 +119,11 @@ export function TopFrameOnlyHelp({ anchorRef }: HelpProps) {
       anchorRef={anchorRef}
     >
       <p>
-        <strong>Checked:</strong> inject only into the page in the address bar.
+        <strong>Top frame only:</strong> inject only into the page in the
+        address bar.
       </p>
       <p>
-        <strong>Unchecked:</strong> also inject into iframes on that page. Each
+        <strong>All frames:</strong> also inject into iframes on that page. Each
         frame is matched on its own address, not the address of the page around
         it, so the URL pattern has to match the iframe's URL for it to apply.
       </p>

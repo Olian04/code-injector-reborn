@@ -108,7 +108,7 @@ test.describe('editor', () => {
     await expect(page.locator('#body')).toHaveAttribute('data-editing', 'true');
   });
 
-  test('explains both injection options while hovering their labels', async ({
+  test('settings tab exposes rule options as selects with help', async ({
     page,
     openPopup,
     seedRules,
@@ -117,35 +117,65 @@ test.describe('editor', () => {
     await openPopup(page);
     await openEditor(page);
 
-    // There is no help icon to aim at any more; the labels are the triggers.
+    // Footer keeps Cancel / Save only; toggles live on the Settings tab.
+    await expect(page.locator('.editor-controls label')).toHaveCount(0);
+    await expect(page.locator('[data-name="cb-editor-onload"]')).toHaveCount(0);
     await expect(page.locator('.help-trigger')).toHaveCount(0);
 
+    await page.locator('[data-name="btn-tab"][data-for="settings"]').click();
+    await expect(page.locator('.tab')).toHaveAttribute('data-selected', 'settings');
+
+    const enabled = page.locator('[data-name="sel-editor-enabled"]');
+    const onLoad = page.locator('[data-name="sel-editor-onload"]');
+    const topFrame = page.locator('[data-name="sel-editor-topframeonly"]');
+
+    await expect(enabled).toHaveValue('true');
+    await expect(onLoad).toHaveValue('true');
+    await expect(topFrame).toHaveValue('true');
+
+    await onLoad.selectOption('false');
+    await topFrame.selectOption('false');
+    await enabled.selectOption('false');
+    await expect(onLoad).toHaveValue('false');
+    await expect(topFrame).toHaveValue('false');
+    await expect(enabled).toHaveValue('false');
+
     const onLoadLabel = page.locator(
-      '.editor-controls label:has([data-name="cb-editor-onload"])'
+      '.editor-settings-field:has([data-name="sel-editor-onload"])'
     );
     const topFrameLabel = page.locator(
-      '.editor-controls label:has([data-name="cb-editor-topframeonly"])'
+      '.editor-settings-field:has([data-name="sel-editor-topframeonly"])'
     );
-    const onLoad = page.locator('[data-name="po-help-onpageload"]');
-    const topFrame = page.locator('[data-name="po-help-topframeonly"]');
+    const onLoadHelp = page.locator('[data-name="po-help-onpageload"]');
+    const topFrameHelp = page.locator('[data-name="po-help-topframeonly"]');
 
     await onLoadLabel.hover();
-    await expect(onLoad).toBeVisible();
-    await expect(onLoad).toContainText("page's load event");
+    await expect(onLoadHelp).toBeVisible();
+    await expect(onLoadHelp).toContainText("page's load event");
+    await expect(onLoadHelp).toContainText('As soon as possible');
+
+    // Stacked fields sit under the open bubble; dismiss before aiming lower.
+    await page.keyboard.press('Escape');
+    await expect(onLoadHelp).toBeHidden();
+    await expect(page.locator('#body')).toHaveAttribute('data-editing', 'true');
 
     await topFrameLabel.hover();
-    await expect(topFrame).toBeVisible();
-    await expect(topFrame).toContainText('iframes');
-    // Opening one bubble dismisses the other.
-    await expect(onLoad).toBeHidden();
+    await expect(topFrameHelp).toBeVisible();
+    await expect(topFrameHelp).toContainText('iframes');
+    await expect(topFrameHelp).toContainText('All frames');
+
+    // Opening another bubble dismisses the one already up.
+    await onLoadLabel.hover();
+    await expect(onLoadHelp).toBeVisible();
+    await expect(topFrameHelp).toBeHidden();
 
     // Moving into the bubble keeps it up, so it can be read and scrolled.
-    await topFrame.hover();
+    await onLoadHelp.hover();
     await page.waitForTimeout(600);
-    await expect(topFrame).toBeVisible();
+    await expect(onLoadHelp).toBeVisible();
 
     await page.locator('[data-name="btn-editor-save"]').hover();
-    await expect(topFrame).toBeHidden();
+    await expect(onLoadHelp).toBeHidden();
   });
 
   test('suggests ids from the CSS tab inside an id attribute', async ({

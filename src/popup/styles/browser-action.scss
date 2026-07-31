@@ -374,10 +374,12 @@
     .tab-contents li[data-target="js"]{ transform: translateX(0%); }
     .tab-contents li[data-target="css"]{ transform: translateX(100%); }
     .tab-contents li[data-target="html"]{ transform: translateX(200%); }
+    .tab-contents li[data-target="settings"]{ transform: translateX(300%); }
 
-    .tab[data-selected="js"]    .tab-titles > li[data-for="js"],
-    .tab[data-selected="css"]   .tab-titles > li[data-for="css"],
-    .tab[data-selected="html"]  .tab-titles > li[data-for="html"]{
+    .tab[data-selected="js"]       .tab-titles > li[data-for="js"],
+    .tab[data-selected="css"]      .tab-titles > li[data-for="css"],
+    .tab[data-selected="html"]     .tab-titles > li[data-for="html"],
+    .tab[data-selected="settings"] .tab-titles > li[data-for="settings"]{
         border-top-color: #ddd;
         border-left-color: #ddd;
         border-right-color: #ddd;
@@ -385,28 +387,66 @@
         background: #fff; 
     }
 
-    .tab[data-selected="js"]    .tab-contents > ul{ transform: translateX(0%); }
-    .tab[data-selected="css"]   .tab-contents > ul{ transform: translateX(-100%); }
-    .tab[data-selected="html"]  .tab-contents > ul{ transform: translateX(-200%); }
+    .tab[data-selected="js"]       .tab-contents > ul{ transform: translateX(0%); }
+    .tab[data-selected="css"]      .tab-contents > ul{ transform: translateX(-100%); }
+    .tab[data-selected="html"]     .tab-contents > ul{ transform: translateX(-200%); }
+    .tab[data-selected="settings"] .tab-contents > ul{ transform: translateX(-300%); }
 
-    .tab[data-selected="js"]    li[data-target="js"],
-    .tab[data-selected="css"]   li[data-target="css"],
-    .tab[data-selected="html"]  li[data-target="html"]{
+    .tab[data-selected="js"]       li[data-target="js"],
+    .tab[data-selected="css"]      li[data-target="css"],
+    .tab[data-selected="html"]     li[data-target="html"],
+    .tab[data-selected="settings"] li[data-target="settings"]{
         opacity: 1; 
         pointer-events: all; 
     }
 
     .tab[data-focus="true"] .tab-contents { border-color: $cPrimary; transition: .2s;}
     .tab[data-focus="true"] .tab-titles { box-shadow: inset 0 -1px $cPrimary; }
-    .tab[data-focus="true"][data-selected="js"]    .tab-titles > li[data-for="js"],
-    .tab[data-focus="true"][data-selected="css"]   .tab-titles > li[data-for="css"],
-    .tab[data-focus="true"][data-selected="html"]  .tab-titles > li[data-for="html"]{   
+    .tab[data-focus="true"][data-selected="js"]       .tab-titles > li[data-for="js"],
+    .tab[data-focus="true"][data-selected="css"]      .tab-titles > li[data-for="css"],
+    .tab[data-focus="true"][data-selected="html"]     .tab-titles > li[data-for="html"],
+    .tab[data-focus="true"][data-selected="settings"] .tab-titles > li[data-for="settings"]{   
         border-top-color: $cPrimary;
         border-left-color: $cPrimary;
         border-right-color: $cPrimary;
         box-shadow: 0 1px #fff;
         background: #fff;
         transition: .2s;
+    }
+
+    .editor-settings{
+        box-sizing: border-box;
+        height: 100%;
+        padding: 20px 24px;
+        overflow-y: auto;
+
+        .editor-settings-field{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 14px;
+            cursor: default;
+
+            &:last-of-type{
+                margin-bottom: 0;
+            }
+        }
+
+        .editor-settings-label{
+            font-size: 12px;
+            color: #444;
+            flex: 0 0 auto;
+        }
+
+        select.inp{
+            flex: 1 1 auto;
+            max-width: 260px;
+            padding: 0 10px;
+            cursor: pointer;
+            background: #fff;
+            color: #333;
+        }
     }
 
 
@@ -499,32 +539,6 @@
 
     .editor-controls{
         text-align: right;
-
-        & label{
-            font-size: 12px;
-            height: 30px;
-            line-height: 30px;
-            vertical-align: middle;
-            // display: inline-block;
-            cursor: pointer;
-            padding: 0 10px;
-            color: #444;
-            float: left;
-
-            &:hover{
-                color: #000;
-            }
-
-            input{
-                vertical-align: middle;
-                height: 30px;
-                line-height: 30px;
-                margin: 0 5px 0 0;
-                display: inline-block;
-                padding: 0;
-                cursor: pointer;
-            }
-        }
     }
 
 
@@ -1300,9 +1314,10 @@
             }
         }
         #{$s} .tab-contents{ border-color: $dBorder; }
-        #{$s} .tab[data-selected="js"]    .tab-titles > li[data-for="js"],
-        #{$s} .tab[data-selected="css"]   .tab-titles > li[data-for="css"],
-        #{$s} .tab[data-selected="html"]  .tab-titles > li[data-for="html"]{
+        #{$s} .tab[data-selected="js"]       .tab-titles > li[data-for="js"],
+        #{$s} .tab[data-selected="css"]      .tab-titles > li[data-for="css"],
+        #{$s} .tab[data-selected="html"]     .tab-titles > li[data-for="html"],
+        #{$s} .tab[data-selected="settings"] .tab-titles > li[data-for="settings"]{
             border-top-color: $dBorder;
             border-left-color: $dBorder;
             border-right-color: $dBorder;
@@ -1311,14 +1326,25 @@
         }
         #{$s} .tab[data-focus="true"] .tab-contents{ border-color: $dPrimaryText; }
         #{$s} .tab[data-focus="true"] .tab-titles{ box-shadow: inset 0 -1px $dPrimaryText; }
-        #{$s} .tab[data-focus="true"][data-selected="js"]    .tab-titles > li[data-for="js"],
-        #{$s} .tab[data-focus="true"][data-selected="css"]   .tab-titles > li[data-for="css"],
-        #{$s} .tab[data-focus="true"][data-selected="html"]  .tab-titles > li[data-for="html"]{
+        #{$s} .tab[data-focus="true"][data-selected="js"]       .tab-titles > li[data-for="js"],
+        #{$s} .tab[data-focus="true"][data-selected="css"]      .tab-titles > li[data-for="css"],
+        #{$s} .tab[data-focus="true"][data-selected="html"]     .tab-titles > li[data-for="html"],
+        #{$s} .tab[data-focus="true"][data-selected="settings"] .tab-titles > li[data-for="settings"]{
             border-top-color: $dPrimaryText;
             border-left-color: $dPrimaryText;
             border-right-color: $dPrimaryText;
             box-shadow: 0 1px $dRaised;
             background: $dRaised;
+        }
+        #{$s} .editor-settings{
+            .editor-settings-label{ color: $dText; }
+            select.inp{
+                background: $dRaised;
+                color: $dText;
+                border-color: $dBorder;
+
+                &:focus{ border-color: $dPrimaryText; }
+            }
         }
         #{$s} body[data-loading="true"] .tab-contents::after{
             background: $dSurface;
@@ -1350,12 +1376,6 @@
                 background: $dSurface;
             }
         }
-        #{$s} .editor-controls label{
-            color: $dText;
-
-            &:hover{ color: #fff; }
-        }
-
         // Info page
         #{$s} .info-header{
             background: $dRaised;

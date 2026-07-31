@@ -1,11 +1,8 @@
 import { useEffect, useRef, type MouseEvent, type RefObject } from 'react';
 import type { EditorTab } from '../types';
 import { closeOpenPopovers } from '../dom';
-import {
-  OnPageLoadHelp,
-  SelectorHelp,
-  TopFrameOnlyHelp,
-} from './EditorHelp';
+import { SelectorHelp } from './EditorHelp';
+import { EditorSettings } from './EditorSettings';
 
 interface EditorPanelProps {
   active: boolean;
@@ -67,8 +64,6 @@ export function EditorPanel({
   onResizeGripMouseDown,
 }: EditorPanelProps) {
   const selectorRef = useRef<HTMLInputElement>(null);
-  const onLoadRef = useRef<HTMLLabelElement>(null);
-  const topFrameOnlyRef = useRef<HTMLLabelElement>(null);
 
   // The bubbles live in the top layer, so they would outlive a panel dismissed
   // from the keyboard while the pointer still rests on a control.
@@ -161,6 +156,13 @@ export function EditorPanel({
               data-active={String(codeActive.html)}
             />
           </li>
+          <li
+            data-name="btn-tab"
+            data-for="settings"
+            onClick={() => onTabSelect('settings')}
+          >
+            Settings
+          </li>
         </ul>
         <div className="tab-contents" ref={tabContentsRef}>
           <ul>
@@ -182,46 +184,24 @@ export function EditorPanel({
             >
               <div className="editor" id="editor-html" ref={editorHtmlRef} />
             </li>
+            <li
+              data-target="settings"
+              data-selected={selectedTab === 'settings' ? 'true' : undefined}
+            >
+              <EditorSettings
+                enabled={enabled}
+                onLoad={onLoad}
+                topFrameOnly={topFrameOnly}
+                onEnabledChange={onEnabledChange}
+                onOnLoadChange={onOnLoadChange}
+                onTopFrameOnlyChange={onTopFrameOnlyChange}
+              />
+            </li>
           </ul>
         </div>
       </div>
 
       <div className="editor-controls unselectable">
-        <label
-          title="Enable this rule (won't be injected if disabled)"
-          style={{ display: 'none' }}
-        >
-          <input
-            type="checkbox"
-            data-name="cb-editor-enabled"
-            tabIndex={-1}
-            checked={enabled}
-            onChange={(e) => onEnabledChange(e.target.checked)}
-          />
-          Enabled
-        </label>
-        <label ref={onLoadRef} aria-describedby="help-onpageload">
-          <input
-            type="checkbox"
-            data-name="cb-editor-onload"
-            tabIndex={-1}
-            checked={onLoad}
-            onChange={(e) => onOnLoadChange(e.target.checked)}
-          />
-          On page load
-        </label>
-        <OnPageLoadHelp anchorRef={onLoadRef} />
-        <label ref={topFrameOnlyRef} aria-describedby="help-topframeonly">
-          <input
-            type="checkbox"
-            data-name="cb-editor-topframeonly"
-            tabIndex={-1}
-            checked={topFrameOnly}
-            onChange={(e) => onTopFrameOnlyChange(e.target.checked)}
-          />
-          Top frame only
-        </label>
-        <TopFrameOnlyHelp anchorRef={topFrameOnlyRef} />
         <button
           data-name="btn-editor-cancel"
           className="btn"

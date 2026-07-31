@@ -595,6 +595,13 @@ export function App() {
                     ?.querySelector<HTMLTextAreaElement>('textarea.inputarea')
                     ?.focus();
                   break;
+                case 'settings':
+                  document
+                    .querySelector<HTMLSelectElement>(
+                      '[data-name="sel-editor-enabled"]'
+                    )
+                    ?.focus();
+                  break;
               }
             }
           }

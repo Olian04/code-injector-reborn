@@ -55,8 +55,10 @@ The original `Code Injector` (Manifest V2, no longer maintained) is still listed
   - [Editor view](#editor-view)
       - [URL pattern](#url-pattern)
       - [Editors](#editors)
+      - [Settings](#settings)
       - [On page load](#on-page-load)
       - [Top frame only](#top-frame-only)
+      - [Enabled](#enabled)
   - [Options view](#options-view)
       - [Saved rules](#saved-rules)
       - [Size](#size)
@@ -185,21 +187,29 @@ _<small style="color: #555">(this example is just for knowledge purposes)</small
 
 The main section of the _Editor view_.
 
-From left to right you can access the _JavaScript_, _CSS_ and _HTML_ editors by clicking on the tabs.
+From left to right you can access the _JavaScript_, _CSS_ and _HTML_ editors, plus a _Settings_ tab for rule injection options.
 
 > **Note:**  
 > If an editor contains just comments the code wont be injected.
 
 To pull in code hosted elsewhere, reference it from the editor that suits it: `import("https://…")` in _JavaScript_, `@import url("…")` in _CSS_, or a tag in _HTML_.
 
+#### Settings
+
+Rule injection options live on the _Settings_ tab (dropdowns, not footer checkboxes):
+
 #### On page load
 
-If `TRUE`, the rule will be injected on page load, else it will be injected on navigation.  
+**On page load** (default): inject after the page load event. **As soon as possible**: inject when navigation commits.  
 Check the [Injection flow](#injection-flow) for more details.
 
 #### Top frame only
 
-`TRUE` by default, if set to `FALSE` the rule will be injected to the iframes too.
+**Top frame only** (default): inject only into the top page. **All frames**: also inject into matching iframes.
+
+#### Enabled
+
+**Enabled** (default): the rule can be injected. **Disabled**: kept in the list but never injected. You can also toggle this from the rule's context menu.
 
 ## Options view
 
@@ -253,7 +263,7 @@ If `true`, a badge with the number of currently injected rules will be visible o
 
 ## Injection flow
 
-A _Rule_ by default is set up to be injected on page load _(after the document and all its resources have finished loading)_ but can be changed to be injected when the navigation is committed _(the DOM is recived and still loading)_ by deselecting the property "[On page load](#on-page-load)" in the _Editor view_.
+A _Rule_ by default is set up to be injected on page load _(after the document and all its resources have finished loading)_ but can be changed to inject when the navigation is committed _(the DOM is received and still loading)_ by choosing **As soon as possible** under "[On page load](#on-page-load)" on the editor's _Settings_ tab.
 
 The rules whose _URL Pattern_ match with the page address will be selected and queued for injection. (from top to bottom, grouped by type)
 

@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 Maintainership of this project has moved to a fork maintained by Oliver Anteros (@Olian04). The original author remains L. Sabatelli (@Lor-Saba).
 
 #### Changed
+- Rule injection toggles (*Enabled*, *On page load*, *Top frame only*) moved from the editor footer into a **Settings** tab as dropdown selects; Cancel / Save stay in the footer.
 - Renamed the extension to **Code Injector Reborn**, to keep the fork distinct from the original store listings.
 - Migrated the extension from Manifest V2 to **Manifest V3** (required for continued distribution on the Chrome Web Store).
   - `browser_action` is now `action`.
@@ -25,7 +26,7 @@ Maintainership of this project has moved to a fork maintained by Oliver Anteros 
 - End-to-end tests now run against Firefox as well as Chromium, in a CI matrix. Firefox has no Playwright API for loading extensions, so the harness installs the build over the remote debugging protocol and drives the background script through it.
 - A GitHub Actions workflow that publishes to the Chrome Web Store via a service-account on GitHub Release, and attaches the Firefox build to the release.
 - The HTML tab now completes the classes and ids defined in the same rule's CSS tab, including selectors nested in at-rules such as `@media`. Suggestions follow the CSS you are typing, saved or not.
-- Help popovers, built on the [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API). Hovering the *URL pattern* field brings up a regular-expression cheat sheet with worked examples, and hovering *On page load* or *Top frame only* explains what both states of that option do. Each bubble stays up long enough to move the pointer into it and read or scroll.
+- Help popovers, built on the [Popover API](https://developer.mozilla.org/en-US/docs/Web/API/Popover_API). Hovering the *URL pattern* field brings up a regular-expression cheat sheet with worked examples, and hovering the Settings-tab controls (*Enabled*, *On page load*, *Top frame only*) explains what both states of each option do. Each bubble stays up long enough to move the pointer into it and read or scroll.
 
 #### Fixed
 - The *Top frame only* tooltip described the opposite of what the option does ("Set if this rule can be injected to iframes").
