@@ -1,4 +1,11 @@
 ---
+description: >-
+  Defer reading React state to the usage point in popup/options UI to avoid unnecessary re-renders.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Defer State Reads to Usage Point
 impact: MEDIUM
 impactDescription: avoids unnecessary subscriptions

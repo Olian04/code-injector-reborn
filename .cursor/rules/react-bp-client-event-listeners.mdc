@@ -1,4 +1,11 @@
 ---
+description: >-
+  Deduplicate global window/document and browser.* event listeners with a module-level shared subscriber in popup/options React; never SWR.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Deduplicate Global Event Listeners
 impact: LOW
 impactDescription: single listener for N components

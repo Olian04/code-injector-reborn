@@ -1,4 +1,11 @@
 ---
+description: >-
+  Hoist default non-primitive props out of memoized popup/options components so defaults do not break memo.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 
 title: Extract Default Non-primitive Parameter Value from Memoized Component to Constant
 impact: MEDIUM

@@ -1,4 +1,11 @@
 ---
+description: >-
+  Narrow useEffect and hook dependency arrays in popup/options React to only values that should trigger the effect.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Narrow Effect Dependencies
 impact: LOW
 impactDescription: minimizes effect re-runs

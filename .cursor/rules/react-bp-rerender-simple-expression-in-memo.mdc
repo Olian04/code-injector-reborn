@@ -1,4 +1,11 @@
 ---
+description: >-
+  Do not wrap simple primitive expressions in useMemo in popup/options React.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Do not wrap a simple expression with a primitive result type in useMemo
 impact: LOW-MEDIUM
 impactDescription: wasted computation on every render

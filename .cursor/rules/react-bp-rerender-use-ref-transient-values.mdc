@@ -1,4 +1,11 @@
 ---
+description: >-
+  Store transient values in useRef in popup/options React when updates should not trigger re-renders.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Use useRef for Transient Values
 impact: MEDIUM
 impactDescription: avoids unnecessary re-renders on frequent updates

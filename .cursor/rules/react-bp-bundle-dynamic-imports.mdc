@@ -1,4 +1,11 @@
 ---
+description: >-
+  Code-split heavy popup/options components with React.lazy + Suspense; never use next/dynamic.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Dynamic Imports for Heavy Components
 impact: CRITICAL
 impactDescription: directly affects TTI and LCP

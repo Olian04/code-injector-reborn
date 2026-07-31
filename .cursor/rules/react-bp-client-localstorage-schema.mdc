@@ -1,4 +1,11 @@
 ---
+description: >-
+  Version and minimize browser.storage payloads for the extension UI; localStorage is theme mirror only.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Version and Minimize Extension Storage Data
 impact: MEDIUM
 impactDescription: prevents schema conflicts, reduces storage size

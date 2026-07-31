@@ -1,4 +1,11 @@
 ---
+description: >-
+  Conditionally load heavy popup/options modules on feature activation or first open (mount-on-first-open), not eagerly.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Conditional Module Loading
 impact: HIGH
 impactDescription: loads large modules only when needed

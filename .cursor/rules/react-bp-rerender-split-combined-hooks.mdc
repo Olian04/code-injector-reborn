@@ -1,4 +1,11 @@
 ---
+description: >-
+  Split combined hook computations in popup/options React so unrelated values do not share invalidation.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Split Combined Hook Computations
 impact: MEDIUM
 impactDescription: avoids recomputing independent steps

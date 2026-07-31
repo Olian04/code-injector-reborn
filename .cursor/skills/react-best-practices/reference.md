@@ -1,68 +1,97 @@
 # React Best Practices — reference index
 
-Authority: files in [`rules/`](rules/), based on
+**Canonical rules:** [`.cursor/rules/react-bp-*.mdc`](../../rules/) — based on
 [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules)
 at `7c180d9044c9ae2b442b567aad4e42a28dd5ed62`, then trimmed and (where noted)
 adapted for this browser-extension project (see [`MISMATCHES.md`](MISMATCHES.md)).
 
 Most rules are still verbatim upstream. Adapted rules are marked in
 [`MISMATCHES.md` → Reworded on disk](MISMATCHES.md#reworded-on-disk) and carry
-an “Adapted for Code Injector Reborn” note in the file body.
+an “Adapted for Code Injector Reborn” note in the `.mdc` body.
 
 Do not use this file as a substitute for the rule bodies. Use it only to find
-the right `rules/<name>.md` file.
+the right `react-bp-<name>.mdc` file.
 
-## Metadata
+Each rule has `alwaysApply: false` and globs:
+`src/popup/**/*.{tsx,ts}`, `src/options/**/*.{tsx,ts}`.
 
-- [`rules/_sections.md`](rules/_sections.md) — section order, impact, descriptions
+## Sections (order / impact)
+
+Upstream categories **Server (`server`)**, **Rendering (`rendering`)**,
+**JavaScript (`js`)**, and **Advanced (`advanced`)** were removed for
+Code-Injector. See [`MISMATCHES.md`](MISMATCHES.md).
+
+### 1. Eliminating Waterfalls (`async`)
+
+**Impact:** CRITICAL  
+Waterfalls are the #1 performance killer. Each sequential await adds full
+network latency. Eliminating them yields the largest gains.
+
+### 2. Bundle Size Optimization (`bundle`)
+
+**Impact:** CRITICAL  
+Reducing initial bundle size improves Time to Interactive and Largest
+Contentful Paint.
+
+### 3. Client-Side Data Fetching (`client`)
+
+**Impact:** MEDIUM-HIGH  
+Efficient client storage and event patterns for the extension UI
+(`browser.storage`, listeners). Upstream SWR dedup rule was removed.
+
+### 4. Re-render Optimization (`rerender`)
+
+**Impact:** MEDIUM  
+Reducing unnecessary re-renders minimizes wasted computation and improves UI
+responsiveness.
 
 ## 1. Eliminating Waterfalls (`async-`)
 
-| File | Title | Notes |
+| Rule | Title | Notes |
 |------|-------|-------|
-| [async-cheap-condition-before-await.md](rules/async-cheap-condition-before-await.md) | Check Cheap Conditions Before Async Flags | verbatim |
-| [async-defer-await.md](rules/async-defer-await.md) | Defer Await Until Needed | verbatim |
-| [async-dependencies.md](rules/async-dependencies.md) | Dependency-Based Parallelization | adapted |
-| [async-parallel.md](rules/async-parallel.md) | Promise.all() for Independent Operations | verbatim |
-| [async-suspense-boundaries.md](rules/async-suspense-boundaries.md) | Strategic Suspense Boundaries | adapted |
+| [react-bp-async-cheap-condition-before-await.mdc](../../rules/react-bp-async-cheap-condition-before-await.mdc) | Check Cheap Conditions Before Async Flags | verbatim |
+| [react-bp-async-defer-await.mdc](../../rules/react-bp-async-defer-await.mdc) | Defer Await Until Needed | verbatim |
+| [react-bp-async-dependencies.mdc](../../rules/react-bp-async-dependencies.mdc) | Dependency-Based Parallelization | adapted |
+| [react-bp-async-parallel.mdc](../../rules/react-bp-async-parallel.mdc) | Promise.all() for Independent Operations | verbatim |
+| [react-bp-async-suspense-boundaries.mdc](../../rules/react-bp-async-suspense-boundaries.mdc) | Strategic Suspense Boundaries | adapted |
 
 ## 2. Bundle Size (`bundle-`)
 
-| File | Title | Notes |
+| Rule | Title | Notes |
 |------|-------|-------|
-| [bundle-analyzable-paths.md](rules/bundle-analyzable-paths.md) | Prefer Statically Analyzable Paths | verbatim |
-| [bundle-barrel-imports.md](rules/bundle-barrel-imports.md) | Avoid Barrel File Imports | verbatim |
-| [bundle-conditional.md](rules/bundle-conditional.md) | Conditional Module Loading | adapted |
-| [bundle-dynamic-imports.md](rules/bundle-dynamic-imports.md) | Dynamic Imports for Heavy Components | adapted |
-| [bundle-preload.md](rules/bundle-preload.md) | Preload Based on User Intent | adapted |
+| [react-bp-bundle-analyzable-paths.mdc](../../rules/react-bp-bundle-analyzable-paths.mdc) | Prefer Statically Analyzable Paths | verbatim |
+| [react-bp-bundle-barrel-imports.mdc](../../rules/react-bp-bundle-barrel-imports.mdc) | Avoid Barrel File Imports | verbatim |
+| [react-bp-bundle-conditional.mdc](../../rules/react-bp-bundle-conditional.mdc) | Conditional Module Loading | adapted |
+| [react-bp-bundle-dynamic-imports.mdc](../../rules/react-bp-bundle-dynamic-imports.mdc) | Dynamic Imports for Heavy Components | adapted |
+| [react-bp-bundle-preload.mdc](../../rules/react-bp-bundle-preload.mdc) | Preload Based on User Intent | adapted |
 
 ## 3. Client-Side Data (`client-`)
 
-| File | Title | Notes |
+| Rule | Title | Notes |
 |------|-------|-------|
-| [client-event-listeners.md](rules/client-event-listeners.md) | Deduplicate Global Event Listeners | adapted |
-| [client-localstorage-schema.md](rules/client-localstorage-schema.md) | Version and Minimize Extension Storage Data | adapted |
-| [client-passive-event-listeners.md](rules/client-passive-event-listeners.md) | Use Passive Event Listeners for Scrolling Performance | verbatim |
+| [react-bp-client-event-listeners.mdc](../../rules/react-bp-client-event-listeners.mdc) | Deduplicate Global Event Listeners | adapted |
+| [react-bp-client-localstorage-schema.mdc](../../rules/react-bp-client-localstorage-schema.mdc) | Version and Minimize Extension Storage Data | adapted |
+| [react-bp-client-passive-event-listeners.mdc](../../rules/react-bp-client-passive-event-listeners.mdc) | Use Passive Event Listeners for Scrolling Performance | verbatim |
 
 ## 4. Re-render (`rerender-`)
 
-| File | Title |
+| Rule | Title |
 |------|-------|
-| [rerender-defer-reads.md](rules/rerender-defer-reads.md) | Defer State Reads to Usage Point |
-| [rerender-dependencies.md](rules/rerender-dependencies.md) | Narrow Effect Dependencies |
-| [rerender-derived-state-no-effect.md](rules/rerender-derived-state-no-effect.md) | Calculate Derived State During Rendering |
-| [rerender-derived-state.md](rules/rerender-derived-state.md) | Subscribe to Derived State |
-| [rerender-functional-setstate.md](rules/rerender-functional-setstate.md) | Use Functional setState Updates |
-| [rerender-lazy-state-init.md](rules/rerender-lazy-state-init.md) | Use Lazy State Initialization |
-| [rerender-memo-with-default-value.md](rules/rerender-memo-with-default-value.md) | Extract Default Non-primitive Parameter Value from Memoized Component to Constant |
-| [rerender-memo.md](rules/rerender-memo.md) | Extract to Memoized Components |
-| [rerender-move-effect-to-event.md](rules/rerender-move-effect-to-event.md) | Put Interaction Logic in Event Handlers |
-| [rerender-no-inline-components.md](rules/rerender-no-inline-components.md) | Don't Define Components Inside Components |
-| [rerender-simple-expression-in-memo.md](rules/rerender-simple-expression-in-memo.md) | Do not wrap a simple expression with a primitive result type in useMemo |
-| [rerender-split-combined-hooks.md](rules/rerender-split-combined-hooks.md) | Split Combined Hook Computations |
-| [rerender-transitions.md](rules/rerender-transitions.md) | Use Transitions for Non-Urgent Updates |
-| [rerender-use-deferred-value.md](rules/rerender-use-deferred-value.md) | Use useDeferredValue for Expensive Derived Renders |
-| [rerender-use-ref-transient-values.md](rules/rerender-use-ref-transient-values.md) | Use useRef for Transient Values |
+| [react-bp-rerender-defer-reads.mdc](../../rules/react-bp-rerender-defer-reads.mdc) | Defer State Reads to Usage Point |
+| [react-bp-rerender-dependencies.mdc](../../rules/react-bp-rerender-dependencies.mdc) | Narrow Effect Dependencies |
+| [react-bp-rerender-derived-state-no-effect.mdc](../../rules/react-bp-rerender-derived-state-no-effect.mdc) | Calculate Derived State During Rendering |
+| [react-bp-rerender-derived-state.mdc](../../rules/react-bp-rerender-derived-state.mdc) | Subscribe to Derived State |
+| [react-bp-rerender-functional-setstate.mdc](../../rules/react-bp-rerender-functional-setstate.mdc) | Use Functional setState Updates |
+| [react-bp-rerender-lazy-state-init.mdc](../../rules/react-bp-rerender-lazy-state-init.mdc) | Use Lazy State Initialization |
+| [react-bp-rerender-memo-with-default-value.mdc](../../rules/react-bp-rerender-memo-with-default-value.mdc) | Extract Default Non-primitive Parameter Value from Memoized Component to Constant |
+| [react-bp-rerender-memo.mdc](../../rules/react-bp-rerender-memo.mdc) | Extract to Memoized Components |
+| [react-bp-rerender-move-effect-to-event.mdc](../../rules/react-bp-rerender-move-effect-to-event.mdc) | Put Interaction Logic in Event Handlers |
+| [react-bp-rerender-no-inline-components.mdc](../../rules/react-bp-rerender-no-inline-components.mdc) | Don't Define Components Inside Components |
+| [react-bp-rerender-simple-expression-in-memo.mdc](../../rules/react-bp-rerender-simple-expression-in-memo.mdc) | Do not wrap a simple expression with a primitive result type in useMemo |
+| [react-bp-rerender-split-combined-hooks.mdc](../../rules/react-bp-rerender-split-combined-hooks.mdc) | Split Combined Hook Computations |
+| [react-bp-rerender-transitions.mdc](../../rules/react-bp-rerender-transitions.mdc) | Use Transitions for Non-Urgent Updates |
+| [react-bp-rerender-use-deferred-value.mdc](../../rules/react-bp-rerender-use-deferred-value.mdc) | Use useDeferredValue for Expensive Derived Renders |
+| [react-bp-rerender-use-ref-transient-values.mdc](../../rules/react-bp-rerender-use-ref-transient-values.mdc) | Use useRef for Transient Values |
 
 ## Removed categories
 

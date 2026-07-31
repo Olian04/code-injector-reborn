@@ -1,4 +1,11 @@
 ---
+description: >-
+  Check cheap sync conditions before awaiting async flags or storage reads in popup/options React to avoid unnecessary async work.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Check Cheap Conditions Before Async Flags
 impact: HIGH
 impactDescription: avoids unnecessary async work when a synchronous guard already fails

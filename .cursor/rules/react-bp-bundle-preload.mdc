@@ -1,4 +1,11 @@
 ---
+description: >-
+  Preload heavy popup/options chunks on user intent or idle warm via bare import(); no SSR window checks.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Preload Based on User Intent
 impact: MEDIUM
 impactDescription: reduces perceived latency

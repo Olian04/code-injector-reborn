@@ -1,4 +1,11 @@
 ---
+description: >-
+  Use useDeferredValue for expensive derived renders in popup/options React when input updates feel laggy.
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+---
 title: Use useDeferredValue for Expensive Derived Renders
 impact: MEDIUM
 impactDescription: keeps input responsive during heavy computation

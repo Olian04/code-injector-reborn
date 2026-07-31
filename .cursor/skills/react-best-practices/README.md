@@ -14,20 +14,20 @@ set of retained rules is **adapted** for the browser extension (React built-ins 
 **Pinned upstream commit:**
 [`7c180d9044c9ae2b442b567aad4e42a28dd5ed62`](https://github.com/vercel-labs/agent-skills/commit/7c180d9044c9ae2b442b567aad4e42a28dd5ed62)
 
-Source directory:
+Upstream source:
 https://github.com/vercel-labs/agent-skills/tree/7c180d9044c9ae2b442b567aad4e42a28dd5ed62/skills/react-best-practices/rules
 
 | File / path | Role |
 |-------------|------|
-| [SKILL.md](SKILL.md) | Agent entrypoint — points at `rules/` + approved adaptations |
-| [rules/](rules/) | Rule markdown (verbatim unless marked Adapted) |
-| [reference.md](reference.md) | Index of retained rule files (titles only) |
+| [SKILL.md](SKILL.md) | Thin orchestrator — overview, exclusions, adaptations |
+| [`.cursor/rules/react-bp-*.mdc`](../../rules/) | **Canonical** per-rule content (restrictive globs) |
+| [reference.md](reference.md) | Index + section metadata |
 | [MISMATCHES.md](MISMATCHES.md) | Removed / reworded / apply-as-is records |
 
-Companion Cursor rule (glob-scoped to `src/popup` / `src/options`):
+Each `react-bp-*.mdc` has `alwaysApply: false` and globs scoped to
+`src/popup/**/*.{tsx,ts}` and `src/options/**/*.{tsx,ts}`. There is no
+umbrella `react-best-practices.mdc` — Cursor loads individual rules by glob /
+description. This skill remains invokable for overview and MISMATCHES.
 
-- `.cursor/rules/react-best-practices.mdc` — points at this skill; does not
-  restate individual rules. Skill `rules/` is the sole source of truth.
-
-N/A, non-mappable, and focus-dropped upstream rules are not present under
-`rules/` — see [MISMATCHES.md](MISMATCHES.md) and [SKILL.md](SKILL.md).
+N/A and focus-dropped upstream rules are not present as `.mdc` files — see
+[MISMATCHES.md](MISMATCHES.md) and [SKILL.md](SKILL.md).

@@ -6,32 +6,30 @@ description: >-
   adapted where needed for the extension. Use when writing, reviewing, or
   refactoring React under src/popup or src/options; when editing App.tsx;
   when adding lazy-loaded panels, storage/async flows, or optimizing
-  re-renders and bundle size.
+  re-renders and bundle size. Canonical per-rule content lives in
+  .cursor/rules/react-bp-*.mdc (restrictive globs).
 ---
 
 # React Best Practices (Code-Injector)
 
-**Sole rule source:** the files in [`rules/`](rules/) — based on
+**Canonical rules:** [`.cursor/rules/react-bp-*.mdc`](../../rules/) — based on
 [vercel-labs/agent-skills — react-best-practices/rules](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules)
 at commit [`7c180d9044c9ae2b442b567aad4e42a28dd5ed62`](https://github.com/vercel-labs/agent-skills/commit/7c180d9044c9ae2b442b567aad4e42a28dd5ed62).
 
 Originally by [@shuding](https://x.com/shuding) / [Vercel](https://vercel.com).
 
-Most retained rules are still **verbatim** upstream. A small set is **adapted
-on disk** for this browser-extension UI (React built-ins / `browser.storage`
-instead of Next.js / SWR / RSC). Adapted files carry an “Adapted for Code
-Injector Reborn” note at the top. See [`MISMATCHES.md`](MISMATCHES.md).
-
-Companion Cursor rule: `.cursor/rules/react-best-practices.mdc` (glob-scoped to
-`src/popup` and `src/options`) points at this skill. It must not restate
-individual rules — `rules/` is canonical.
+This skill is a **thin orchestrator**: overview, exclusions, and adaptations.
+Individual practice rules are Cursor `.mdc` files with `alwaysApply: false` and
+globs limited to `src/popup` / `src/options`. Adapted rules carry an “Adapted
+for Code Injector Reborn” note in the `.mdc` body. See
+[`MISMATCHES.md`](MISMATCHES.md).
 
 ## Excluded upstream rules (N/A for this project)
 
 This UI is **client-only browser-extension pages** (`src/popup`, `src/options`) —
 no Next.js server, RSC, SSR hydration, API routes, or document-level Next
-resource pipeline. The following upstream rules were **removed** from `rules/`
-(do not reintroduce or apply them):
+resource pipeline. The following upstream rules were **removed** (do not
+reintroduce or apply them):
 
 - `async-api-routes` — Next.js API routes / server actions waterfalls
 - all `server-*` rules (10) — RSC/SSR/server-actions/server I/O
@@ -47,7 +45,7 @@ Rationale, reworded rules, and apply-as-is lists: [`MISMATCHES.md`](MISMATCHES.m
 
 ## Project adaptations
 
-**Approved conventions** (rewritten on disk under `rules/`):
+**Approved conventions** (rewritten in the matching `react-bp-*.mdc`):
 
 | Rule | Convention |
 |------|------------|
@@ -66,7 +64,7 @@ categories were later dropped entirely for focus (including former adaptations
 
 ## When to use
 
-Apply this skill when you:
+Apply this skill (overview + MISMATCHES) when you:
 
 - Add or change UI in `src/popup/**` or `src/options/**`
 - Touch `src/popup/App.tsx` or `src/options/App.tsx`
@@ -75,9 +73,9 @@ Apply this skill when you:
 
 ## How to apply
 
-1. Open the matching file under [`rules/`](rules/) and follow its
-   incorrect/correct guidance.
-2. Section ordering and impact levels: [`rules/_sections.md`](rules/_sections.md).
+1. Follow the matching [`.cursor/rules/react-bp-<name>.mdc`](../../rules/) rule
+   (Cursor loads it via restrictive globs / agent-requestable description).
+2. Section ordering and impact levels: [reference.md](reference.md) (Sections).
 3. Before insisting on a rule, check [`MISMATCHES.md`](MISMATCHES.md) for
    removed vs reworded vs apply-as-is. Do not reintroduce Next.js / SWR / RSC APIs.
 4. Repo structure preference (not from upstream): when touching App roots, prefer
@@ -86,18 +84,19 @@ Apply this skill when you:
 
 ## Rule categories (retained)
 
-| Priority | Category | Prefix |
-|----------|----------|--------|
-| 1 | Eliminating Waterfalls | `async-` |
-| 2 | Bundle Size Optimization | `bundle-` |
-| 3 | Client-Side Data Fetching | `client-` |
-| 4 | Re-render Optimization | `rerender-` |
+| Priority | Category | Prefix | Cursor rules |
+|----------|----------|--------|--------------|
+| 1 | Eliminating Waterfalls | `async-` | `react-bp-async-*.mdc` |
+| 2 | Bundle Size Optimization | `bundle-` | `react-bp-bundle-*.mdc` |
+| 3 | Client-Side Data Fetching | `client-` | `react-bp-client-*.mdc` |
+| 4 | Re-render Optimization | `rerender-` | `react-bp-rerender-*.mdc` |
 
 Upstream priority 3 (`server-`) and priorities 5–7 (`rendering-`, `js-`,
 `advanced-`) are omitted — removed as N/A or to focus agents on
 extension-relevant guidance.
 
-Full index and extension applicability: [reference.md](reference.md), [MISMATCHES.md](MISMATCHES.md).
+Full index: [reference.md](reference.md). Exclusions/adaptations:
+[MISMATCHES.md](MISMATCHES.md).
 
 ## Attribution
 
