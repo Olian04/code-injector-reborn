@@ -1,71 +1,71 @@
 ---
-title: Version and Minimize localStorage Data
+title: Version and Minimize Extension Storage Data
 impact: MEDIUM
 impactDescription: prevents schema conflicts, reduces storage size
-tags: client, localStorage, storage, versioning, data-minimization
+tags: client, browser-storage, localStorage, storage, versioning, data-minimization
 ---
 
-## Version and Minimize localStorage Data
+> Adapted for Code Injector Reborn (browser extension). Upstream: vercel-labs/agent-skills @ 7c180d9.
 
-Add version prefix to keys and store only needed fields. Prevents schema conflicts and accidental storage of sensitive data.
+## Version and Minimize Extension Storage Data
+
+Primary persistence is `browser.storage.local` (via `src/shared/storage.ts`) for
+rules and settings — **not** `localStorage`. Version keys / shapes, store only
+needed fields, and migrate schemas deliberately.
 
 **Incorrect:**
 
 ```typescript
-// No version, stores everything, no error handling
-localStorage.setItem('userConfig', JSON.stringify(fullUserObject))
-const data = localStorage.getItem('userConfig')
+// Dump the whole object into storage with no shape discipline
+await browser.storage.local.set({ userConfig: fullUserObject })
+const data = await browser.storage.local.get('userConfig')
 ```
 
 **Correct:**
 
 ```typescript
 const VERSION = 'v2'
+const KEY = `userConfig:${VERSION}`
 
-function saveConfig(config: { theme: string; language: string }) {
-  try {
-    localStorage.setItem(`userConfig:${VERSION}`, JSON.stringify(config))
-  } catch {
-    // Throws in incognito/private browsing, quota exceeded, or disabled
-  }
+async function saveConfig(config: { theme: string; language: string }) {
+  await browser.storage.local.set({ [KEY]: config })
 }
 
-function loadConfig() {
-  try {
-    const data = localStorage.getItem(`userConfig:${VERSION}`)
-    return data ? JSON.parse(data) : null
-  } catch {
-    return null
-  }
+async function loadConfig() {
+  const data = await browser.storage.local.get(KEY)
+  return (data[KEY] as { theme: string; language: string } | undefined) ?? null
 }
 
 // Migration from v1 to v2
-function migrate() {
-  try {
-    const v1 = localStorage.getItem('userConfig:v1')
-    if (v1) {
-      const old = JSON.parse(v1)
-      saveConfig({ theme: old.darkMode ? 'dark' : 'light', language: old.lang })
-      localStorage.removeItem('userConfig:v1')
-    }
-  } catch {}
+async function migrate() {
+  const data = await browser.storage.local.get('userConfig:v1')
+  const v1 = data['userConfig:v1'] as { darkMode?: boolean; lang?: string } | undefined
+  if (v1) {
+    await saveConfig({
+      theme: v1.darkMode ? 'dark' : 'light',
+      language: v1.lang ?? 'en',
+    })
+    await browser.storage.local.remove('userConfig:v1')
+  }
 }
 ```
 
-**Store minimal fields from server responses:**
+**Sync exception — theme first paint:** `localStorage` is used only for the
+theme mirror (`THEME_CACHE_KEY` / `public/theme-boot.js`) so the UI can paint
+without waiting on async `browser.storage`. Keep that path try/caught (see
+`applyTheme`); do **not** move rules/settings into `localStorage`.
+
+**Store minimal fields:**
 
 ```typescript
-// User object has 20+ fields, only store what UI needs
-function cachePrefs(user: FullUser) {
-  try {
-    localStorage.setItem('prefs:v1', JSON.stringify({
-      theme: user.preferences.theme,
-      notifications: user.preferences.notifications
-    }))
-  } catch {}
-}
+// Prefer a small settings shape over caching entire rule payloads twice
+await browser.storage.local.set({
+  'prefs:v1': {
+    theme: settings.theme,
+    notifications: settings.notifications,
+  },
+})
 ```
 
-**Always wrap in try-catch:** `getItem()` and `setItem()` throw in incognito/private browsing (Safari, Firefox), when quota exceeded, or when disabled.
-
-**Benefits:** Schema evolution via versioning, reduced storage size, prevents storing tokens/PII/internal flags.
+**Benefits:** Schema evolution via versioning, reduced storage size, prevents
+storing tokens/PII/internal flags in extension storage.

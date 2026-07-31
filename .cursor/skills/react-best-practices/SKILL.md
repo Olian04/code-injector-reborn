@@ -2,24 +2,29 @@
 name: react-best-practices
 description: >-
   React performance guidance for Code-Injector's browser-extension UI
-  (popup + options), using verbatim Vercel Engineering React Best Practices
-  rules. Use when writing, reviewing, or refactoring React under src/popup or
-  src/options; when editing App.tsx; when adding lazy-loaded panels,
-  storage/async flows, or optimizing re-renders and bundle size.
+  (popup + options), using Vercel Engineering React Best Practices rules
+  adapted where needed for the extension. Use when writing, reviewing, or
+  refactoring React under src/popup or src/options; when editing App.tsx;
+  when adding lazy-loaded panels, storage/async flows, or optimizing
+  re-renders and bundle size.
 ---
 
 # React Best Practices (Code-Injector)
 
-**Sole rule source:** the verbatim files in [`rules/`](rules/) — copied from
+**Sole rule source:** the files in [`rules/`](rules/) — based on
 [vercel-labs/agent-skills — react-best-practices/rules](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules)
 at commit [`7c180d9044c9ae2b442b567aad4e42a28dd5ed62`](https://github.com/vercel-labs/agent-skills/commit/7c180d9044c9ae2b442b567aad4e42a28dd5ed62).
 
 Originally by [@shuding](https://x.com/shuding) / [Vercel](https://vercel.com).
-Do **not** paraphrase, distill, or rewrite those rule bodies. Apply them as written.
+
+Most retained rules are still **verbatim** upstream. A small set is **adapted
+on disk** for this browser-extension UI (React built-ins / `browser.storage`
+instead of Next.js / SWR / RSC). Adapted files carry an “Adapted for Code
+Injector Reborn” note at the top. See [`MISMATCHES.md`](MISMATCHES.md).
 
 Companion Cursor rules: one `.cursor/rules/react-bp-*.mdc` per retained practice
 rule (glob-scoped to `src/popup` and `src/options`), each embedding the same
-verbatim markdown.
+rule markdown body (wrappers keep Cursor frontmatter).
 
 ## Excluded upstream rules (N/A for this project)
 
@@ -33,21 +38,29 @@ and from `.cursor/rules/react-bp-*.mdc` (do not reintroduce or apply them):
 - `rendering-hydration-no-flicker` / `rendering-hydration-suppress-warning` — SSR hydration
 - `rendering-resource-hints` / `rendering-script-defer-async` — document-level web resource loading
 - `bundle-defer-third-party` — defer after **hydration**
+- `client-swr-dedup` — SWR; do not add SWR for this UI
+- `rendering-activity` — React `<Activity>` (needs React 19+); revisit on upgrade
 
-Rationale and the adapt-carefully / apply-as-is lists for **remaining** rules:
-[`MISMATCHES.md`](MISMATCHES.md).
+Rationale, reworded rules, and apply-as-is lists: [`MISMATCHES.md`](MISMATCHES.md).
 
 ## Project adaptations
 
-**Pending user approval** — do not treat these as settled conventions yet.
+**Approved conventions** (rewritten on disk under `rules/` and matching
+`.cursor/rules/react-bp-*.mdc`):
 
-Decided-direction drafts (upstream stays verbatim; agents map usage) live in
-[`MISMATCHES.md` → Needs your attention / adapt carefully](MISMATCHES.md#needs-your-attention--adapt-carefully)
-and the summary table
-[`Project adaptations (pending approval)`](MISMATCHES.md#project-adaptations-pending-approval).
+| Rule | Convention |
+|------|------------|
+| `bundle-dynamic-imports` | `React.lazy` + `Suspense` (see `OptionsPanel`) — never `next/dynamic` |
+| `bundle-preload` | Bare `import()` / idle warm; no SSR `typeof window` framing |
+| `bundle-conditional` | Load-on-feature-activation; mount-on-first-open like `OptionsPanel` |
+| `async-suspense-boundaries` | Suspense for `lazy()` only; storage waterfalls → parallel / defer-await |
+| `async-dependencies` | Promise orchestration only; do **not** add `better-all` |
+| `client-localstorage-schema` | Version/minimize `browser.storage`; `localStorage` = theme mirror only |
+| `js-cache-storage` | Map-cache hot theme `localStorage` / optional `browser.storage`; invalidate via `storage.onChanged` |
+| `js-request-idle-callback` | Idle warm OK; cancel on unmount; not for must-finish work (Monaco warm exemplar) |
 
-Until approved: follow adapt-carefully guidance in MISMATCHES when a rule’s
-examples mention Next/SWR/RSC/`better-all`/`Activity`; do not rewrite `rules/`.
+Removed rather than faked: `client-swr-dedup`, `rendering-activity` (see
+MISMATCHES “Removed — non-trivial / cannot map”).
 
 ## When to use
 
@@ -61,11 +74,10 @@ Apply this skill when you:
 ## How to apply
 
 1. Open the matching file under [`rules/`](rules/) (or the corresponding
-   `react-bp-*.mdc`) and follow its incorrect/correct guidance **verbatim**.
+   `react-bp-*.mdc`) and follow its incorrect/correct guidance.
 2. Section ordering and impact levels: [`rules/_sections.md`](rules/_sections.md).
 3. Before insisting on a rule, check [`MISMATCHES.md`](MISMATCHES.md) for
-   adapt-carefully vs apply-as-is. **Do not edit rule files to “fit”** — only
-   adapt usage per that flag list. Excluded (N/A) rules are already deleted.
+   removed vs reworded vs apply-as-is. Do not reintroduce Next.js / SWR / RSC APIs.
 4. Repo structure preference (not from upstream): when touching App roots, prefer
    extracting focused components/hooks under `components/` rather than growing
    `App.tsx` further. Match existing naming (`EditorPanel`, `RuleItem`, etc.).
@@ -88,7 +100,9 @@ Full index and extension applicability: [reference.md](reference.md), [MISMATCHE
 
 ## Attribution
 
-Verbatim rules from
+Rules from
 [vercel-labs/agent-skills — react-best-practices](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices)
 (MIT), originally created by [@shuding](https://x.com/shuding) at Vercel.
 Pinned upstream commit: `7c180d9044c9ae2b442b567aad4e42a28dd5ed62`.
+Some rules adapted for Code Injector Reborn (browser extension); see
+[`MISMATCHES.md`](MISMATCHES.md).

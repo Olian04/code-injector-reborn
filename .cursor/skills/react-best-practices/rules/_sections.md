@@ -22,7 +22,7 @@ entire category was removed for Code-Injector (client-only extension UI). See
 ## 3. Client-Side Data Fetching (client)
 
 **Impact:** MEDIUM-HIGH  
-**Description:** Automatic deduplication and efficient data fetching patterns reduce redundant network requests.
+**Description:** Efficient client storage and event patterns for the extension UI (`browser.storage`, listeners). Upstream SWR dedup rule was removed.
 
 ## 4. Re-render Optimization (rerender)
 

@@ -7,99 +7,61 @@ alwaysApply: false
 ---
 title: Strategic Suspense Boundaries
 impact: HIGH
-impactDescription: faster initial paint
-tags: async, suspense, streaming, layout-shift
+impactDescription: faster initial paint for lazy UI
+tags: async, suspense, lazy, code-splitting
 ---
+
+> Adapted for Code Injector Reborn (browser extension). Upstream: vercel-labs/agent-skills @ 7c180d9.
 
 ## Strategic Suspense Boundaries
 
-Instead of awaiting data in async components before returning JSX, use Suspense boundaries to show the wrapper UI faster while data loads.
+In this extension, `Suspense` is for `React.lazy` code-split boundaries so the
+shell paints while a heavy chunk loads. There is no RSC streaming and no
+`use(promise)` data-loading convention here.
 
-**Incorrect (wrapper blocked by data fetching):**
+**Incorrect (eager import blocks the shell):**
 
 ```tsx
-async function Page() {
-  const data = await fetchData() // Blocks entire page
-  
+import { OptionsApp } from '../../options/App'
+
+function OptionsPanel({ active }: { active: boolean }) {
+  if (!active) return null
+  return <OptionsApp embedded active={active} />
+}
+```
+
+**Correct (lazy chunk + Suspense fallback):**
+
+```tsx
+import { lazy, Suspense, useEffect, useState } from 'react'
+
+const OptionsApp = lazy(() =>
+  import('../../options/App').then((mod) => ({ default: mod.App }))
+)
+
+function OptionsPanel({ active }: { active: boolean }) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    if (active) setMounted(true)
+  }, [active])
+
+  if (!mounted) return null
+
   return (
-    <div>
-      <div>Sidebar</div>
-      <div>Header</div>
-      <div>
-        <DataDisplay data={data} />
-      </div>
-      <div>Footer</div>
-    </div>
+    <Suspense fallback={<div className="options-loading" />}>
+      <OptionsApp embedded active={active} />
+    </Suspense>
   )
 }
 ```
 
-The entire layout waits for data even though only the middle section needs it.
+**Storage / messaging waterfalls:** do **not** model them as Suspense data
+boundaries. Prefer `async-parallel` and `async-defer-await` (start promises
+early, `Promise.all` where independent, await only when needed).
 
-**Correct (wrapper shows immediately, data streams in):**
+**When NOT to wrap in Suspense:**
 
-```tsx
-function Page() {
-  return (
-    <div>
-      <div>Sidebar</div>
-      <div>Header</div>
-      <div>
-        <Suspense fallback={<Skeleton />}>
-          <DataDisplay />
-        </Suspense>
-      </div>
-      <div>Footer</div>
-    </div>
-  )
-}
-
-async function DataDisplay() {
-  const data = await fetchData() // Only blocks this component
-  return <div>{data.content}</div>
-}
-```
-
-Sidebar, Header, and Footer render immediately. Only DataDisplay waits for data.
-
-**Alternative (share promise across components):**
-
-```tsx
-function Page() {
-  // Start fetch immediately, but don't await
-  const dataPromise = fetchData()
-  
-  return (
-    <div>
-      <div>Sidebar</div>
-      <div>Header</div>
-      <Suspense fallback={<Skeleton />}>
-        <DataDisplay dataPromise={dataPromise} />
-        <DataSummary dataPromise={dataPromise} />
-      </Suspense>
-      <div>Footer</div>
-    </div>
-  )
-}
-
-function DataDisplay({ dataPromise }: { dataPromise: Promise<Data> }) {
-  const data = use(dataPromise) // Unwraps the promise
-  return <div>{data.content}</div>
-}
-
-function DataSummary({ dataPromise }: { dataPromise: Promise<Data> }) {
-  const data = use(dataPromise) // Reuses the same promise
-  return <div>{data.summary}</div>
-}
-```
-
-Both components share the same promise, so only one fetch occurs. Layout renders immediately while both components wait together.
-
-**When NOT to use this pattern:**
-
-- Critical data needed for layout decisions (affects positioning)
-- SEO-critical content above the fold
-- Small, fast queries where suspense overhead isn't worth it
-- When you want to avoid layout shift (loading → content jump)
-
-**Trade-off:** Faster initial paint vs potential layout shift. Choose based on your UX priorities.
+- Critical UI needed before the user can act (save/inject controls)
+- Tiny modules where lazy overhead isn't worth it
+- Async `browser.storage` reads — use effects / parallel promises instead

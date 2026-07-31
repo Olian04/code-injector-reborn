@@ -2,69 +2,76 @@
 title: Cache Storage API Calls
 impact: LOW-MEDIUM
 impactDescription: reduces expensive I/O
-tags: javascript, localStorage, storage, caching, performance
+tags: javascript, browser-storage, localStorage, storage, caching, performance
 ---
+
+> Adapted for Code Injector Reborn (browser extension). Upstream: vercel-labs/agent-skills @ 7c180d9.
 
 ## Cache Storage API Calls
 
-`localStorage`, `sessionStorage`, and `document.cookie` are synchronous and expensive. Cache reads in memory.
+Hot storage reads benefit from a module-level `Map` cache. Most extension data
+is async `browser.storage`; sync `localStorage` is only the theme boot mirror
+(`THEME_CACHE_KEY`). Popup sessions are short — do **not** cache every
+`getSettings()` call by default.
 
 **Incorrect (reads storage on every call):**
 
 ```typescript
-function getTheme() {
-  return localStorage.getItem('theme') ?? 'light'
+function getThemeCache() {
+  return localStorage.getItem(THEME_CACHE_KEY) ?? 'light'
 }
 // Called 10 times = 10 storage reads
 ```
 
-**Correct (Map cache):**
+**Correct (Map cache for sync theme mirror):**
 
 ```typescript
 const storageCache = new Map<string, string | null>()
 
-function getLocalStorage(key: string) {
-  if (!storageCache.has(key)) {
-    storageCache.set(key, localStorage.getItem(key))
+function getThemeCache() {
+  if (!storageCache.has(THEME_CACHE_KEY)) {
+    storageCache.set(THEME_CACHE_KEY, localStorage.getItem(THEME_CACHE_KEY))
   }
-  return storageCache.get(key)
+  return storageCache.get(THEME_CACHE_KEY) ?? 'light'
 }
 
-function setLocalStorage(key: string, value: string) {
-  localStorage.setItem(key, value)
-  storageCache.set(key, value)  // keep cache in sync
+function setThemeCache(value: string) {
+  localStorage.setItem(THEME_CACHE_KEY, value)
+  storageCache.set(THEME_CACHE_KEY, value)
 }
 ```
 
-Use a Map (not a hook) so it works everywhere: utilities, event handlers, not just React components.
-
-**Cookie caching:**
+**Optional session cache for hot `browser.storage` keys:**
 
 ```typescript
-let cookieCache: Record<string, string> | null = null
+const browserStorageCache = new Map<string, unknown>()
 
-function getCookie(name: string) {
-  if (!cookieCache) {
-    cookieCache = Object.fromEntries(
-      document.cookie.split('; ').map(c => c.split('='))
-    )
+async function getCachedSetting(key: string) {
+  if (browserStorageCache.has(key)) {
+    return browserStorageCache.get(key)
   }
-  return cookieCache[name]
+  const data = await browser.storage.local.get(key)
+  browserStorageCache.set(key, data[key])
+  return data[key]
 }
 ```
+
+Use a Map (not a hook) so it works in utilities and event handlers, not only
+React components.
 
 **Important (invalidate on external changes):**
 
-If storage can change externally (another tab, server-set cookies), invalidate cache:
+Cross-context updates use `browser.storage.onChanged` (not the `window`
+`storage` event for extension storage):
 
 ```typescript
-window.addEventListener('storage', (e) => {
-  if (e.key) storageCache.delete(e.key)
-})
-
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
-    storageCache.clear()
+browser.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local') return
+  for (const key of Object.keys(changes)) {
+    browserStorageCache.delete(key)
   }
 })
 ```
+
+For the theme `localStorage` mirror, invalidate the Map entry when `applyTheme`
+writes, or on `visibilitychange` if another context may have updated it.

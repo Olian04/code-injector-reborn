@@ -2,14 +2,16 @@
 title: Defer Non-Critical Work with requestIdleCallback
 impact: MEDIUM
 impactDescription: keeps UI responsive during background tasks
-tags: javascript, performance, idle, scheduling, analytics
+tags: javascript, performance, idle, scheduling, prefetch
 ---
+
+> Adapted for Code Injector Reborn (browser extension). Upstream: vercel-labs/agent-skills @ 7c180d9.
 
 ## Defer Non-Critical Work with requestIdleCallback
 
-**Impact: MEDIUM (keeps UI responsive during background tasks)**
-
-Use `requestIdleCallback()` to schedule non-critical work during browser idle periods. This keeps the main thread free for user interactions and animations, reducing jank and improving perceived performance.
+Use `requestIdleCallback()` to schedule non-critical work during browser idle
+periods. Browser-action popups are short-lived: always cancel on unmount, and
+never put must-finish work (saves, injects, user-visible loads) on idle.
 
 **Incorrect (blocks main thread during user interaction):**
 
@@ -32,7 +34,6 @@ function handleSearch(query: string) {
   const results = searchItems(query)
   setResults(results)
 
-  // Defer non-critical work to idle periods
   requestIdleCallback(() => {
     analytics.track('search', { query })
   })
@@ -47,37 +48,35 @@ function handleSearch(query: string) {
 }
 ```
 
-**With timeout for required work:**
+**Project exemplar (Monaco warm in popup — idle + timeout + cancel):**
 
 ```typescript
-// Ensure analytics fires within 2 seconds even if browser stays busy
-requestIdleCallback(
-  () => analytics.track('page_view', { path: location.pathname }),
-  { timeout: 2000 }
-)
-```
-
-**Chunking large tasks:**
-
-```typescript
-function processLargeDataset(items: Item[]) {
-  let index = 0
-
-  function processChunk(deadline: IdleDeadline) {
-    // Process items while we have idle time (aim for <50ms chunks)
-    while (index < items.length && deadline.timeRemaining() > 0) {
-      processItem(items[index])
-      index++
-    }
-
-    // Schedule next chunk if more items remain
-    if (index < items.length) {
-      requestIdleCallback(processChunk)
-    }
+useEffect(() => {
+  const warm = () => {
+    void ensureEditors()
   }
 
-  requestIdleCallback(processChunk)
-}
+  const idle = window.requestIdleCallback
+    ? window.requestIdleCallback(warm, { timeout: 1000 })
+    : window.setTimeout(warm, 1)
+
+  return () => {
+    if (window.cancelIdleCallback && typeof idle === 'number') {
+      window.cancelIdleCallback(idle)
+    } else {
+      clearTimeout(idle)
+    }
+  }
+}, [ensureEditors])
+```
+
+**With timeout for best-effort work:**
+
+```typescript
+requestIdleCallback(
+  () => void import('./monaco-editor'),
+  { timeout: 1000 }
+)
 ```
 
 **With fallback for unsupported browsers:**
@@ -92,14 +91,14 @@ scheduleIdleWork(() => {
 
 **When to use:**
 
+- Prefetch / warm heavy chunks (Monaco, options) before the user opens them
 - Analytics and telemetry
-- Saving state to localStorage/IndexedDB
-- Prefetching resources for likely next actions
 - Processing non-urgent data transformations
 - Lazy initialization of non-critical features
 
 **When NOT to use:**
 
+- Saves, injects, or any work that must finish before the popup may close
 - User-initiated actions that need immediate feedback
 - Rendering updates the user is waiting for
 - Time-sensitive operations

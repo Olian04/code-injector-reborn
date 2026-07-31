@@ -8,21 +8,23 @@ alwaysApply: false
 title: Preload Based on User Intent
 impact: MEDIUM
 impactDescription: reduces perceived latency
-tags: bundle, preload, user-intent, hover
+tags: bundle, preload, user-intent, hover, idle
 ---
+
+> Adapted for Code Injector Reborn (browser extension). Upstream: vercel-labs/agent-skills @ 7c180d9.
 
 ## Preload Based on User Intent
 
-Preload heavy bundles before they're needed to reduce perceived latency.
+Preload heavy bundles before they're needed to reduce perceived latency. Use a
+bare dynamic `import()` (or an existing idle warm helper) — there is no Next.js
+preload API and no SSR.
 
 **Example (preload on hover/focus):**
 
 ```tsx
 function EditorButton({ onClick }: { onClick: () => void }) {
   const preload = () => {
-    if (typeof window !== 'undefined') {
-      void import('./monaco-editor')
-    }
+    void import('./monaco-editor')
   }
 
   return (
@@ -37,20 +39,27 @@ function EditorButton({ onClick }: { onClick: () => void }) {
 }
 ```
 
-**Example (preload when feature flag is enabled):**
+**Example (idle warm when the popup opens):**
 
 ```tsx
-function FlagsProvider({ children, flags }: Props) {
-  useEffect(() => {
-    if (flags.editorEnabled && typeof window !== 'undefined') {
-      void import('./monaco-editor').then(mod => mod.init())
-    }
-  }, [flags.editorEnabled])
+useEffect(() => {
+  const warm = () => {
+    void ensureEditors() // starts dynamic import of Monaco
+  }
 
-  return <FlagsContext.Provider value={flags}>
-    {children}
-  </FlagsContext.Provider>
-}
+  const idle = window.requestIdleCallback
+    ? window.requestIdleCallback(warm, { timeout: 1000 })
+    : window.setTimeout(warm, 1)
+
+  return () => {
+    if (window.cancelIdleCallback && typeof idle === 'number') {
+      window.cancelIdleCallback(idle)
+    } else {
+      clearTimeout(idle)
+    }
+  }
+}, [ensureEditors])
 ```
 
-The `typeof window !== 'undefined'` check prevents bundling preloaded modules for SSR, optimizing server bundle size and build speed.
+Prefer idle warm for must-feel-instant editors (Monaco). Use hover/focus preload
+when idle warm is insufficient (e.g. options chunk on gear-icon hover).
