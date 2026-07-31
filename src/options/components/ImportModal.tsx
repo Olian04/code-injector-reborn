@@ -25,7 +25,6 @@ export function ImportModal({
   onOpenStandalone,
 }: ImportModalProps) {
   const [method, setMethod] = useState('0');
-  const [fileValue, setFileValue] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [remote, setRemote] = useState('');
   const [github, setGithub] = useState('');
@@ -40,25 +39,20 @@ export function ImportModal({
     hasCSS: boolean;
     hasHTML: boolean;
   } | null>(null);
-  const [canImport, setCanImport] = useState(false);
   const githubInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const remoteInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    let enable = false;
-    if (method === '0') {
-      // Embedded local-file uses a handoff control, not the Import button.
-      enable = embedded
-        ? false
-        : !!(fileValue && fileInputRef.current?.validity.valid);
-    } else if (method === '1') {
-      enable = !!remote;
-    } else if (method === '2') {
-      enable = validGithub;
-    }
-    setCanImport(enable);
-  }, [method, fileValue, remote, validGithub, embedded]);
+  // Derived from inputs — no sync effect (rerender-derived-state-no-effect).
+  // Embedded local-file uses a handoff control, not the Import button.
+  const canImport =
+    method === '0'
+      ? !embedded && !!file
+      : method === '1'
+        ? !!remote
+        : method === '2'
+          ? validGithub
+          : false;
 
   useEffect(() => {
     if (method === '0' && !embedded) fileInputRef.current?.focus();
@@ -67,7 +61,6 @@ export function ImportModal({
   }, [method, embedded]);
 
   const resetPanels = () => {
-    setFileValue('');
     setFile(null);
     setRemote('');
     setGithub('');
@@ -185,11 +178,9 @@ export function ImportModal({
               ref={fileInputRef}
               type="file"
               data-name="inp-import-file"
-              accept="*.json"
+              accept=".json,application/json"
               onChange={(e) => {
-                const f = e.target.files?.[0] || null;
-                setFile(f);
-                setFileValue(e.target.value);
+                setFile(e.target.files?.[0] || null);
               }}
             />
           )}

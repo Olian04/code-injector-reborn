@@ -14,13 +14,15 @@
     "zip:chrome": "extension build --browser=chrome --polyfill --zip --no-telemetry",
     "zip:firefox": "extension build --browser=firefox --polyfill --zip --no-telemetry",
     "preview": "extension preview --browser=chrome --polyfill --no-telemetry",
+    "install:chrome": "extension install --browser=chrome",
+    "install:firefox": "extension install --browser=firefox",
     "test": "playwright test",
     "test:e2e": "playwright test",
     "test:e2e:chromium": "playwright test --project=chromium",
     "test:e2e:firefox": "playwright test --project=firefox",
     "typecheck": "tsc --noEmit",
     "publish:chrome": "node tools/publish-chrome.mjs",
-    "postinstall": "node tools/copy-monaco.mjs"
+    "postinstall": "node tools/copy-monaco.mjs && npm run install:chrome && npm run install:firefox"
   },
   "engines": {
     "node": ">=22.12"

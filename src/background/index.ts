@@ -21,6 +21,10 @@ const INJECT_SCRIPT = '/scripts/inject.js';
 let rules: ParsedRule[] = [];
 let settings: Settings = { ...DEFAULT_SETTINGS };
 const activeTabsData: Record<number, TabData> = {};
+const countTimers: Record<number, ReturnType<typeof setTimeout>> = {};
+
+/** Resolves once storage-backed state is loaded; navigation waits on this. */
+let ready: Promise<void> = Promise.resolve();
 
 function createNewTabData(
   info: Pick<NavigationInfo, 'tabId' | 'parentFrameId' | 'url'>,
@@ -54,20 +58,21 @@ function createNewTabData(
 }
 
 function setBadgeCounter(tabData: TabData | undefined): void {
+  if (!tabData) return;
+
   let text = '';
-  if (tabData?.getTotal) {
+  if (tabData.getTotal) {
     const total = tabData.getTotal();
     text = total ? String(total) : '';
   }
   if (!settings.showcounter) text = '';
-  browser.action.setBadgeText({ text });
+  browser.action.setBadgeText({ text, tabId: tabData.id });
 }
 
-let countTimer: ReturnType<typeof setTimeout> | undefined;
-
 function countInvolvedRules(tabData: TabData, cb: () => void): void {
-  clearTimeout(countTimer);
-  countTimer = setTimeout(async () => {
+  clearTimeout(countTimers[tabData.id]);
+  countTimers[tabData.id] = setTimeout(async () => {
+    delete countTimers[tabData.id];
     const data = await browser.storage.local.get('rules');
     const stored = (data.rules as Rule[]) || [];
     if (!stored.length && !data.rules) return;
@@ -153,6 +158,8 @@ async function injectRules(payload: {
 async function handleWebNavigationOnCommitted(
   details: BrowserNS.WebNavigation.OnCommittedDetailsType
 ): Promise<void> {
+  await ready;
+
   // @types/webextension-polyfill omits parentFrameId on OnCommitted, but
   // Chromium/Firefox provide it at runtime (top-level frames use -1).
   const parentFrameId =
@@ -195,12 +202,16 @@ function handleActivated(activeInfo: { tabId: number }): void {
 function handleStorageChanged(
   changes: Record<string, { newValue?: unknown }>
 ): void {
-  if (changes.rules?.newValue) {
-    rules = serializeRules(changes.rules.newValue as Rule[]);
+  if ('rules' in changes) {
+    const next = (changes.rules.newValue as Rule[]) || [];
+    rules = serializeRules(next);
     browser.storage.local.set({ parsedRules: rules });
   }
   if (changes.settings?.newValue) {
     settings = changes.settings.newValue as Settings;
+    for (const tabData of Object.values(activeTabsData)) {
+      setBadgeCounter(tabData);
+    }
   }
 }
 
@@ -216,13 +227,10 @@ function handleOnMessage(
         if (!tab?.id) throw new Error('Failed to get the current active tab.');
 
         const info = { tabId: tab.id, frameId: 0 };
-        const serialized = serializeRules([mex.rule!]);
-        const involved = getInvolvedRules(
-          { ...info, parentFrameId: -1, url: tab.url || '' },
-          serialized
-        );
-        // Manual inject: force through same path; serializeRules already filtered.
-        // Original forced both buckets via split of serializeRules output.
+        // Manual inject always runs, even when the saved rule is disabled.
+        const serialized = serializeRules([
+          { ...mex.rule!, enabled: true },
+        ]);
         const split = splitRulesByInjectionType(
           serialized.map((r) => ({
             type: r.type,
@@ -231,8 +239,6 @@ function handleOnMessage(
           }))
         );
 
-        // Use involved for URL match? Original used serializeRules + split without URL re-match for manual inject.
-        void involved;
         injectRules({ info, rules: split })
           .then(() =>
             browser.runtime.sendMessage({ action: mex.action, success: true })
@@ -284,15 +290,18 @@ async function initialize(): Promise<void> {
   const data = await browser.storage.local.get();
   if (data.parsedRules) {
     rules = data.parsedRules as ParsedRule[];
+  } else if (data.rules) {
+    // Cold start without cached parsedRules (e.g. after clear / first install).
+    rules = serializeRules(data.rules as Rule[]);
   }
   if (data.settings) {
     settings = data.settings as Settings;
   }
 }
 
+ready = initialize();
+
 browser.storage.onChanged.addListener(handleStorageChanged);
 browser.tabs.onActivated.addListener(handleActivated);
 browser.webNavigation.onCommitted.addListener(handleWebNavigationOnCommitted);
 browser.runtime.onMessage.addListener(handleOnMessage);
-
-void initialize();

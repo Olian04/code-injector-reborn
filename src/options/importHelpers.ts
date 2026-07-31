@@ -17,7 +17,7 @@ export async function importRules(raw: unknown): Promise<ImportResult | null> {
 }
 
 export type GitHubRuleInfo =
-  | { valid: true; url: string; json: GitHubRuleJson }
+  | { valid: true; url: string; branch: string; json: GitHubRuleJson }
   | { valid: false; error: string };
 
 export interface GitHubRuleJson {
@@ -56,29 +56,45 @@ export function getGitHubRuleInfo(_link: string): Promise<GitHubRuleInfo> {
 
       const requestURL = 'https://raw.githubusercontent.com' + link.pathname;
 
-      fetch(requestURL + '/master/rule.json')
-        .then((res) => {
-          if (res.status !== 200) throw res.status;
-          return res.json();
-        })
-        .then(
-          (json: GitHubRuleJson) => {
-            ok({ valid: true, url: requestURL, json });
-          },
-          (err: unknown) => {
+      // Prefer main (current GitHub default), fall back to master.
+      const tryBranches = ['main', 'master'] as const;
+
+      const fetchRule = (index: number): void => {
+        if (index >= tryBranches.length) {
+          ko({ valid: false, error: 'NOT_FOUND' });
+          return;
+        }
+        const branch = tryBranches[index];
+        fetch(requestURL + '/' + branch + '/rule.json')
+          .then((res) => {
+            if (res.status === 404) {
+              fetchRule(index + 1);
+              return null;
+            }
+            if (res.status !== 200) throw res.status;
+            return res.json();
+          })
+          .then((json: GitHubRuleJson | null) => {
+            if (!json) return;
+            ok({ valid: true, url: requestURL, branch, json });
+          })
+          .catch((err: unknown) => {
             if (err === 404) {
-              ko({ valid: false, error: 'NOT_FOUND' });
+              fetchRule(index + 1);
               return;
             }
             ko({ valid: false, error: 'JSON_PARSE_FAIL' });
-          }
-        );
+          });
+      };
+
+      fetchRule(0);
     }, 500);
   });
 }
 
 export async function getGitHubRule(data: {
   url: string;
+  branch: string;
   json: GitHubRuleJson;
 }): Promise<ImportResult | null> {
   if (!data || typeof data !== 'object') throw new Error('INVALID_DATA');
@@ -87,15 +103,17 @@ export async function getGitHubRule(data: {
   if (!remoteConfig.code) throw new Error('NO_CODES');
 
   const stripLeadingSlash = (p: string) => p.replace(/^\//, '');
+  const branch = data.branch || 'main';
+  const base = data.url + '/' + branch + '/';
 
   const remoteUrlJS = remoteConfig.code.js
-    ? data.url + '/master/' + stripLeadingSlash(remoteConfig.code.js)
+    ? base + stripLeadingSlash(remoteConfig.code.js)
     : null;
   const remoteUrlCSS = remoteConfig.code.css
-    ? data.url + '/master/' + stripLeadingSlash(remoteConfig.code.css)
+    ? base + stripLeadingSlash(remoteConfig.code.css)
     : null;
   const remoteUrlHTML = remoteConfig.code.html
-    ? data.url + '/master/' + stripLeadingSlash(remoteConfig.code.html)
+    ? base + stripLeadingSlash(remoteConfig.code.html)
     : null;
 
   const newRule: Rule = {
@@ -124,9 +142,11 @@ export async function getGitHubRule(data: {
     }
   };
 
-  await requestFile(remoteUrlJS, 'js');
-  await requestFile(remoteUrlCSS, 'css');
-  await requestFile(remoteUrlHTML, 'html');
+  await Promise.all([
+    requestFile(remoteUrlJS, 'js'),
+    requestFile(remoteUrlCSS, 'css'),
+    requestFile(remoteUrlHTML, 'html'),
+  ]);
 
   return importRules([newRule]);
 }

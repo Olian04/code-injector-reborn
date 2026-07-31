@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Rule } from '../../shared/types';
 import { downloadText } from '../../shared/utils';
 
@@ -18,10 +18,8 @@ export function ExportModal({ rules, onDone }: ExportModalProps) {
     setToggleAll(false);
   }, [rules]);
 
-  const selectedCount = useMemo(
-    () => selected.filter(Boolean).length,
-    [selected]
-  );
+  // Simple primitive — skip useMemo (rerender-simple-expression-in-memo).
+  const selectedCount = selected.filter(Boolean).length;
 
   const setOne = (index: number, checked: boolean) => {
     setSelected((prev) => {

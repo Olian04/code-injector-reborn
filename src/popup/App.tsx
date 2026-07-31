@@ -31,7 +31,10 @@ import {
 } from '../shared/theme';
 import { closest, getElementIndex } from './dom';
 import { InfoOverlay } from './components/InfoOverlay';
-import { OptionsPanel } from './components/OptionsPanel';
+import {
+  OptionsPanel,
+  preloadOptionsApp,
+} from './components/OptionsPanel';
 import { RuleItem } from './components/RuleItem';
 import { ContextMenu } from './components/ContextMenu';
 import { EditorPanel } from './components/EditorPanel';
@@ -95,6 +98,7 @@ export function App() {
   const [selectorActive, setSelectorActive] = useState(false);
   const [selectorError, setSelectorError] = useState(false);
   const [selectedTab, setSelectedTab] = useState<EditorTab>('js');
+  const selectedTabRef = useRef(selectedTab);
   const [tabFocus, setTabFocus] = useState(false);
   const [enabled, setEnabled] = useState(true);
   const [onLoad, setOnLoad] = useState(true);
@@ -148,6 +152,7 @@ export function App() {
   editingRef.current = editing;
   optionsRef.current = options;
   tabDataRef.current = tabData;
+  selectedTabRef.current = selectedTab;
   editorMetaRef.current = {
     target: editorTarget,
     enabled,
@@ -507,7 +512,7 @@ export function App() {
       if (el.scrollLeft !== 0) el.scrollLeft = 0;
       if (el.scrollTop !== 0) el.scrollTop = 0;
     };
-    el.addEventListener('scroll', reset);
+    el.addEventListener('scroll', reset, { passive: true });
     return () => el.removeEventListener('scroll', reset);
   }, []);
 
@@ -571,7 +576,7 @@ export function App() {
           if (editingRef.current) {
             const name = target.dataset.name;
             if (name === 'txt-editor-selector') {
-              switch (selectedTab) {
+              switch (selectedTabRef.current) {
                 case 'js':
                   editorJS.current
                     ?.getDomNode()
@@ -636,7 +641,7 @@ export function App() {
 
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [selectedTab, setLastSession]);
+  }, [setLastSession]);
 
   const handleSelectorChange = (value: string) => {
     setSelector(value);
@@ -1011,6 +1016,8 @@ export function App() {
             data-name="btn-general-options-show"
             tabIndex={-1}
             type="button"
+            onMouseEnter={preloadOptionsApp}
+            onFocus={preloadOptionsApp}
             onClick={() => {
               setEditing(false);
               setInfo(false);

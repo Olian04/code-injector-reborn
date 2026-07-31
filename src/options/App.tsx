@@ -1,5 +1,7 @@
 import browser from '../shared/browser';
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useRef,
@@ -16,10 +18,22 @@ import {
 import type { Rule, Settings } from '../shared/types';
 import { DEFAULT_SETTINGS } from '../shared/types';
 import { applyTheme, type ThemePreference } from '../shared/theme';
-import { ExportModal } from './components/ExportModal';
-import { ImportModal } from './components/ImportModal';
 import { Modal } from './components/Modal';
 import './styles/options-ui.scss';
+
+const ExportModal = lazy(() =>
+  import('./components/ExportModal').then((m) => ({ default: m.ExportModal }))
+);
+const ImportModal = lazy(() =>
+  import('./components/ImportModal').then((m) => ({ default: m.ImportModal }))
+);
+
+function preloadExportModal() {
+  void import('./components/ExportModal');
+}
+function preloadImportModal() {
+  void import('./components/ImportModal');
+}
 
 type ModalKind = 'import' | 'export' | null;
 type FlashResult = 'success' | 'fail' | null;
@@ -113,8 +127,11 @@ export function App({
     }
 
     void (async () => {
-      await refreshRulesCounter();
-      const loaded = await getSettings();
+      // Independent storage reads — run together (async-parallel).
+      const [, loaded] = await Promise.all([
+        refreshRulesCounter(),
+        getSettings(),
+      ]);
       setSettingsState(loaded);
       // Popup already owns theme application when we are embedded.
       if (!embedded) applyTheme(loaded.theme);
@@ -125,10 +142,9 @@ export function App({
     const onChanged = (changes: {
       rules?: { newValue?: Rule[] };
     }) => {
-      if (changes.rules && changes.rules.newValue) {
+      if (changes.rules?.newValue) {
         void refreshRulesCounter(changes.rules.newValue);
       }
-      setModal(null);
     };
 
     browser.storage.onChanged.addListener(onChanged);
@@ -272,6 +288,8 @@ export function App({
                     className="btn"
                     data-name="btn-show-modal-import"
                     title="Import"
+                    onMouseEnter={preloadImportModal}
+                    onFocus={preloadImportModal}
                     onClick={openImport}
                   >
                     Import
@@ -298,6 +316,8 @@ export function App({
                         ? 'Open the options page to export'
                         : 'Export'
                     }
+                    onMouseEnter={embedded ? undefined : preloadExportModal}
+                    onFocus={embedded ? undefined : preloadExportModal}
                     onClick={() => void openExport()}
                   >
                     Export
@@ -412,28 +432,30 @@ export function App({
         visible={modal !== null}
         onClose={closeModal}
       >
-        {modal === 'export' && (
-          <ExportModal
-            rules={exportRules}
-            onDone={(result) => {
-              setExportResult(result);
-              setExportFlashKey((k) => k + 1);
-              closeModal();
-            }}
-          />
-        )}
-        {modal === 'import' && (
-          <ImportModal
-            embedded={embedded}
-            onOpenStandalone={onOpenStandalone}
-            onDone={(result, detail) => {
-              setImportResult(result);
-              setImportDetail(detail);
-              setImportFlashKey((k) => k + 1);
-              closeModal();
-            }}
-          />
-        )}
+        <Suspense fallback={null}>
+          {modal === 'export' && (
+            <ExportModal
+              rules={exportRules}
+              onDone={(result) => {
+                setExportResult(result);
+                setExportFlashKey((k) => k + 1);
+                closeModal();
+              }}
+            />
+          )}
+          {modal === 'import' && (
+            <ImportModal
+              embedded={embedded}
+              onOpenStandalone={onOpenStandalone}
+              onDone={(result, detail) => {
+                setImportResult(result);
+                setImportDetail(detail);
+                setImportFlashKey((k) => k + 1);
+                closeModal();
+              }}
+            />
+          )}
+        </Suspense>
       </Modal>
 
       <div className="hidden">

@@ -4,27 +4,42 @@
  * Kept as plain JS in public/ so Extension.js copies it with a stable path.
  */
 (function (window) {
+  // executeScript re-runs this file on every inject; skip re-registering.
+  if (window.__codeInjectorListening) return;
+  window.__codeInjectorListening = true;
+
+  function appendEl(el) {
+    (document.head || document.documentElement).append(el);
+  }
+
   function injectJS(rule, cb) {
     var el = document.createElement('script');
     el.textContent = rule.code;
-    document.head.append(el);
+    appendEl(el);
     cb();
   }
 
   function injectCSS(rule, cb) {
     var el = document.createElement('style');
     el.textContent = rule.code;
-    document.head.append(el);
+    appendEl(el);
     cb();
   }
 
   function injectHTML(rule, cb) {
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(rule.code, 'text/html');
-    while (doc.body.firstChild) {
-      document.body.append(doc.body.firstChild);
+    function go() {
+      if (!document.body) {
+        document.addEventListener('DOMContentLoaded', go, { once: true });
+        return;
+      }
+      var parser = new DOMParser();
+      var doc = parser.parseFromString(rule.code, 'text/html');
+      while (doc.body.firstChild) {
+        document.body.append(doc.body.firstChild);
+      }
+      cb();
     }
-    cb();
+    go();
   }
 
   function insertRules(rules) {
@@ -40,6 +55,9 @@
         break;
       case 'html':
         injectHTML(rule, insertRules.bind(null, rules));
+        break;
+      default:
+        insertRules(rules);
         break;
     }
   }

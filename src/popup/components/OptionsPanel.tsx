@@ -5,6 +5,11 @@ const OptionsApp = lazy(() =>
   import('../../options/App').then((mod) => ({ default: mod.App }))
 );
 
+/** Warm options chunk on intent (bundle-preload). */
+export function preloadOptionsApp() {
+  void import('../../options/App');
+}
+
 interface OptionsPanelProps {
   active: boolean;
   onHide: () => void;

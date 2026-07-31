@@ -55,23 +55,27 @@ export function parseImportedRules(raw: unknown): Rule[] | null {
     const code = loadedRule.code as Rule['code'] | undefined;
     if (!code) continue;
 
+    if (typeof loadedRule.selector !== 'string') continue;
+    if (typeof loadedRule.enabled !== 'boolean') continue;
+    if (typeof code.js !== 'string') continue;
+    if (typeof code.css !== 'string') continue;
+    if (typeof code.html !== 'string') continue;
+
     const rule: Rule = {
-      selector: loadedRule.selector as string,
-      enabled: loadedRule.enabled as boolean,
-      onLoad: loadedRule.onLoad as boolean,
-      topFrameOnly: loadedRule.topFrameOnly as boolean,
+      selector: loadedRule.selector,
+      enabled: loadedRule.enabled,
+      // Match emptyRule() defaults when older exports omit these flags.
+      onLoad: typeof loadedRule.onLoad === 'boolean' ? loadedRule.onLoad : true,
+      topFrameOnly:
+        typeof loadedRule.topFrameOnly === 'boolean'
+          ? loadedRule.topFrameOnly
+          : true,
       code: {
         js: code.js,
         css: code.css,
         html: code.html,
       },
     };
-
-    if (rule.selector === undefined) continue;
-    if (rule.enabled === undefined) continue;
-    if (typeof rule.code.js !== 'string') continue;
-    if (typeof rule.code.css !== 'string') continue;
-    if (typeof rule.code.html !== 'string') continue;
 
     newRules.push(rule);
   }

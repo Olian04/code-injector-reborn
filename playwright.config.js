@@ -2,8 +2,10 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: 'tests/e2e',
+  // Specs share beforeAll fixture servers within a file; keep those serial.
+  // Different files still run across workers (each launches its own browser).
   fullyParallel: false,
-  workers: 1,
+  workers: process.env.CI ? 2 : 4,
   retries: process.env.CI ? 2 : 0,
   timeout: 60_000,
   expect: {
