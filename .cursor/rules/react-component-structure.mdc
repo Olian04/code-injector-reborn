@@ -1,0 +1,44 @@
+---
+description: Prefer composition over growing popup/options App.tsx god-components
+globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
+alwaysApply: false
+---
+
+# React component structure
+
+`src/popup/App.tsx` and `src/options/App.tsx` are already large. When touching them, **extract** focused pieces instead of growing the roots.
+
+## Rules
+
+- New UI sections → `src/popup/components/` or `src/options/components/` (match neighbors like `EditorPanel`, `RuleItem`, `ImportModal`).
+- Reusable logic → colocated hooks; keep App as orchestration (state wiring, top-level effects).
+- Never define components inside components.
+- Prefer composition and clear props over passing sprawling context objects unless that pattern already exists for the feature.
+- Do not drive-by rewrite unrelated App regions; extract the concern you are changing.
+
+```tsx
+// ❌ Growing App further
+export function App() {
+  return (
+    <>
+      {/* …hundreds of lines… */}
+      <div className="new-feature">{/* large inline UI */}</div>
+    </>
+  );
+}
+
+// ✅ Extract
+import { NewFeature } from './components/NewFeature';
+
+export function App() {
+  return (
+    <>
+      {/* … */}
+      <NewFeature {...needed} />
+    </>
+  );
+}
+```
+
+Deeper performance guidance: skill `react-best-practices` and upstream  
+https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices
