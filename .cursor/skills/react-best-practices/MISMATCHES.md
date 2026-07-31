@@ -3,37 +3,40 @@
 Code-Injector’s React UI is **client-only browser-extension pages**
 (`src/popup`, `src/options`), not a Next.js App Router / RSC fullstack app.
 
-Upstream rules under [`rules/`](rules/) are kept **verbatim**. This file only
-flags which ones to skip or adapt when applying them here.
+Upstream rules under [`rules/`](rules/) are kept **verbatim** for every rule
+that remains. This file records (1) which upstream rules were **removed** as
+N/A for this project, and (2) which remaining rules need careful adaptation.
 
 Pinned upstream: `7c180d9044c9ae2b442b567aad4e42a28dd5ed62`
 ([vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)).
 
 ---
 
-## N/A / skip for this project
+## Removed — N/A / skip for this project
 
 No Next.js server, RSC, SSR hydration, API routes, or document-level Next
-resource pipeline.
+resource pipeline. These upstream rules were **deleted** from `rules/` and from
+`.cursor/rules/react-bp-*.mdc` (confirmed skip for this extension). Do not
+reintroduce them unless the product gains a matching runtime.
 
-| Rule file | Why |
-|-----------|-----|
-| `async-api-routes.md` | Next.js API routes / server actions waterfalls |
-| `server-after-nonblocking.md` | Next.js `after()` |
-| `server-auth-actions.md` | Server Actions auth |
-| `server-cache-lru.md` | Server cross-request LRU cache |
-| `server-cache-react.md` | `React.cache()` per-request RSC dedupe |
-| `server-dedup-props.md` | RSC prop serialization |
-| `server-hoist-static-io.md` | Server route handlers / OG image / font I/O |
-| `server-no-shared-module-state.md` | RSC/SSR shared request module state |
-| `server-parallel-fetching.md` | Server component fetch parallelization |
-| `server-parallel-nested-fetching.md` | Nested server fetch parallelization |
-| `server-serialization.md` | Minimize RSC → client serialization |
-| `rendering-hydration-no-flicker.md` | SSR hydration vs localStorage flicker |
-| `rendering-hydration-suppress-warning.md` | SSR hydration warning suppression |
-| `rendering-resource-hints.md` | ReactDOM preload/preconnect for web documents |
-| `rendering-script-defer-async.md` | Classic document `<script defer/async>` loading |
-| `bundle-defer-third-party.md` | Defer analytics/logging after **hydration** |
+| Rule basename | Why removed |
+|---------------|-------------|
+| `async-api-routes` | Next.js API routes / server actions waterfalls |
+| `server-after-nonblocking` | Next.js `after()` |
+| `server-auth-actions` | Server Actions auth |
+| `server-cache-lru` | Server cross-request LRU cache |
+| `server-cache-react` | `React.cache()` per-request RSC dedupe |
+| `server-dedup-props` | RSC prop serialization |
+| `server-hoist-static-io` | Server route handlers / OG image / font I/O |
+| `server-no-shared-module-state` | RSC/SSR shared request module state |
+| `server-parallel-fetching` | Server component fetch parallelization |
+| `server-parallel-nested-fetching` | Nested server fetch parallelization |
+| `server-serialization` | Minimize RSC → client serialization |
+| `rendering-hydration-no-flicker` | SSR hydration vs localStorage flicker |
+| `rendering-hydration-suppress-warning` | SSR hydration warning suppression |
+| `rendering-resource-hints` | ReactDOM preload/preconnect for web documents |
+| `rendering-script-defer-async` | Classic document `<script defer/async>` loading |
+| `bundle-defer-third-party` | Defer analytics/logging after **hydration** |
 
 ---
 

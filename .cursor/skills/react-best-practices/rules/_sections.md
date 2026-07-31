@@ -3,6 +3,10 @@
 This file defines all sections, their ordering, impact levels, and descriptions.
 The section ID (in parentheses) is the filename prefix used to group rules.
 
+Upstream originally included **Server-Side Performance (`server`)**; that
+entire category was removed for Code-Injector (client-only extension UI). See
+[`../MISMATCHES.md`](../MISMATCHES.md).
+
 ---
 
 ## 1. Eliminating Waterfalls (async)
@@ -15,32 +19,27 @@ The section ID (in parentheses) is the filename prefix used to group rules.
 **Impact:** CRITICAL  
 **Description:** Reducing initial bundle size improves Time to Interactive and Largest Contentful Paint.
 
-## 3. Server-Side Performance (server)
-
-**Impact:** HIGH  
-**Description:** Optimizing server-side rendering and data fetching eliminates server-side waterfalls and reduces response times.
-
-## 4. Client-Side Data Fetching (client)
+## 3. Client-Side Data Fetching (client)
 
 **Impact:** MEDIUM-HIGH  
 **Description:** Automatic deduplication and efficient data fetching patterns reduce redundant network requests.
 
-## 5. Re-render Optimization (rerender)
+## 4. Re-render Optimization (rerender)
 
 **Impact:** MEDIUM  
 **Description:** Reducing unnecessary re-renders minimizes wasted computation and improves UI responsiveness.
 
-## 6. Rendering Performance (rendering)
+## 5. Rendering Performance (rendering)
 
 **Impact:** MEDIUM  
 **Description:** Optimizing the rendering process reduces the work the browser needs to do.
 
-## 7. JavaScript Performance (js)
+## 6. JavaScript Performance (js)
 
 **Impact:** LOW-MEDIUM  
 **Description:** Micro-optimizations for hot paths can add up to meaningful improvements.
 
-## 8. Advanced Patterns (advanced)
+## 7. Advanced Patterns (advanced)
 
 **Impact:** LOW  
 **Description:** Advanced patterns for specific cases that require careful implementation.

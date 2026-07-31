@@ -2,7 +2,8 @@
 
 Authority: verbatim files in [`rules/`](rules/), synced from
 [vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills/tree/main/skills/react-best-practices/rules)
-at `7c180d9044c9ae2b442b567aad4e42a28dd5ed62`.
+at `7c180d9044c9ae2b442b567aad4e42a28dd5ed62`, then trimmed for this
+browser-extension project (see [`MISMATCHES.md`](MISMATCHES.md)).
 
 Do not use this file as a substitute for the rule bodies. Use it only to find
 the right `rules/<name>.md` file. Extension applicability flags:
@@ -16,7 +17,6 @@ the right `rules/<name>.md` file. Extension applicability flags:
 
 | File | Title |
 |------|-------|
-| [async-api-routes.md](rules/async-api-routes.md) | Prevent Waterfall Chains in API Routes |
 | [async-cheap-condition-before-await.md](rules/async-cheap-condition-before-await.md) | Check Cheap Conditions Before Async Flags |
 | [async-defer-await.md](rules/async-defer-await.md) | Defer Await Until Needed |
 | [async-dependencies.md](rules/async-dependencies.md) | Dependency-Based Parallelization |
@@ -30,26 +30,10 @@ the right `rules/<name>.md` file. Extension applicability flags:
 | [bundle-analyzable-paths.md](rules/bundle-analyzable-paths.md) | Prefer Statically Analyzable Paths |
 | [bundle-barrel-imports.md](rules/bundle-barrel-imports.md) | Avoid Barrel File Imports |
 | [bundle-conditional.md](rules/bundle-conditional.md) | Conditional Module Loading |
-| [bundle-defer-third-party.md](rules/bundle-defer-third-party.md) | Defer Non-Critical Third-Party Libraries |
 | [bundle-dynamic-imports.md](rules/bundle-dynamic-imports.md) | Dynamic Imports for Heavy Components |
 | [bundle-preload.md](rules/bundle-preload.md) | Preload Based on User Intent |
 
-## 3. Server-Side (`server-`)
-
-| File | Title |
-|------|-------|
-| [server-after-nonblocking.md](rules/server-after-nonblocking.md) | Use after() for Non-Blocking Operations |
-| [server-auth-actions.md](rules/server-auth-actions.md) | Authenticate Server Actions Like API Routes |
-| [server-cache-lru.md](rules/server-cache-lru.md) | Cross-Request LRU Caching |
-| [server-cache-react.md](rules/server-cache-react.md) | Per-Request Deduplication with React.cache() |
-| [server-dedup-props.md](rules/server-dedup-props.md) | Avoid Duplicate Serialization in RSC Props |
-| [server-hoist-static-io.md](rules/server-hoist-static-io.md) | Hoist Static I/O to Module Level |
-| [server-no-shared-module-state.md](rules/server-no-shared-module-state.md) | Avoid Shared Module State for Request Data |
-| [server-parallel-fetching.md](rules/server-parallel-fetching.md) | Parallel Data Fetching with Component Composition |
-| [server-parallel-nested-fetching.md](rules/server-parallel-nested-fetching.md) | Parallel Nested Data Fetching |
-| [server-serialization.md](rules/server-serialization.md) | Minimize Serialization at RSC Boundaries |
-
-## 4. Client-Side Data (`client-`)
+## 3. Client-Side Data (`client-`)
 
 | File | Title |
 |------|-------|
@@ -58,7 +42,7 @@ the right `rules/<name>.md` file. Extension applicability flags:
 | [client-passive-event-listeners.md](rules/client-passive-event-listeners.md) | Use Passive Event Listeners for Scrolling Performance |
 | [client-swr-dedup.md](rules/client-swr-dedup.md) | Use SWR for Automatic Deduplication |
 
-## 5. Re-render (`rerender-`)
+## 4. Re-render (`rerender-`)
 
 | File | Title |
 |------|-------|
@@ -78,7 +62,7 @@ the right `rules/<name>.md` file. Extension applicability flags:
 | [rerender-use-deferred-value.md](rules/rerender-use-deferred-value.md) | Use useDeferredValue for Expensive Derived Renders |
 | [rerender-use-ref-transient-values.md](rules/rerender-use-ref-transient-values.md) | Use useRef for Transient Values |
 
-## 6. Rendering (`rendering-`)
+## 5. Rendering (`rendering-`)
 
 | File | Title |
 |------|-------|
@@ -87,14 +71,10 @@ the right `rules/<name>.md` file. Extension applicability flags:
 | [rendering-conditional-render.md](rules/rendering-conditional-render.md) | Use Explicit Conditional Rendering |
 | [rendering-content-visibility.md](rules/rendering-content-visibility.md) | CSS content-visibility for Long Lists |
 | [rendering-hoist-jsx.md](rules/rendering-hoist-jsx.md) | Hoist Static JSX Elements |
-| [rendering-hydration-no-flicker.md](rules/rendering-hydration-no-flicker.md) | Prevent Hydration Mismatch Without Flickering |
-| [rendering-hydration-suppress-warning.md](rules/rendering-hydration-suppress-warning.md) | Suppress Expected Hydration Mismatches |
-| [rendering-resource-hints.md](rules/rendering-resource-hints.md) | Use React DOM Resource Hints |
-| [rendering-script-defer-async.md](rules/rendering-script-defer-async.md) | Use defer or async on Script Tags |
 | [rendering-svg-precision.md](rules/rendering-svg-precision.md) | Optimize SVG Precision |
 | [rendering-usetransition-loading.md](rules/rendering-usetransition-loading.md) | Use useTransition Over Manual Loading States |
 
-## 7. JavaScript (`js-`)
+## 6. JavaScript (`js-`)
 
 | File | Title |
 |------|-------|
@@ -113,7 +93,7 @@ the right `rules/<name>.md` file. Extension applicability flags:
 | [js-set-map-lookups.md](rules/js-set-map-lookups.md) | Use Set/Map for O(1) Lookups |
 | [js-tosorted-immutable.md](rules/js-tosorted-immutable.md) | Use toSorted() Instead of sort() for Immutability |
 
-## 8. Advanced (`advanced-`)
+## 7. Advanced (`advanced-`)
 
 | File | Title |
 |------|-------|
