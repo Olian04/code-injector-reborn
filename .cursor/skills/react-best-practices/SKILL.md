@@ -58,6 +58,7 @@ Rationale, reworded rules, and apply-as-is lists: [`MISMATCHES.md`](MISMATCHES.m
 | `client-localstorage-schema` | Version/minimize `browser.storage`; `localStorage` = theme mirror only |
 | `js-cache-storage` | Map-cache hot theme `localStorage` / optional `browser.storage`; invalidate via `storage.onChanged` |
 | `js-request-idle-callback` | Idle warm OK; cancel on unmount; not for must-finish work (Monaco warm exemplar) |
+| `client-event-listeners` | Module-level shared `window`/`document` listener (or one `browser.*.addListener`); never SWR |
 
 Removed rather than faked: `client-swr-dedup`, `rendering-activity` (see
 MISMATCHES “Removed — non-trivial / cannot map”).

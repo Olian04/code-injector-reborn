@@ -73,6 +73,7 @@ Approved adaptations — rule bodies (and matching `.mdc` wrappers) updated.
 | `client-localstorage-schema` | Primary API `browser.storage`; theme `localStorage` mirror (`THEME_CACHE_KEY` / theme-boot) as sync exception |
 | `js-cache-storage` | Map-cache for hot theme `localStorage` / optional `browser.storage`; invalidate via `storage.onChanged` |
 | `js-request-idle-callback` | Keep rIC; emphasize popup short lifetime, cancel on unmount, not for must-finish work (Monaco warm exemplar) |
+| `client-event-listeners` | Dropped `useSWRSubscription` / SWR; module-level shared subscriber for `window`/`document` (and same idea for `browser.storage.onChanged` / `browser.runtime.onMessage`) |
 
 ---
 
@@ -85,7 +86,7 @@ Open items are only future revisits:
 |------|--------|-------------------------|
 | `client-swr-dedup` | **Removed** (handled) | Do not add SWR; dedupe with shared promises / storage subscription if fan-out appears |
 | `rendering-activity` | **Removed** (handled) | Revisit on React 19+; until then keep expensive panels mounted after first open |
-| All eight reworded rules above | **Done on disk** | Treat as approved project conventions in `SKILL.md` |
+| All nine reworded rules above | **Done on disk** | Treat as approved project conventions in `SKILL.md` |
 
 ---
 
@@ -107,7 +108,6 @@ Pure client React / JS patterns that fit the extension popup/options UI
 
 ### Client
 
-- `client-event-listeners.md`
 - `client-passive-event-listeners.md`
 
 ### Re-render

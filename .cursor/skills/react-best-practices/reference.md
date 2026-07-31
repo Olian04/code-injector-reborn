@@ -40,7 +40,7 @@ the right `rules/<name>.md` file.
 
 | File | Title | Notes |
 |------|-------|-------|
-| [client-event-listeners.md](rules/client-event-listeners.md) | Deduplicate Global Event Listeners | verbatim |
+| [client-event-listeners.md](rules/client-event-listeners.md) | Deduplicate Global Event Listeners | adapted |
 | [client-localstorage-schema.md](rules/client-localstorage-schema.md) | Version and Minimize Extension Storage Data | adapted |
 | [client-passive-event-listeners.md](rules/client-passive-event-listeners.md) | Use Passive Event Listeners for Scrolling Performance | verbatim |
 

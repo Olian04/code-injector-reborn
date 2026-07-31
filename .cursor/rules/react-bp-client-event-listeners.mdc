@@ -8,12 +8,15 @@ alwaysApply: false
 title: Deduplicate Global Event Listeners
 impact: LOW
 impactDescription: single listener for N components
-tags: client, swr, event-listeners, subscription
+tags: client, event-listeners, subscription, browser-extension
 ---
+
+> Adapted for Code Injector Reborn (browser extension). Upstream: vercel-labs/agent-skills @ 7c180d9.
 
 ## Deduplicate Global Event Listeners
 
-Use `useSWRSubscription()` to share global event listeners across component instances.
+Share one event listener (or one extension subscription) across component
+instances instead of attaching N listeners in N `useEffect`s.
 
 **Incorrect (N instances = N listeners):**
 
@@ -31,23 +34,40 @@ function useKeyboardShortcut(key: string, callback: () => void) {
 }
 ```
 
-When using the `useKeyboardShortcut` hook multiple times, each instance will register a new listener.
+When using the `useKeyboardShortcut` hook multiple times, each instance
+registers a new `window` listener.
 
 **Correct (N instances = 1 listener):**
 
 ```tsx
-import useSWRSubscription from 'swr/subscription'
-
-// Module-level Map to track callbacks per key
+// Module-level Map + one shared window listener
 const keyCallbacks = new Map<string, Set<() => void>>()
+let listening = false
+
+function onKeyDown(e: KeyboardEvent) {
+  if (!e.metaKey || !keyCallbacks.has(e.key)) return
+  keyCallbacks.get(e.key)!.forEach((cb) => cb())
+}
+
+function ensureKeydownListener() {
+  if (listening) return
+  listening = true
+  window.addEventListener('keydown', onKeyDown)
+}
+
+function teardownKeydownListenerIfIdle() {
+  if (keyCallbacks.size > 0) return
+  window.removeEventListener('keydown', onKeyDown)
+  listening = false
+}
 
 function useKeyboardShortcut(key: string, callback: () => void) {
-  // Register this callback in the Map
   useEffect(() => {
     if (!keyCallbacks.has(key)) {
       keyCallbacks.set(key, new Set())
     }
     keyCallbacks.get(key)!.add(callback)
+    ensureKeydownListener()
 
     return () => {
       const set = keyCallbacks.get(key)
@@ -57,24 +77,20 @@ function useKeyboardShortcut(key: string, callback: () => void) {
           keyCallbacks.delete(key)
         }
       }
+      teardownKeydownListenerIfIdle()
     }
   }, [key, callback])
-
-  useSWRSubscription('global-keydown', () => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.metaKey && keyCallbacks.has(e.key)) {
-        keyCallbacks.get(e.key)!.forEach(cb => cb())
-      }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  })
 }
 
-function Profile() {
-  // Multiple shortcuts will share the same listener
-  useKeyboardShortcut('p', () => { /* ... */ }) 
+function EditorChrome() {
+  // Multiple shortcuts share the same keydown listener
+  useKeyboardShortcut('p', () => { /* ... */ })
   useKeyboardShortcut('k', () => { /* ... */ })
-  // ...
 }
 ```
+
+**Same idea for extension APIs** (`browser.storage.onChanged`,
+`browser.runtime.onMessage`): keep a module-level `Set` of callbacks and attach
+one `addListener` while any subscriber is active; remove it when the set is
+empty. Prefer this over each component calling `addListener` in its own
+`useEffect`.
