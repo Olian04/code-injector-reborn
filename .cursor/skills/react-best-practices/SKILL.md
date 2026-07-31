@@ -37,6 +37,18 @@ and from `.cursor/rules/react-bp-*.mdc` (do not reintroduce or apply them):
 Rationale and the adapt-carefully / apply-as-is lists for **remaining** rules:
 [`MISMATCHES.md`](MISMATCHES.md).
 
+## Project adaptations
+
+**Pending user approval** — do not treat these as settled conventions yet.
+
+Decided-direction drafts (upstream stays verbatim; agents map usage) live in
+[`MISMATCHES.md` → Needs your attention / adapt carefully](MISMATCHES.md#needs-your-attention--adapt-carefully)
+and the summary table
+[`Project adaptations (pending approval)`](MISMATCHES.md#project-adaptations-pending-approval).
+
+Until approved: follow adapt-carefully guidance in MISMATCHES when a rule’s
+examples mention Next/SWR/RSC/`better-all`/`Activity`; do not rewrite `rules/`.
+
 ## When to use
 
 Apply this skill when you:
