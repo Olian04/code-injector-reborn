@@ -381,29 +381,6 @@
         }
     }
 
-    .help-trigger{
-        background: none;
-        border: 0;
-        padding: 0;
-        font-size: 18px;
-        width: 30px;
-        height: 30px;
-        line-height: 30px;
-        color: #ccc;
-        cursor: help;
-
-        &:hover{
-            color: #aaa;
-        }
-    }
-    .e-s-help{
-        position: absolute;
-        display: inline-block;
-        top: 0;
-        right: 0;
-        text-decoration: none;
-    }
-
 /* Help popovers */
 
     .help-popover{
@@ -1308,11 +1285,6 @@
         #{$s} .editor-selector table td:first-child input[data-error="true"]{
             border-color: $dError;
             color: $dError;
-        }
-        #{$s} .help-trigger{
-            color: $dTextMuted;
-
-            &:hover{ color: $dText; }
         }
         #{$s} .help-popover{
             background: $dRaised;

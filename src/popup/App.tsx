@@ -28,7 +28,12 @@ import {
   watchSystemTheme,
   type ThemePreference,
 } from '../shared/theme';
-import { closest, getElementIndex, hasOpenPopover } from './dom';
+import {
+  closeOpenPopovers,
+  closest,
+  getElementIndex,
+  hasOpenPopover,
+} from './dom';
 import { InfoOverlay } from './components/InfoOverlay';
 import { RuleItem } from './components/RuleItem';
 import { ContextMenu } from './components/ContextMenu';
@@ -588,9 +593,14 @@ export function App() {
           break;
         }
         case 27: {
-          // Leave Escape alone while a help popover is up, or preventDefault
-          // here would stop the browser dismissing it.
-          if (hasOpenPopover()) break;
+          // Escape dismisses a help bubble first, and only that: the bubbles
+          // are manual popovers, so nothing else will close them.
+          if (hasOpenPopover()) {
+            closeOpenPopovers();
+            e.preventDefault();
+            e.stopPropagation();
+            break;
+          }
           if (e.shiftKey) setEditing(false);
           setInfo(false);
           e.preventDefault();

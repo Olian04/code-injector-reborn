@@ -1,8 +1,12 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode, type RefObject } from 'react';
+import { closeOpenPopovers } from '../dom';
 
 /**
- * A help bubble built on the Popover API, so the browser handles the top layer,
- * light dismiss and Escape.
+ * A help bubble built on the Popover API, so the browser handles the top layer.
+ *
+ * The bubble explains a control rather than sitting beside it, so it is opened
+ * by hovering that control. Dismissal is `manual`: `auto` would light-dismiss on
+ * the very click the control exists for.
  *
  * Placement is computed here rather than with CSS anchor positioning, which
  * Firefox does not support yet; a popover lives in the top layer, so its
@@ -12,6 +16,9 @@ import { useEffect, useRef, type ReactNode } from 'react';
 
 const GAP = 6;
 const EDGE = 8;
+
+/** Long enough to cross the gap between the control and the bubble. */
+const CLOSE_DELAY = 250;
 
 function place(panel: HTMLElement, trigger: HTMLElement): void {
   // Measure from a known origin: the panel is already open at this point.
@@ -42,60 +49,73 @@ function place(panel: HTMLElement, trigger: HTMLElement): void {
 interface HelpPopoverProps {
   id: string;
   heading: string;
-  /** Accessible name for the trigger, which is icon-only. */
-  label: string;
-  /** Extra class on the trigger, for callers that position it themselves. */
-  triggerClass?: string;
+  /** The control this explains. Hovering it opens the bubble. */
+  anchorRef: RefObject<HTMLElement>;
   children: ReactNode;
 }
 
 export function HelpPopover({
   id,
   heading,
-  label,
-  triggerClass,
+  anchorRef,
   children,
 }: HelpPopoverProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const panel = panelRef.current;
-    const trigger = triggerRef.current;
-    if (!panel || !trigger) return;
+    const anchor = anchorRef.current;
+    if (!panel || !anchor) return;
 
-    const onToggle = (event: Event) => {
-      if ((event as ToggleEvent).newState === 'open') place(panel, trigger);
+    let closeTimer = 0;
+
+    const keepOpen = () => {
+      window.clearTimeout(closeTimer);
+      closeTimer = 0;
     };
 
-    panel.addEventListener('toggle', onToggle);
-    return () => panel.removeEventListener('toggle', onToggle);
-  }, []);
+    const open = () => {
+      keepOpen();
+      if (panel.matches(':popover-open')) return;
+      // Manual popovers do not dismiss each other, so only one is left showing.
+      closeOpenPopovers();
+      panel.showPopover();
+      place(panel, anchor);
+    };
+
+    // The pointer has to cross a gap to reach the bubble, and the bubble can
+    // scroll, so leaving the control only arms a delayed close.
+    const close = () => {
+      keepOpen();
+      closeTimer = window.setTimeout(() => {
+        if (panel.matches(':popover-open')) panel.hidePopover();
+      }, CLOSE_DELAY);
+    };
+
+    anchor.addEventListener('pointerenter', open);
+    anchor.addEventListener('pointerleave', close);
+    panel.addEventListener('pointerenter', keepOpen);
+    panel.addEventListener('pointerleave', close);
+
+    return () => {
+      window.clearTimeout(closeTimer);
+      anchor.removeEventListener('pointerenter', open);
+      anchor.removeEventListener('pointerleave', close);
+      panel.removeEventListener('pointerenter', keepOpen);
+      panel.removeEventListener('pointerleave', close);
+    };
+  }, [anchorRef]);
 
   return (
-    <>
-      <button
-        ref={triggerRef}
-        type="button"
-        className={`help-trigger material-icons${triggerClass ? ` ${triggerClass}` : ''}`}
-        data-name={`btn-${id}`}
-        popovertarget={id}
-        aria-label={label}
-        title={label}
-        tabIndex={-1}
-      >
-        &#xE8FD;
-      </button>
-      <div
-        ref={panelRef}
-        id={id}
-        popover="auto"
-        className="help-popover"
-        data-name={`po-${id}`}
-      >
-        <div className="hp-heading">{heading}</div>
-        <div className="hp-body">{children}</div>
-      </div>
-    </>
+    <div
+      ref={panelRef}
+      id={id}
+      popover="manual"
+      className="help-popover"
+      data-name={`po-${id}`}
+    >
+      <div className="hp-heading">{heading}</div>
+      <div className="hp-body">{children}</div>
+    </div>
   );
 }

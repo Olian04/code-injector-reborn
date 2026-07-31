@@ -1,5 +1,6 @@
 import { useEffect, useRef, type MouseEvent, type RefObject } from 'react';
 import type { EditorTab } from '../types';
+import { closeOpenPopovers } from '../dom';
 import {
   OnPageLoadHelp,
   SelectorHelp,
@@ -66,6 +67,14 @@ export function EditorPanel({
   onResizeGripMouseDown,
 }: EditorPanelProps) {
   const selectorRef = useRef<HTMLInputElement>(null);
+  const onLoadRef = useRef<HTMLLabelElement>(null);
+  const topFrameOnlyRef = useRef<HTMLLabelElement>(null);
+
+  // The bubbles live in the top layer, so they would outlive a panel dismissed
+  // from the keyboard while the pointer still rests on a control.
+  useEffect(() => {
+    if (!active) closeOpenPopovers();
+  }, [active]);
 
   // Only focus once this panel is on screen, and never let focus scroll the
   // popup: while #editor is translated off-screen, scroll-into-view would shift
@@ -98,9 +107,10 @@ export function EditorPanel({
                   value={selector}
                   data-active={String(selectorActive)}
                   data-error={String(selectorError)}
+                  aria-describedby="help-selector"
                   onChange={(e) => onSelectorChange(e.target.value)}
                 />
-                <SelectorHelp />
+                <SelectorHelp anchorRef={selectorRef} />
               </td>
               <td>
                 <button
@@ -190,7 +200,7 @@ export function EditorPanel({
           />
           Enabled
         </label>
-        <label>
+        <label ref={onLoadRef} aria-describedby="help-onpageload">
           <input
             type="checkbox"
             data-name="cb-editor-onload"
@@ -200,8 +210,8 @@ export function EditorPanel({
           />
           On page load
         </label>
-        <OnPageLoadHelp />
-        <label>
+        <OnPageLoadHelp anchorRef={onLoadRef} />
+        <label ref={topFrameOnlyRef} aria-describedby="help-topframeonly">
           <input
             type="checkbox"
             data-name="cb-editor-topframeonly"
@@ -211,7 +221,7 @@ export function EditorPanel({
           />
           Top frame only
         </label>
-        <TopFrameOnlyHelp />
+        <TopFrameOnlyHelp anchorRef={topFrameOnlyRef} />
         <button
           data-name="btn-editor-cancel"
           className="btn"

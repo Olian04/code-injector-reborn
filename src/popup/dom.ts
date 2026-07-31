@@ -36,6 +36,17 @@ export function hasOpenPopover(): boolean {
   }
 }
 
+/** Dismiss every showing popover; the manual ones have no light dismiss. */
+export function closeOpenPopovers(): void {
+  try {
+    for (const el of document.querySelectorAll(':popover-open')) {
+      (el as HTMLElement).hidePopover();
+    }
+  } catch {
+    // No Popover API, so nothing is open.
+  }
+}
+
 /** Index of an element among its parent's children. */
 export function getElementIndex(el: Element): number {
   let index = 0;

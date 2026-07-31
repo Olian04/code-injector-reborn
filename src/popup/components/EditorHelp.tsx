@@ -1,4 +1,9 @@
+import type { RefObject } from 'react';
 import { HelpPopover } from './HelpPopover';
+
+interface HelpProps {
+  anchorRef: RefObject<HTMLElement>;
+}
 
 interface Token {
   pattern: string;
@@ -49,14 +54,9 @@ function Rows({ rows }: { rows: Token[] }) {
   );
 }
 
-export function SelectorHelp() {
+export function SelectorHelp({ anchorRef }: HelpProps) {
   return (
-    <HelpPopover
-      id="help-selector"
-      heading="URL pattern"
-      label="Regular expression help"
-      triggerClass="e-s-help"
-    >
+    <HelpPopover id="help-selector" heading="URL pattern" anchorRef={anchorRef}>
       <p>
         A JavaScript regular expression, matched against each frame's address.
         It is a search rather than a whole-address match, and it is
@@ -74,12 +74,12 @@ export function SelectorHelp() {
   );
 }
 
-export function OnPageLoadHelp() {
+export function OnPageLoadHelp({ anchorRef }: HelpProps) {
   return (
     <HelpPopover
       id="help-onpageload"
       heading="On page load"
-      label="What does On page load do?"
+      anchorRef={anchorRef}
     >
       <p>
         <strong>Checked:</strong> wait for the page's load event — markup,
@@ -96,12 +96,12 @@ export function OnPageLoadHelp() {
   );
 }
 
-export function TopFrameOnlyHelp() {
+export function TopFrameOnlyHelp({ anchorRef }: HelpProps) {
   return (
     <HelpPopover
       id="help-topframeonly"
       heading="Top frame only"
-      label="What does Top frame only do?"
+      anchorRef={anchorRef}
     >
       <p>
         <strong>Checked:</strong> inject only into the page in the address bar.
