@@ -1,11 +1,4 @@
 ---
-description: >-
-  Prefer statically analyzable import paths in popup/options React so bundlers can tree-shake and split correctly.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Prefer Statically Analyzable Paths
 impact: HIGH
 impactDescription: avoids accidental broad bundles and file traces

@@ -1,11 +1,4 @@
 ---
-description: >-
-  Extract expensive popup/options subtrees into memoized components when re-render cost is measurable.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Extract to Memoized Components
 impact: MEDIUM
 impactDescription: enables early returns

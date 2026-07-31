@@ -1,11 +1,4 @@
 ---
-description: >-
-  Avoid barrel-file imports in popup/options React; import from concrete modules to reduce bundle size.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Avoid Barrel File Imports
 impact: CRITICAL
 impactDescription: 200-800ms import cost, slow builds

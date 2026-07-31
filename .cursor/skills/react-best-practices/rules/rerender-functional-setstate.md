@@ -1,11 +1,4 @@
 ---
-description: >-
-  Use functional setState updates in popup/options React when next state depends on previous state.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Use Functional setState Updates
 impact: MEDIUM
 impactDescription: prevents stale closures and unnecessary callback recreations

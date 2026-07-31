@@ -1,11 +1,4 @@
 ---
-description: >-
-  Use Promise.all for independent async operations in popup/options React to eliminate sequential waterfalls.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Promise.all() for Independent Operations
 impact: CRITICAL
 impactDescription: 2-10× improvement

@@ -6,23 +6,23 @@ Code-Injector’s React UI is **client-only browser-extension pages**
 Pinned upstream: `7c180d9044c9ae2b442b567aad4e42a28dd5ed62`
 ([vercel-labs/agent-skills](https://github.com/vercel-labs/agent-skills)).
 
-Most retained rules in [`.cursor/rules/react-bp-*.mdc`](../../rules/) are still
-**verbatim**. A small set was **reworded on disk** to React built-ins /
-extension APIs. Adapted files start with:
+Most retained rules under [`rules/`](rules/) are still **verbatim**. A small set
+was **reworded on disk** to React built-ins / extension APIs. Adapted files
+start with:
 
 > Adapted for Code Injector Reborn (browser extension). Upstream: vercel-labs/agent-skills @ 7c180d9.
 
-Canonical per-rule content lives in those `.mdc` files (`alwaysApply: false`,
-popup/options globs). This skill is overview + mismatch records only.
+Cursor applies this skill via `.cursor/rules/react-best-practices.mdc` (one
+glob trigger). Per-rule content lives only under [`rules/`](rules/).
 
 ---
 
 ## Removed — N/A / skip for this project
 
 No Next.js server, RSC, SSR hydration, API routes, or document-level Next
-resource pipeline. These upstream rules were **deleted** (confirmed skip for
-this extension). Do not reintroduce them unless the product gains a matching
-runtime.
+resource pipeline. These upstream rules were **deleted** from `rules/`
+(confirmed skip for this extension). Do not reintroduce them unless the product
+gains a matching runtime.
 
 | Rule basename | Why removed |
 |---------------|-------------|
@@ -48,8 +48,8 @@ runtime.
 ## Removed — non-trivial / cannot map
 
 Could not be trivially mapped to React built-ins or extension APIs without
-inventing fakes or adding deps. **User decision: do not add SWR; do not mimic
-Next/`Activity`.**
+inventing fakes or adding deps. Deleted from `rules/`. **User decision: do not
+add SWR; do not mimic Next/`Activity`.**
 
 | Rule basename | Why removed | Revisit? |
 |---------------|-------------|----------|
@@ -75,7 +75,7 @@ this extension. Includes former on-disk adaptations `js-cache-storage` and
 
 ## Reworded on disk
 
-Approved adaptations — bodies in the matching `react-bp-*.mdc`.
+Approved adaptations — rule bodies under `rules/` updated.
 
 | Rule | Adaptation |
 |------|------------|
@@ -106,37 +106,37 @@ Open items are only future revisits:
 ## Apply as-is
 
 Pure client React / JS patterns that fit the extension popup/options UI
-(still verbatim upstream). Canonical files: `react-bp-<name>.mdc`.
+(still verbatim upstream).
 
 ### Async
 
-- `async-parallel`
-- `async-defer-await`
-- `async-cheap-condition-before-await`
+- `async-parallel.md`
+- `async-defer-await.md`
+- `async-cheap-condition-before-await.md`
 
 ### Bundle
 
-- `bundle-barrel-imports`
-- `bundle-analyzable-paths`
+- `bundle-barrel-imports.md`
+- `bundle-analyzable-paths.md`
 
 ### Client
 
-- `client-passive-event-listeners`
+- `client-passive-event-listeners.md`
 
 ### Re-render
 
-- `rerender-defer-reads`
-- `rerender-dependencies`
-- `rerender-derived-state-no-effect`
-- `rerender-derived-state`
-- `rerender-functional-setstate`
-- `rerender-lazy-state-init`
-- `rerender-memo`
-- `rerender-memo-with-default-value`
-- `rerender-move-effect-to-event`
-- `rerender-no-inline-components`
-- `rerender-simple-expression-in-memo`
-- `rerender-split-combined-hooks`
-- `rerender-transitions`
-- `rerender-use-deferred-value`
-- `rerender-use-ref-transient-values`
+- `rerender-defer-reads.md`
+- `rerender-dependencies.md`
+- `rerender-derived-state-no-effect.md`
+- `rerender-derived-state.md`
+- `rerender-functional-setstate.md`
+- `rerender-lazy-state-init.md`
+- `rerender-memo.md`
+- `rerender-memo-with-default-value.md`
+- `rerender-move-effect-to-event.md`
+- `rerender-no-inline-components.md`
+- `rerender-simple-expression-in-memo.md`
+- `rerender-split-combined-hooks.md`
+- `rerender-transitions.md`
+- `rerender-use-deferred-value.md`
+- `rerender-use-ref-transient-values.md`

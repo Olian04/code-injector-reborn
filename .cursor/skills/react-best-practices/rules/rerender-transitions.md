@@ -1,11 +1,4 @@
 ---
-description: >-
-  Use startTransition for non-urgent popup/options UI updates so urgent input stays responsive.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Use Transitions for Non-Urgent Updates
 impact: MEDIUM
 impactDescription: maintains UI responsiveness

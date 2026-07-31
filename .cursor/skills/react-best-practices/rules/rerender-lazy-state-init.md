@@ -1,11 +1,4 @@
 ---
-description: >-
-  Use lazy useState initializers in popup/options React for expensive initial state computation.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Use Lazy State Initialization
 impact: MEDIUM
 impactDescription: wasted computation on every render

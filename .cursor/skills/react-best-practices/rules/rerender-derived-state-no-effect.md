@@ -1,11 +1,4 @@
 ---
-description: >-
-  Compute derived state during render in popup/options React instead of syncing via useEffect.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Calculate Derived State During Rendering
 impact: MEDIUM
 impactDescription: avoids redundant renders and state drift

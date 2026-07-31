@@ -1,11 +1,4 @@
 ---
-description: >-
-  Defer await until the value is needed; avoid blocking early awaits in popup/options React async flows.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Defer Await Until Needed
 impact: HIGH
 impactDescription: avoids blocking unused code paths

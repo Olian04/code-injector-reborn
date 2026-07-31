@@ -1,11 +1,4 @@
 ---
-description: >-
-  Do not define React components inside components in popup/options UI; define them at module scope.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Don't Define Components Inside Components
 impact: HIGH
 impactDescription: prevents remount on every render

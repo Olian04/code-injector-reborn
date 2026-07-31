@@ -1,11 +1,4 @@
 ---
-description: >-
-  Put interaction side effects in event handlers in popup/options React instead of effects that re-run on render.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Put Interaction Logic in Event Handlers
 impact: MEDIUM
 impactDescription: avoids effect re-runs and duplicate side effects

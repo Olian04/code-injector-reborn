@@ -1,11 +1,4 @@
 ---
-description: >-
-  Use Suspense boundaries for React.lazy panels only; fix storage waterfalls with parallel/defer-await, not Suspense streaming.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Strategic Suspense Boundaries
 impact: HIGH
 impactDescription: faster initial paint for lazy UI

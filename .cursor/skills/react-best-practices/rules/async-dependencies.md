@@ -1,11 +1,4 @@
 ---
-description: >-
-  Parallelize independent promises with dependency-aware orchestration in popup/options React; do not add better-all.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Dependency-Based Parallelization
 impact: CRITICAL
 impactDescription: 2-10× improvement

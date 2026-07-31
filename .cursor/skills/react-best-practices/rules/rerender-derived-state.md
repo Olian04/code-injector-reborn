@@ -1,11 +1,4 @@
 ---
-description: >-
-  Subscribe to derived/selected state in popup/options React rather than broad parent state that causes extra re-renders.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Subscribe to Derived State
 impact: MEDIUM
 impactDescription: reduces re-render frequency

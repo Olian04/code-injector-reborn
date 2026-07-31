@@ -1,11 +1,4 @@
 ---
-description: >-
-  Use passive event listeners for scroll-related handlers in popup/options React to improve scrolling performance.
-globs: src/popup/**/*.{tsx,ts},src/options/**/*.{tsx,ts}
-alwaysApply: false
----
-
----
 title: Use Passive Event Listeners for Scrolling Performance
 impact: MEDIUM
 impactDescription: eliminates scroll delay caused by event listeners
